@@ -1,0 +1,174 @@
+\begin{filecontents*}{example.eps}
+%!PS-Adobe-3.0 EPSF-3.0
+%%BoundingBox: 19 19 221 221
+%%CreationDate: Mon Sep 29 1997
+%%Creator: programmed by hand (JK)
+%%EndComments
+gsave
+newpath
+  20 20 moveto
+  20 220 lineto
+  220 220 lineto
+  220 20 lineto
+closepath
+2 setlinewidth
+gsave
+  .4 setgray fill
+grestore
+stroke
+grestore
+\end{filecontents*}
+%
+%\documentclass{svjour3}                     % onecolumn (standard format)
+%\documentclass[smallcondensed]{svjour3}     % onecolumn (ditto)
+\documentclass[smallextended]{svjour3}  
+
+\usepackage{apacite}
+\usepackage{appendix}
+\usepackage{amsmath}
+\usepackage{amsthm}
+
+\usepackage{amssymb} % for approx greater than
+\usepackage{caption}
+\usepackage{placeins} % for \FloatBarrier
+\usepackage{graphicx}
+%\usepackage{subcaption}
+\usepackage{longtable}
+\usepackage{setspace}
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{xcolor,colortbl}
+\usepackage{chngpage}
+\usepackage{natbib}
+\bibpunct{(}{)}{,}{a}{}{;} 
+\usepackage{url}
+\usepackage{nth}
+\usepackage{authblk}
+\usepackage[most]{tcolorbox}
+\usepackage[normalem]{ulem}
+\usepackage{amsfonts}
+\smartqed  
+% columns for longtable
+\usepackage{arydshln} % Dashed lines in matrices
+
+\usepackage[margin=1in]{geometry}
+%\doublespacing % for review
+
+% line numbers to make review easier
+%\usepackage{lineno}
+%\linenumbers
+
+%\usepackage{soul}% for \st{}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% for section 4 math environments
+%\theoremstyle{definition}
+%\newtheorem{definition}{Definition}[section]
+%\newtheorem{theorem}{Theorem}[section]
+%\newtheorem{proposition}{Proposition}[section]
+%\newtheorem{corollary}{Corollary}[proposition]
+%\newtheorem{remark}{Remark}[section]
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{filecontents*}{example.eps}
+%!PS-Adobe-3.0 EPSF-3.0
+%%BoundingBox: 19 19 221 221
+%%CreationDate: Mon Sep 29 1997
+%%Creator: programmed by hand (JK)
+%%EndComments
+%gsave
+%newpath
+%  20 20 moveto
+%  20 220 lineto
+%  220 220 lineto
+%  220 20 lineto
+%closepath
+%2 setlinewidth
+%gsave
+%  .4 setgray fill
+%grestore
+%stroke
+%grestore
+\end{filecontents*}
+\RequirePackage{fix-cm}
+
+\newcommand\ackn[1]{%
+  \begingroup
+  \renewcommand\thefootnote{}\footnote{#1}%
+  \addtocounter{footnote}{-1}%
+  \endgroup
+}
+
+% Affiliations in small font size
+%\renewcommand\Affilfont{\small}
+
+\defcitealias{HMD}{HMD 2016}
+
+% junk for longtable caption
+%\AtBeginEnvironment{longtable}{\linespread{1}\selectfont}
+%\setlength{\LTcapwidth}{\linewidth}
+
+% sort van Raalte properly
+% #1: sorting key, #2: prefix for citation, #3: prefix for bibliography
+%\DeclareRobustCommand{\VAN}[3]{#2} % set up for citation
+\newcommand{\tc}{\quad\quad\text{,}}
+\newcommand{\tp}{\quad\quad\text{.}}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{document}
+
+
+\title{Healthy lives: Delayed onset, improved recovery, or mortality
+change?}
+
+\author{Tim Riffe \and Niel Mehta \and Mikko Myrskyl\"a \and Daniel Schneider}
+
+%\authorrunning{Short form of author list} % if too long for running head
+
+\institute{   Tim Riffe \at
+              Max Planck Institute for Demographic Research.
+              Konrad-Zuse-Str. 1. 18057 Rostock, Germany\\
+              \email{riffe@demogr.mpg.de}\\
+              Tel.:  +49 176 232 858 45\\
+              Fax: +49 381 2081 - 280
+\and 
+ Niel Mehta \at
+              University of Michigan.
+              Ann Arbor, MI, USA\\
+              \email{blabla@blabla.edu}
+\and
+Mikko Myrskyl\"a \at
+              Max Planck Institute for Demographic Research.
+              Konrad-Zuse-Str. 1. 18057 Rostock, Germany\\
+              \email{myrskyla@demogr.mpg.de}
+\and
+Daniel Schneider \at
+              Max Planck Institute for Demographic Research.
+              Konrad-Zuse-Str. 1. 18057 Rostock, Germany\\
+              \email{schneider@demogr.mpg.de}         
+              }
+              
+\journalname{Journal TBD}
+\date{Received: date / Accepted: date}
+\maketitle
+
+
+\begin{abstract}
+\end{abstract}
+
+\section{Background}
+\section{Data and Methods}
+\subsection{Data}
+\subsection{Methods}
+\subsubsection{Transition probabilities}
+\subsubsection{Markov health models}
+\subsubsection{Decomposition method}
+\section{Results}
+\subsection{Trends}
+\subsection{Trend decomposition}
+\section{Discussion}
+\section{Conclusions}
+
+% bibliography
+\bibliographystyle{spbasic}
+\bibliography{references}  
+\end{document}
