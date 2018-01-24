@@ -190,124 +190,23 @@ HLEDecomp <- function(datout1, datout2, N = 10, prop = attr(datout1,"initprop"),
 }
 
 
-m1995 <- get_data(time = 1995, self = FALSE)
-m2004 <- get_data(time = 2004, self = FALSE)
-m2014 <- get_data(time = 2014, self = FALSE)
 
-library(devtools)
-
-
-dec1.1 <- HLEDecomp(m1995, m2004, N = 20, to = 1)[-1, ]
-dec1.2 <- HLEDecomp(m1995, m2004, N = 20, to = 2)[-1, ]
-dec1.3 <- HLEDecomp(m1995, m2004, N = 20, to = 3)[-1, ]
-
-a <- seq(52,110,by=2)
+# functions for figures. geometric color blending
 
 blend <- function(col1, col2){
 	rgb1   <- col2rgb(col1)
 	rgb2   <- col2rgb(col2)
 	rgbnew <- sqrt((rgb1^2+rgb2^2)/2)
-	rgb2hex(c(rgbnew))
+	spatstat::rgb2hex(c(rgbnew))
 }
 
-RColorBrewer::display.brewer.all()
-cols1 <- RColorBrewer::brewer.pal(9,"YlOrBr")[5:7]
-cols2 <- RColorBrewer::brewer.pal(11,"RdYlBu")[c(9,3,1)]
-cols3 <- RColorBrewer::brewer.pal(11,"RdYlGn")[c(10,9,1)]
-cols1[3] <- blend(cols1[3],"#6E3A07")
-cols2[3] <- blend(cols2[3],"#6E3A07")
-cols3[3] <- blend(cols3[3],"#6E3A07")
-
-dec1.tot <- dec1.1 + dec1.2 + dec1.3
-
-
-cols <- c(cols1,cols2,cols3)
-
-png("Figures/dec1hle.png")
-matplot(a,dec1.1, type = 'l', xlab = "age", xlim = c(52,100), col = cols, lty = 1, lwd = 2, 
-		ylab = "contribution to difference in HLE", main = "males all edu HLE 1995 vs 2004 (+1.47 yrs)")
-text(60,dec1.1["60", ], colnames(dec1), font = 2, col = cols, pos = c(3,1,1,2,1,3,3,3,1))
-dev.off()
-
-png("Figures/dec1adl1.png")
-matplot(a,dec1.2, type = 'l', xlab = "age", xlim = c(52,100), col = cols, lty = 1, lwd = 2, 
-		ylab = "contribution to difference in ADL1 LE", main = "males all edu ADL1 LE 1995 vs 2004 (trivial increase)")
-text(60,dec1.2["60", ], colnames(dec1), font = 2, col = cols)
-dev.off()
-
-png("Figures/dec1adl2.png")
-matplot(a,dec1.3, type = 'l', xlab = "age", xlim = c(52,100), col = cols, lty = 1, lwd = 2, 
-		ylab = "contribution to difference in ADL2+ LE", main = "males all edu ADL2+ LE 1995 vs 2004 (-1 months)")
-text(60,dec1.3["60", ], colnames(dec1), font = 2, col = cols)
-dev.off()
-
-png("Figures/dec1le.png")
-matplot(a,dec1.tot, type = 'l', xlab = "age", xlim = c(52,100), col = cols, lty = 1, lwd = 2, 
-		ylab = "contribution to difference in LE", main = "males all edu LE 1995 vs 2004 (+1.36 yrs)")
-text(60,dec1.tot["60", ], colnames(dec1), font = 2, col = cols)
-dev.off()
-
-matplot(m2004-m2014,type='l')
-dec2.1 <- HLEDecomp(m2004, m2014, N = 20, to = 1)[-1, ]
-dec2.2 <- HLEDecomp(m2004, m2014, N = 20, to = 2)[-1, ]
-dec2.3 <- HLEDecomp(m2004, m2014, N = 20, to = 3)[-1, ]
-
-dec2.tot <- dec2.1 + dec2.2 + dec2.3
-
-dec3.1 <- HLEDecomp(m2014, m1995, N = 10, to = 1)[-1, ]
-dec3.2 <- HLEDecomp(m1995, m2014, N = 10, to = 2)[-1, ]
-dec3.3 <- HLEDecomp(m1995, m2014, N = 10, to = 3)[-1, ]
-
-dec3.tot <- dec3.1 + dec3.2 + dec3.3
-
-matplot(m2014, type ='l',col=cols)
-
-matplot(a,dec3.1, type = 'l', xlab = "age", xlim = c(52,100), col = cols, lty = 1, lwd = 2, 
-		ylab = "contribution to difference in LE", main = "males all edu LE 1995 vs 2014")
-
-matplot(a,dec3.tot, type = 'l', xlab = "age", xlim = c(52,100), col = cols, lty = 1, lwd = 2, 
-		ylab = "contribution to difference in LE", main = "males all edu LE 1995 vs 2014")
-text(60,dec2.tot["60", ], colnames(dec1), font = 2, col = cols)
-
-
-matplot(a,dec2.1, type = 'l', xlab = "age", xlim = c(52,100), col = cols, lty = 1, lwd = 2, 
-		ylab = "contribution to difference in HLE", main = "males all edu HLE 2004 vs 2014")
-text(60,dec2.1["60", ], colnames(dec1), font = 2, col = cols)
-sum(dec2.tot)
-png("Figures/dec2le.png")
-matplot(a,dec2.tot, type = 'l', xlab = "age", xlim = c(52,100), col = cols, lty = 1, lwd = 2, 
-		ylab = "contribution to difference in LE", main = "males all edu LE 2004 vs 2014 (+1.42 yrs)")
-text(60,dec2.tot["60", ], colnames(dec1), font = 2, col = cols)
-dev.off()
-
-#matplot(out2self(m2004)-out2self(m2014),type='l')
-
-#
-#m1995 <- get_data(time = 1995)
-#m2004 <- get_data(time = 2004)
-#m2014 <- get_data(time = 2014)
-#
-## hle
-#hle95 <- e50(m1995, to = 1, age = 52)
-#hle04 <- e50(m2004, to = 1, age = 52)
-#hle14 <- e50(m2014, to = 1, age = 52)
-#
-## adl1
-#a195 <- e50(m1995, to = 2, age = 52)
-#a104 <- e50(m2004, to = 2, age = 52)
-#a114 <- e50(m2014, to = 2, age = 52)
-#
-## adl2
-#a295 <- e50(m1995, to = 3, age = 52)
-#a204 <- e50(m2004, to = 3, age = 52)
-#a214 <- e50(m2014, to = 3, age = 52)
-#
-## tot
-#tot95 <- hle95 + a195 + a295
-#tot04 <- hle04 + a104 + a204
-#tot14 <- hle14 + a114 + a214
-#
-#print(data.frame(hle = c(hle95,hle04,hle14),
-#		adl1 = c(a195,a104,a114),
-#		adl2p = c(a295,a204,a214),
-#		tot = c(tot95,tot04,tot14)),digits=3)
+get_colors <- function(){
+	cols1    <- RColorBrewer::brewer.pal(9,"YlOrBr")[5:7]
+	cols2    <- RColorBrewer::brewer.pal(11,"RdYlBu")[c(9,3,1)]
+	cols3    <- RColorBrewer::brewer.pal(11,"RdYlGn")[c(10,9,1)]
+	cols1[3] <- blend(cols1[3],"#6E3A07")
+	cols2[3] <- blend(cols2[3],"#6E3A07")
+	cols3[3] <- blend(cols3[3],"#6E3A07")
+	cols     <- c(cols1,cols2,cols3)
+	cols
+}
