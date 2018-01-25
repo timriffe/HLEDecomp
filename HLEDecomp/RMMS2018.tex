@@ -101,6 +101,10 @@ grestore
 
 % Affiliations in small font size
 %\renewcommand\Affilfont{\small}
+\newcommand{\absdiv}[1]{%
+  \par\addvspace{.5\baselineskip}% adjust to suit
+  \noindent\textbf{#1}\quad\ignorespaces
+}
 
 \defcitealias{HMD}{HMD 2016}
 
@@ -149,28 +153,30 @@ Daniel Schneider \at
               \email{schneider@demogr.mpg.de}         
               }
               
-\journalname{Journal TBD}
-\date{Received: date / Accepted: date}
+\journalname{~}
+\date{~}
 \maketitle
 
-
+\vspace{-7em}
 \begin{abstract}
+\absdiv{Background}
+Life expectancy and healthy life expectancy at older ages in the United States have both slowly increased in recent decades and both lag behind other high income countries. There is no exhaustive study on whether changes in disease onset, recovery, or mortality, or other changes in population composition drive these trends.
+\absdiv{Objective}
+We aim to determine how much of the change in healthy, unhealthy, and total life expectancy between 1995 and 2015 is due to changes in  onset, recovery, mortality, and certain aspects of population composition.
+\absdiv{Data and Methods}
+We use version P of the RAND version of the US Health and Retirement Study to
+estimate transition rates between health and mild and severe disability states, as well as death rates in all three states, and centered on the years 1995, 2004, and 2014. We calculate healthy, disabled, and total life expectancy using incidence-based Markov matrix models. We decompose the difference between time points and between sexes and groups into 9 separate age-specific components for onset, recovery, and mortality using pseudo-continuous decomposition.
+\absdiv{Results}
+We describe preliminary results for males, all education groups combined. Perhaps counter to intuition, most change in total, healthy, and disabled life expectancy is due to mortality. Most of the two-year increase in healthy life expectancy since 1995 is due to decreased mortality of healthy people, whereas the effects of delayed onset and slowed recovery from disability offset each other. Expected life in mild disability increased by about 4 months over the two decades, mostly due to improved mortality of both healthy and mildly disabled people. Slowed (or delayed) onset into mild disability almost equally offset the effects of improved mortality among the mildly disabled. Expected years in severe disability increased by about half a year, also mostly due to improved mortality of healthy, mildly, and severely disabled people. Slowed recovery from severe disability (transitions to good health) was just as important as reduced mortality of the severely disabled. Delayed onset in ages below 80 was roughly offset by increased transitions into severe disability in older ages. On the whole, remaining life expectancy at age 50 increased by 2.8 years since 1995, almost entirely driven by mortality, itself almost entirely driven by the mortality of healthy people. In the net, slowed recovery reduced life expectancy more than delayed onset of disability improved it.
+\absdiv{Conclusions}
+Total life expectancy at age 50 increased relatively faster than disabled life expectancy. Years spent in disability have been pushed into higher ages, indicating a slight delay of onset. While the lives of disabled individuals are longer now, mostly due to improved mortality, healthy life has been lengthened much more by improved mortality.
+\absdiv{Contribution}
+Our results suggest that should be targeted to achieve maximal increases in healthy and total life expectancy. 
 \end{abstract}
 
-\section{Background}
-\section{Data and Methods}
-\subsection{Data}
-\subsection{Methods}
-\subsubsection{Transition probabilities}
-\subsubsection{Markov health models}
-\subsubsection{Decomposition method}
-\section{Results}
-\subsection{Trends}
-\subsection{Trend decomposition}
-\section{Discussion}
-\section{Conclusions}
+
 
 % bibliography
-\bibliographystyle{spbasic}
-\bibliography{references}  
+%\bibliographystyle{spbasic}
+%\bibliography{references}  
 \end{document}
