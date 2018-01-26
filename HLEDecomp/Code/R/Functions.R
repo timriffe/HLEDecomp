@@ -228,6 +228,50 @@ HLEDecomp_logit <- function(datout1, datout2, N = 10, prop = attr(datout1,"initp
 	dec
 }
 
+# not implemented for logit transform. Could add in logical switch tho
+do_decomp <- function(times = c(1995,2004,2014), ntrans = 3, version, sex, educlevel, N = 20){
+	
+	# get transition rate sets
+	DatL   <- lapply(times, 
+			get_data, 
+			self = FALSE, 
+			version = version, 
+			sex = Sex, 
+			educlevel = educlevel,
+			path = "N:\\dcs\\proj\\hledecomp\\results\\margins")
+	
+	names(DatL) <- times
+		
+	# make from-to pairlist
+	comparisons <- outer(times, times, '<')
+	from        <- row(comparisons)[comparisons]
+	to          <- col(comparisons)[comparisons]
+	ft          <- mapply(c, from, to, SIMPLIFY = FALSE)
+	
+	# looping. Can be swapped w parallel decomp
+	dec <- do.call("rbind",lapply(ft, function(fromto, DatL, ntrans, N){
+						A1   <- DatL[[fromto[1]]]
+						A2   <- DatL[[fromto[2]]]
+						yrs  <- as.integer(names(DatL)[fromto])
+						decx <- do.call("rbind", lapply(1:ntrans, function(sto, A1, A2, N = N){
+											dec.i <- melt(HLEDecomp(A1, A2, N = N, to = sto)[-1, ],
+													varnames = c("age","transition"))
+											dec.i$state <- sto
+											dec.i
+										}, A1 = A1, A2 = A2, N = N))
+						decx$year1 <- yrs[1]
+						decx$year2 <- yrs[2]
+						decx
+					}, DatL = DatL, ntrans = ntrans, N = N))  
+	
+	# add metadata
+	dec$sex       <- sex
+	dec$educlevel <- educlevel
+	dec$version   <- version
+	dec$N         <- N
+	
+	dec
+}
 
 # functions for figures. geometric color blending
 

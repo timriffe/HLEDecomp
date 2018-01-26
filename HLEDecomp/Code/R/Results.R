@@ -1,3 +1,6 @@
+# TODO consider parallelsugar on Windows if this is too slow
+
+
 me <- system("whoami",intern=TRUE)
 if (me == "mpidr_d\\riffe"){
 	setwd("U:/git/HLEDecomp/HLEDecomp")
@@ -6,7 +9,7 @@ if (me == "tim"){
 	setwd("/home/tim/git/HLEDecomp/HLEDecomp")
 }
 source("Code/R/Functions.R")
-
+library(reshape2)
 # set this to rerun
 version    <- "01"
 sex        <- "m" # "m","f",or"b"
@@ -17,39 +20,26 @@ Sex        <- ifelse(sex == "m", "1.men", ifelse(sex == "f", "2.wmn", "0.all"))
 
 # define results container
 # easier
+dec.i <- do_decomp(times = c(1995,2004,2014), ntrans = 3, version = version, sex = Sex, educlevel = educlevel, N = 20)
 
+# save out results systematically
+file.name <- paste0(paste("dec",version,Sex,educlevel,N,sep="_"),".Rdata")
+path <- file.path("Data","Results",paste0("mspec",version))
+if (!dir.exists(path)){
+	dir.create(path)
+}
+save(dec.i, file = file.path(path, file.name))
 
+# ------------------------------------------------------
 
-m1995      <- get_data(time = 1995, self = FALSE, version = version, sex = Sex, educlevel = educlevel)
-m2004      <- get_data(time = 2004, self = FALSE, version = version, sex = Sex, educlevel = educlevel)
-m2014      <- get_data(time = 2014, self = FALSE, version = version, sex = Sex, educlevel = educlevel)
-           
-# decompo  se 1995 vs 2004
-dec1.1     <- HLEDecomp(m1995, m2004, N = 100, to = 1)[-1, ]
-dec1.2     <- HLEDecomp(m1995, m2004, N = 100, to = 2)[-1, ]
-dec1.3     <- HLEDecomp(m1995, m2004, N = 100, to = 3)[-1, ]
-dec1.tot   <- dec1.1 + dec1.2 + dec1.3
-           
-# decompo  se 2004 vs 2014
-dec2.1     <- HLEDecomp(m2004, m2014, N = 100, to = 1)[-1, ]
-dec2.2     <- HLEDecomp(m2004, m2014, N = 100, to = 2)[-1, ]
-dec2.3     <- HLEDecomp(m2004, m2014, N = 100, to = 3)[-1, ]
-dec2.tot   <- dec2.1 + dec2.2 + dec2.3
-           
-# decompo  se 1995 vs 2014
-dec3.1     <- HLEDecomp(m1995, m2014, N = 100, to = 1)[-1, ]
-dec3.2     <- HLEDecomp(m1995, m2014, N = 100, to = 2)[-1, ]
-dec3.3     <- HLEDecomp(m1995, m2014, N = 100, to = 3)[-1, ]
-dec3.tot   <- dec3.1 + dec3.2 + dec3.3
-           
-1+1
 
 
 
 
 # ------------------------------------------------------
 # repeat with logit decomp
-
+do.this <- FALSE
+if (do.this){
 # decompose 1995 vs 2004
 dec1.1.l   <- HLEDecomp_logit(m1995, m2004, N = 100, to = 1)[-1, ]
 dec1.2.l   <- HLEDecomp_logit(m1995, m2004, N = 100, to = 2)[-1, ]
@@ -69,7 +59,7 @@ dec3.3.l   <- HLEDecomp_logit(m1995, m2014, N = 100, to = 3)[-1, ]
 dec3.tot.l <- dec3.1.l + dec3.2.l + dec3.3.l
 
 1+1
-
+}
 
 #matplot(out2self(m2004)-out2self(m2014),type='l')
 
