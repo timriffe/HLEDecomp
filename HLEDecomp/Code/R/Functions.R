@@ -189,6 +189,44 @@ HLEDecomp <- function(datout1, datout2, N = 10, prop = attr(datout1,"initprop"),
 	dec
 }
 
+logit <- function(x){
+	log(x / (1 - x))
+}
+expit <- function(x){
+	exp(x )/ (1 + exp(x))
+}
+dec_fun_logit <- function(datoutvec,to=1,age=52, prop){
+	datoutvec <- expit(datoutvec)
+	datout    <- v2m(datoutvec, 3)
+	
+	datself   <- out2self(datout)
+	e50(datself, to = to, age = age, prop = prop)
+}
+HLEDecomp_logit <- function(datout1, datout2, N = 10, prop = attr(datout1,"initprop"), to=1){
+	
+	datout1vec <- c(as.matrix(datout1))
+	datout2vec <- c(as.matrix(datout2))
+	
+	# impute 0s (none are structural
+	datout1vec[datout1vec == 0] <- 1e-7
+	datout2vec[datout2vec == 0] <- 1e-7
+	
+	# logit transform
+	datout1vec <- logit(datout1vec)
+	datout2vec <- logit(datout2vec)
+	# arrow decomposition:
+	dec      <- DecompHoriuchi::DecompContinuousOrig(
+			      func = dec_fun_logit, 
+			      rates1 = datout1vec, 
+			      rates2 = datout2vec, 
+			      N = N, 
+			      prop = prop,
+			      to = to)
+	dim(dec)      <- dim(datout1)
+	dimnames(dec) <- dimnames(datout1)
+	# no dim reduction here
+	dec
+}
 
 
 # functions for figures. geometric color blending

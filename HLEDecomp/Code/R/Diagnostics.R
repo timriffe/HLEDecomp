@@ -39,5 +39,6 @@ decomp_lines(dec3.3, main = "Males, all edu, ADL2p 1995 vs 2014")
 decomp_lines(dec3.tot, main = "Males, all edu, LE50 1995 vs 2014")
 dev.off()
 
-# notion of decomp error. Things should sum
+# notion of decomp error. Things should sum tho?
 decomp_lines(dec1.1 + dec2.1 - dec3.1)
+# decomp_lines(dec3.tot - dec3.tot.l)
