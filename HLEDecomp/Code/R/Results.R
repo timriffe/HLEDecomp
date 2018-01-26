@@ -14,26 +14,21 @@ library(reshape2)
 version    <- "01"
 sex        <- "m" # "m","f",or"b"
 educlevel  <- "0.All edu"
-
+N <- 20
 # let sex recode
 Sex        <- ifelse(sex == "m", "1.men", ifelse(sex == "f", "2.wmn", "0.all"))
 
 # define results container
 # easier
-dec.i <- do_decomp(times = c(1995,2004,2014), ntrans = 3, version = version, sex = Sex, educlevel = educlevel, N = 20)
+dec.i <- do_decomp(times = c(1995,2004,2014), ntrans = 3, version = version, sex = Sex, educlevel = educlevel, N = N)
 
 # save out results systematically
-file.name <- paste0(paste("dec",version,Sex,educlevel,N,sep="_"),".Rdata")
+file.name <- paste0(paste("dec",version,sex,educlevel,N,sep="_"),".Rdata")
 path <- file.path("Data","Results",paste0("mspec",version))
 if (!dir.exists(path)){
 	dir.create(path)
 }
 save(dec.i, file = file.path(path, file.name))
-
-# ------------------------------------------------------
-
-
-
 
 
 # ------------------------------------------------------

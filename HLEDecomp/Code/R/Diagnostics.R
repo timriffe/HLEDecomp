@@ -8,11 +8,61 @@ if (me == "tim"){
 	setwd("/home/tim/git/HLEDecomp/HLEDecomp")
 }
 source("Code/R/Functions.R")
+version    <- "01"
+sex        <- "m" # "m","f",or"b"
+educlevel  <- "0.All edu"
+# let sex recode
+
+file.name  <- paste0(paste("dec",version,sex,educlevel,N,sep="_"),".Rdata")
+path       <- file.path("Data","Results",paste0("mspec",version))
+
+dec.i      <- local(get(load(file.path(path, file.name))))
+
+# ------------------------------------------------------
+# MARGINS PLOTS
+sets          <- paste(dec.i$year1,dec.i$year2)
+code          <- unique(sets)
+recvec        <- 1:length(code)
+names(recvec) <- code
+dec.i$decnr   <- recvec[sets]
+# transition margins
+trmargins     <- acast(dec.i, transition ~ state ~ decnr, sum, value.var = "value")
+
+trp <- trn <-trmargins
+trp[trp < 0] <- NA
+trn[trn > 0] <- NA
+
+ylim <- c(min(apply(trn,3,rowSums,na.rm=TRUE)), max(apply(trp,3,rowSums,na.rm=TRUE)))
+
+
+figpath <-  file.path("Figures","margins",paste0("mspec",version))
+fig.name <- gsub(".Rdata","",file.name)
+fig.name <- paste0(fig.name,"trmargins.pdf")
+pdf(file.path(figpath,fig.name))
+# 1995 vs 2004
+barplot(t(trp[,,1]), ylim = ylim, legend.text=c("HLE","ADL1","ADL2p"), main = "1995 vs 2004, Males All edu",
+		ylab = "contribution to difference in e50")
+barplot(t(trn[,,1]),add=TRUE)
+
+# 1995 vs 2014
+barplot(t(trp[,,2]), ylim = ylim, legend.text=c("HLE","ADL1","ADL2p"), main = "1995 vs 2014, Males All edu",
+		ylab = "contribution to difference in e50")
+barplot(t(trn[,,2]),add=TRUE)
+
+# 2004 vs 2014
+barplot(t(trp[,,3]), ylim = range(trmargins), legend.text=c("HLE","ADL1","ADL2p"), main = "2004 vs 2014, Males All edu",
+		ylab = "contribution to difference in e50")
+barplot(t(trn[,,3]),add=TRUE)
+dev.off()
+
+#----------------------------
+
 
 library(plotrix)
 
 cols     <- get_colors()
 a        <- seq(52,110,by=2)
+
 
 decomp_lines <- function(dec, a = as.integer(rownames(dec))-2, ...){
 	plot(a,type = 'n', xlab = "age", xlim = c(52,100), ylim = range(dec), las = 1,
