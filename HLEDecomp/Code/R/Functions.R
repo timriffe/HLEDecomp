@@ -107,7 +107,8 @@ U2N <- function(U){
 	Nsx 
 }
 
-e50 <- function(dat,to=1,age=50,prop=attr(dat,"initprop")){
+# TR: added deduct switch to test for differences re DCS email
+e50 <- function(dat, to = 1, age = 50, prop = attr(dat, "initprop"), deduct = TRUE){
 	#prop <- attr(dat,"initprop")
 	U    <- data_2_U(dat)
 	N    <- U2N(U)
@@ -116,11 +117,14 @@ e50 <- function(dat,to=1,age=50,prop=attr(dat,"initprop")){
 	
 	e50  <- colSums(N[rind,cind]) * 2
 	# subtract half interval from self-state
-	e50[to] <- e50[to] - 1 
+	if (deduct){
+	  e50[to] <- e50[to] - 1 
+    }
 	sum(e50 * prop)
 }
 
-e50dcs <- function(dat,age=50,prop=attr(dat,"initprop"),deduct=FALSE){
+e50dcs <- function(dat,age=50,prop=attr(dat,"initprop"),deduct=FALSE,to = 4){
+	
 	#prop <- attr(dat,"initprop")
 	U    <- data_2_U(dat)
 	N    <- U2N(U)
@@ -140,14 +144,24 @@ e50dcs <- function(dat,age=50,prop=attr(dat,"initprop"),deduct=FALSE){
 		Nprop <- t(t(Ntab) / colSums(Ntab))
 		Ntab  <- Ntab - Nprop
 	}
-
-	sum(colSums(Ntab) * prop)
+	ei <- rowSums(Ntab %*% diag(prop))
+    if (is.integer(to) & to <= 3){
+		out <- ei[to]
+	} else {
+		out <- sum(ei)
+	}
+	out
 }
 
-dec_fun <- function(datoutvec,to=1,age=52, prop){
+dec_fun <- function(datoutvec,to=1,age=52, prop, deduct = TRUE, dcs = FALSE){
 	datout  <- v2m(datoutvec, 3)
 	datself <- out2self(datout)
-	e50(datself, to = to, age = age, prop = prop)
+	if (!dcs){
+		dc <- e50(datself, to = to, age = age, prop = prop)
+	} else {
+		dc <- e50dcs(datself, to = to, age = age, prop = prop, deduct = deduct)
+	}
+	dc
 }
 
 # preliminary results to cross-check w DCS
@@ -171,7 +185,7 @@ dec_fun <- function(datoutvec,to=1,age=52, prop){
 # state-specific expectancies will not agree until we decide where to deduct from.
 
 
-HLEDecomp <- function(datout1, datout2, N = 10, prop = attr(datout1,"initprop"), to=1){
+HLEDecomp <- function(datout1, datout2, N = 10, prop = attr(datout1,"initprop"), to=1, deduct = TRUE, dcs = FALSE){
 	
 	datout1vec <- c(as.matrix(datout1))
 	datout2vec <- c(as.matrix(datout2))
@@ -182,7 +196,9 @@ HLEDecomp <- function(datout1, datout2, N = 10, prop = attr(datout1,"initprop"),
 			        rates2 = datout2vec, 
 			        N = N, 
 			        prop = prop,
-					to = to)
+					to = to,
+					deduct = deduct,
+					dcs = dcs)
 	dim(dec)      <- dim(datout1)
 	dimnames(dec) <- dimnames(datout1)
 	# no dim reduction here
@@ -229,7 +245,7 @@ HLEDecomp_logit <- function(datout1, datout2, N = 10, prop = attr(datout1,"initp
 }
 
 # not implemented for logit transform. Could add in logical switch tho
-do_decomp <- function(times = c(1995,2004,2014), ntrans = 3, version, sex, educlevel, N = 20){
+do_decomp <- function(times = c(1995,2004,2014), ntrans = 3, version, sex, educlevel, N = 20, deduct = TRUE, dcs = FALSE){
 	
 	# get transition rate sets
 	DatL   <- lapply(times, 
@@ -249,20 +265,20 @@ do_decomp <- function(times = c(1995,2004,2014), ntrans = 3, version, sex, educl
 	ft          <- mapply(c, from, to, SIMPLIFY = FALSE)
 	
 	# looping. Can be swapped w parallel decomp
-	dec <- do.call("rbind",lapply(ft, function(fromto, DatL, ntrans, N){
+	dec <- do.call("rbind",lapply(ft, function(fromto, DatL, ntrans, N, deduct, dcs){
 						A1   <- DatL[[fromto[1]]]
 						A2   <- DatL[[fromto[2]]]
 						yrs  <- as.integer(names(DatL)[fromto])
-						decx <- do.call("rbind", lapply(1:ntrans, function(sto, A1, A2, N = N){
-											dec.i <- melt(HLEDecomp(A1, A2, N = N, to = sto)[-1, ],
+						decx <- do.call("rbind", lapply(1:ntrans, function(sto, A1, A2, N = N, deduct, dcs){
+											dec.i <- melt(HLEDecomp(A1, A2, N = N, to = sto, deduct = deduct, dcs = dcs)[-1, ],
 													varnames = c("age","transition"))
 											dec.i$state <- sto
 											dec.i
-										}, A1 = A1, A2 = A2, N = N))
+										}, A1 = A1, A2 = A2, N = N, deduct = deduct, dcs = dcs))
 						decx$year1 <- yrs[1]
 						decx$year2 <- yrs[2]
 						decx
-					}, DatL = DatL, ntrans = ntrans, N = N))  
+					}, DatL = DatL, ntrans = ntrans, N = N, deduct = deduct, dcs = dcs))  
 	
 	# add metadata
 	dec$sex       <- sex
@@ -272,6 +288,42 @@ do_decomp <- function(times = c(1995,2004,2014), ntrans = 3, version, sex, educl
 	
 	dec
 }
+
+
+do_le <- function(times = c(1995,2004,2014),age = 52, version, sex, educlevel, deduct = TRUE, dcs = FALSE){
+	DatL   <- lapply(times, 
+			get_data, 
+			self = TRUE, 
+			version = version, 
+			sex = Sex, 
+			educlevel = educlevel,
+			path = "N:\\dcs\\proj\\hledecomp\\results\\margins")
+	
+	names(DatL) <- times
+
+	do.call("rbind",lapply(DatL, function(X,deduct,dcs){
+				prop <- attr(X, "initprop")
+				U    <- data_2_U(X)
+				N    <- U2N(U)
+				cind <- rep(seq(50,112,by=2), 3) == age
+				
+				rgroups <- rep(1:3, each = 32)
+				Ntab <- apply(N[, cind], 2, function(x, rgroups){
+							tapply(x, rgroups, sum) * 2
+						}, rgroups = rgroups)
+				if (deduct & !dcs){
+					Ntab <- Ntab - diag(3)
+				}
+				if (deduct & dcs){
+			
+					Nprop <- t(t(Ntab) / colSums(Ntab))
+					Ntab  <- Ntab - Nprop
+				}
+				rowSums(Ntab  %*% diag(prop))
+			}, deduct = deduct, dcs = dcs))
+	
+}
+
 
 # functions for figures. geometric color blending
 

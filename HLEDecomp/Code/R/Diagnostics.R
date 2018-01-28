@@ -28,6 +28,31 @@ dec.i$decnr   <- recvec[sets]
 # transition margins
 trmargins     <- acast(dec.i, transition ~ state ~ decnr, sum, value.var = "value")
 
+barmargins <- function(dec.i){
+	trmargins     <- acast(dec.i, transition ~ state ~ decnr, sum, value.var = "value")
+	
+	
+	trp <- trn <-trmargins
+	trp[trp < 0] <- NA
+	trn[trn > 0] <- NA
+	
+	ylim <- c(min(apply(trn,3,rowSums,na.rm=TRUE)), max(apply(trp,3,rowSums,na.rm=TRUE)))
+	barplot(t(trp[,,1]), ylim = ylim, legend.text=c("HLE","ADL1","ADL2p"), main = "1995 vs 2004, Males All edu",
+			ylab = "contribution to difference in e50")
+	barplot(t(trn[,,1]),add=TRUE)
+	
+# 1995 vs 2014
+	barplot(t(trp[,,2]), ylim = ylim, legend.text=c("HLE","ADL1","ADL2p"), main = "1995 vs 2014, Males All edu",
+			ylab = "contribution to difference in e50")
+	barplot(t(trn[,,2]),add=TRUE)
+	
+# 2004 vs 2014
+	barplot(t(trp[,,3]), ylim = range(trmargins), legend.text=c("HLE","ADL1","ADL2p"), main = "2004 vs 2014, Males All edu",
+			ylab = "contribution to difference in e50")
+	barplot(t(trn[,,3]),add=TRUE)
+}
+
+
 trp <- trn <-trmargins
 trp[trp < 0] <- NA
 trn[trn > 0] <- NA
