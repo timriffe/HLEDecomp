@@ -1,27 +1,15 @@
-\begin{filecontents*}{example.eps}
+%\begin{filecontents*}{example.eps}
 %!PS-Adobe-3.0 EPSF-3.0
 %%BoundingBox: 19 19 221 221
 %%CreationDate: Mon Sep 29 1997
 %%Creator: programmed by hand (JK)
 %%EndComments
-gsave
-newpath
-  20 20 moveto
-  20 220 lineto
-  220 220 lineto
-  220 20 lineto
-closepath
-2 setlinewidth
-gsave
-  .4 setgray fill
-grestore
-stroke
-grestore
-\end{filecontents*}
+
+%\end{filecontents*}
 %
 %\documentclass{svjour3}                     % onecolumn (standard format)
 %\documentclass[smallcondensed]{svjour3}     % onecolumn (ditto)
-\documentclass[smallextended]{svjour3}  
+\documentclass[12pt,oneside,a4paper]{article}  
 
 \usepackage{apacite}
 \usepackage{appendix}
@@ -47,9 +35,9 @@ grestore
 \usepackage[most]{tcolorbox}
 \usepackage[normalem]{ulem}
 \usepackage{amsfonts}
-\smartqed  
+
 % columns for longtable
-\usepackage{arydshln} % Dashed lines in matrices
+%\usepackage{arydshln} % Dashed lines in matrices
 
 \usepackage[margin=1in]{geometry}
 %\doublespacing % for review
@@ -70,7 +58,7 @@ grestore
 %\newtheorem{remark}{Remark}[section]
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\begin{filecontents*}{example.eps}
+%\begin{filecontents*}{example.eps}
 %!PS-Adobe-3.0 EPSF-3.0
 %%BoundingBox: 19 19 221 221
 %%CreationDate: Mon Sep 29 1997
@@ -89,8 +77,8 @@ grestore
 %grestore
 %stroke
 %grestore
-\end{filecontents*}
-\RequirePackage{fix-cm}
+%\end{filecontents*}
+%\RequirePackage{fix-cm}
 
 \newcommand\ackn[1]{%
   \begingroup
@@ -106,7 +94,7 @@ grestore
   \noindent\textbf{#1}\quad\ignorespaces
 }
 
-\defcitealias{HMD}{HMD 2016}
+%\defcitealias{HMD}{HMD 2016}
 
 % junk for longtable caption
 %\AtBeginEnvironment{longtable}{\linespread{1}\selectfont}
@@ -115,8 +103,8 @@ grestore
 % sort van Raalte properly
 % #1: sorting key, #2: prefix for citation, #3: prefix for bibliography
 %\DeclareRobustCommand{\VAN}[3]{#2} % set up for citation
-\newcommand{\tc}{\quad\quad\text{,}}
-\newcommand{\tp}{\quad\quad\text{.}}
+%\newcommand{\tc}{\quad\quad\text{,}}
+%\newcommand{\tp}{\quad\quad\text{.}}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{document}
 
@@ -124,54 +112,81 @@ grestore
 \title{Healthy lives: Delayed onset, improved recovery, or mortality
 change?}
 
-\author{Tim Riffe \and Niel Mehta \and Mikko Myrskyl\"a \and Daniel Schneider}
+%\author{Tim Riffe \and Neil Mehta \and Daniel Schneider \and Mikko Myrskyl\"a}
+\author[1]{Tim Riffe\thanks{riffe@demogr.mpg.de}}
+\author[2]{Neil Mehta}
+\author[1]{Daniel Schneider}
+\author[1,3]{Mikko Myrskyl\"a}
+
+\affil[1]{Max Planck Institute for Demographic Research}
+\affil[2]{University of Michigan, Ann Arbor}
+\affil[3]{University of Helsinki}
 
 %\authorrunning{Short form of author list} % if too long for running head
 
-\institute{   Tim Riffe \at
-              Max Planck Institute for Demographic Research.
-              Konrad-Zuse-Str. 1. 18057 Rostock, Germany\\
-              \email{riffe@demogr.mpg.de}\\
-              Tel.:  +49 176 232 858 45\\
-              Fax: +49 381 2081 - 280
-\and 
- Neil Mehta \at
-              Department of Health Management and Policy. 
-School of Public Health.
-M3531 SPH II
-Ann Arbor, MI 48109-2029\\
-              \email{nkmehta@umich.edu }
-\and
-Mikko Myrskyl\"a \at
-              Max Planck Institute for Demographic Research.
-              Konrad-Zuse-Str. 1. 18057 Rostock, Germany\\
-              \email{myrskyla@demogr.mpg.de}
-\and
-Daniel Schneider \at
-              Max Planck Institute for Demographic Research.
-              Konrad-Zuse-Str. 1. 18057 Rostock, Germany\\
-              \email{schneider@demogr.mpg.de}         
-              }
-              
-\journalname{~}
-\date{~}
+%\institute{   Tim Riffe \at
+%              Max Planck Institute for Demographic Research.
+%              Konrad-Zuse-Str. 1. 18057 Rostock, Germany\\
+%              \email{riffe@demogr.mpg.de}\\
+%              Tel.:  +49 176 232 858 45\\
+%              Fax: +49 381 2081 - 280
+%\and 
+% Neil Mehta \at
+%              Department of Health Management and Policy. 
+%School of Public Health.
+%M3531 SPH II
+%Ann Arbor, MI 48109-2029\\
+%              \email{nkmehta@umich.edu }
+%\and
+%Daniel Schneider \at
+%              Max Planck Institute for Demographic Research.
+%              Konrad-Zuse-Str. 1. 18057 Rostock, Germany\\
+%              \email{schneider@demogr.mpg.de}      
+%\and
+%Mikko Myrskyl\"a \at
+%              Max Planck Institute for Demographic Research.
+%              Konrad-Zuse-Str. 1. 18057 Rostock, Germany\\
+%              \email{myrskyla@demogr.mpg.de}   
+%              }
+%              
+%
+
 \maketitle
 
-\vspace{-7em}
+\vspace{-2em}
 \begin{abstract}
 \absdiv{Background}
-Life expectancy and healthy life expectancy at older ages in the United States have both slowly increased in recent decades and both lag behind other high income countries. There is no exhaustive study on whether changes in disease onset, recovery, or mortality, or other changes in population composition drive these trends.
+Healthy life expectancy at older ages in the United States has steadily
+increased in recent decades. We do not know whether changes in
+disease onset, recovery, or mortality drive this trend.
 \absdiv{Objective}
-We aim to determine how much of the change in healthy, unhealthy, and total life expectancy between 1995 and 2015 is due to changes in  onset, recovery, mortality, and certain aspects of population composition.
+We aim to determine how much of the change in healthy and unhealthy
+life expectancy between 1995 and 2015 is due to changes in onset, recovery, and
+mortality.
 \absdiv{Data and Methods}
-We use version P of the RAND version of the US Health and Retirement Study to
-estimate transition rates between health and mild and severe disability states, as well as death rates in all three states, and centered on the years 1995, 2004, and 2014. We calculate healthy, disabled, and total life expectancy using incidence-based Markov matrix models. We decompose the difference between time points and between sexes and groups into 9 separate age-specific components for onset, recovery, and mortality using pseudo-continuous decomposition.
+We use the US Health and Retirement Study
+to estimate transition rates between health and mild and severe disability
+states, as well as state-specific death rates, for the years 1995,
+2004, and 2014. We calculate healthy, disabled, and total life expectancy using
+incidence-based Markov matrix models. We decompose the difference between time
+points and population strata into 9 separate age-specific components for onset,
+recovery, and mortality using pseudo-continuous decomposition.
 \absdiv{Results}
-We describe preliminary results for males, all education groups combined. Perhaps counter to intuition, most change in total, healthy, and disabled life expectancy is due to mortality. Most of the two-year increase in healthy life expectancy since 1995 is due to decreased mortality of healthy people, whereas the effects of delayed onset and slowed recovery from disability offset each other. Expected life in mild disability increased by about 4 months over the two decades, mostly due to improved mortality of both healthy and mildly disabled people. Slowed (or delayed) onset into mild disability almost equally offset the effects of improved mortality among the mildly disabled. Expected years in severe disability increased by about half a year, also mostly due to improved mortality of healthy, mildly, and severely disabled people. Slowed recovery from severe disability (transitions to good health) was just as important as reduced mortality of the severely disabled. Delayed onset in ages below 80 was roughly offset by increased transitions into severe disability in older ages. On the whole, remaining life expectancy at age 50 increased by 2.8 years since 1995, almost entirely driven by mortality, itself almost entirely driven by the mortality of healthy people. In the net, slowed recovery reduced life expectancy more than delayed onset of disability improved it.
+We describe preliminary results for males, all education groups combined.
+Perhaps counter to intuition, most change in healthy life expectancy is due to
+mortality and not to onset of or recovery from disability. Most of the two-year
+increase in healthy life expectancy since 1995 is due to decreased mortality of
+healthy people, whereas delayed onset and slowed recovery from
+disability offset each other. Expected years in mild disability increased by
+about 4 months over the two decades, mostly due to improved mortality of both
+healthy and mildly disabled people. Delayed onset of mild disability almost
+equally offset the effects of improved mortality among the mildly disabled.
+Expected years in severe disability increased by about half a year, also mostly
+due to improved mortality in all health states. 
 \absdiv{Conclusions}
-Total life expectancy at age 50 increased relatively faster than disabled life expectancy. Years spent in disability have been pushed into higher ages, indicating a slight delay of onset. While the lives of disabled individuals are longer now, mostly due to improved mortality, healthy life has been lengthened much more by improved mortality.
-\absdiv{Contribution}
-Our results suggest that should be targeted to achieve maximal increases in healthy and total life expectancy. 
+Healthy life expectancy at age 50 increased relatively faster than disabled life
+expectancy, both driven by mortality improvements. Years spent in disability
+have been pushed into higher ages, indicating a slight delay of onset.
 \end{abstract}
 
 
