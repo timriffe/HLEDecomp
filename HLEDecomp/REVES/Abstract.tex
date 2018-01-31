@@ -1,0 +1,197 @@
+%\begin{filecontents*}{example.eps}
+%!PS-Adobe-3.0 EPSF-3.0
+%%BoundingBox: 19 19 221 221
+%%CreationDate: Mon Sep 29 1997
+%%Creator: programmed by hand (JK)
+%%EndComments
+
+%\end{filecontents*}
+%
+%\documentclass{svjour3}                     % onecolumn (standard format)
+%\documentclass[smallcondensed]{svjour3}     % onecolumn (ditto)
+\documentclass[12pt,oneside,a4paper]{article}  
+
+\usepackage{apacite}
+\usepackage{appendix}
+\usepackage{amsmath}
+\usepackage{amsthm}
+
+\usepackage{amssymb} % for approx greater than
+\usepackage{caption}
+\usepackage{placeins} % for \FloatBarrier
+\usepackage{graphicx}
+%\usepackage{subcaption}
+\usepackage{longtable}
+\usepackage{setspace}
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{xcolor,colortbl}
+\usepackage{chngpage}
+\usepackage{natbib}
+\bibpunct{(}{)}{,}{a}{}{;} 
+\usepackage{url}
+\usepackage{nth}
+\usepackage{authblk}
+\usepackage[most]{tcolorbox}
+\usepackage[normalem]{ulem}
+\usepackage{amsfonts}
+
+% columns for longtable
+%\usepackage{arydshln} % Dashed lines in matrices
+
+\usepackage[margin=1in]{geometry}
+%\doublespacing % for review
+
+% line numbers to make review easier
+%\usepackage{lineno}
+%\linenumbers
+
+%\usepackage{soul}% for \st{}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% for section 4 math environments
+%\theoremstyle{definition}
+%\newtheorem{definition}{Definition}[section]
+%\newtheorem{theorem}{Theorem}[section]
+%\newtheorem{proposition}{Proposition}[section]
+%\newtheorem{corollary}{Corollary}[proposition]
+%\newtheorem{remark}{Remark}[section]
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%\begin{filecontents*}{example.eps}
+%!PS-Adobe-3.0 EPSF-3.0
+%%BoundingBox: 19 19 221 221
+%%CreationDate: Mon Sep 29 1997
+%%Creator: programmed by hand (JK)
+%%EndComments
+%gsave
+%newpath
+%  20 20 moveto
+%  20 220 lineto
+%  220 220 lineto
+%  220 20 lineto
+%closepath
+%2 setlinewidth
+%gsave
+%  .4 setgray fill
+%grestore
+%stroke
+%grestore
+%\end{filecontents*}
+%\RequirePackage{fix-cm}
+
+\newcommand\ackn[1]{%
+  \begingroup
+  \renewcommand\thefootnote{}\footnote{#1}%
+  \addtocounter{footnote}{-1}%
+  \endgroup
+}
+
+% Affiliations in small font size
+%\renewcommand\Affilfont{\small}
+\newcommand{\absdiv}[1]{%
+  \par\addvspace{.5\baselineskip}% adjust to suit
+  \noindent\textbf{#1}\quad\ignorespaces
+}
+
+%\defcitealias{HMD}{HMD 2016}
+
+% junk for longtable caption
+%\AtBeginEnvironment{longtable}{\linespread{1}\selectfont}
+%\setlength{\LTcapwidth}{\linewidth}
+
+% sort van Raalte properly
+% #1: sorting key, #2: prefix for citation, #3: prefix for bibliography
+%\DeclareRobustCommand{\VAN}[3]{#2} % set up for citation
+%\newcommand{\tc}{\quad\quad\text{,}}
+%\newcommand{\tp}{\quad\quad\text{.}}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{document}
+
+
+\title{Healthy lives: Delayed onset, improved recovery, or mortality
+change?}
+
+%\author{Tim Riffe \and Neil Mehta \and Daniel Schneider \and Mikko Myrskyl\"a}
+\author[1]{Tim Riffe\thanks{riffe@demogr.mpg.de}}
+\author[2]{Neil Mehta}
+\author[1]{Daniel Schneider}
+\author[1,3]{Mikko Myrskyl\"a}
+
+\affil[1]{Max Planck Institute for Demographic Research}
+\affil[2]{University of Michigan, Ann Arbor}
+\affil[3]{University of Helsinki}
+
+%\authorrunning{Short form of author list} % if too long for running head
+
+%\institute{   Tim Riffe \at
+%              Max Planck Institute for Demographic Research.
+%              Konrad-Zuse-Str. 1. 18057 Rostock, Germany\\
+%              \email{riffe@demogr.mpg.de}\\
+%              Tel.:  +49 176 232 858 45\\
+%              Fax: +49 381 2081 - 280
+%\and 
+% Neil Mehta \at
+%              Department of Health Management and Policy. 
+%School of Public Health.
+%M3531 SPH II
+%Ann Arbor, MI 48109-2029\\
+%              \email{nkmehta@umich.edu }
+%\and
+%Daniel Schneider \at
+%              Max Planck Institute for Demographic Research.
+%              Konrad-Zuse-Str. 1. 18057 Rostock, Germany\\
+%              \email{schneider@demogr.mpg.de}      
+%\and
+%Mikko Myrskyl\"a \at
+%              Max Planck Institute for Demographic Research.
+%              Konrad-Zuse-Str. 1. 18057 Rostock, Germany\\
+%              \email{myrskyla@demogr.mpg.de}   
+%              }
+%              
+%
+
+\maketitle
+
+\vspace{-2em}
+\begin{abstract}
+\absdiv{Background}
+Healthy life expectancy at older ages in the United States has steadily
+increased in recent decades. We do not know whether changes in
+disease onset, recovery, or mortality drive this trend.
+\absdiv{Objective}
+We aim to determine how much of the change in healthy and unhealthy
+life expectancy between 1995 and 2015 is due to changes in onset, recovery, and
+mortality.
+\absdiv{Data and Methods}
+We use the US Health and Retirement Study
+to estimate transition rates between health and mild and severe disability
+states, as well as state-specific death rates, for the years 1995,
+2004, and 2014. We calculate remaining healthy, disabled, and total life
+expectancy at age 50 using incidence-based Markov matrix models. We decompose the difference
+between time points and population strata into 9 separate age-specific components for onset,
+recovery, and mortality using pseudo-continuous decomposition.
+\absdiv{Results}
+We describe preliminary results for males, all education groups combined.
+Perhaps counter to intuition, most change in healthy life expectancy is due to
+mortality and not to onset of or recovery from disability. Most of the two-year
+increase in healthy life expectancy since 1995 is due to decreased mortality of
+healthy people, whereas delayed onset and slowed recovery from
+disability offset each other. Expected years in mild disability increased by
+about 4 months over the two decades, mostly due to improved mortality of both
+healthy and mildly disabled people. Delayed onset of mild disability almost
+equally offset the effects of improved mortality among the mildly disabled.
+Expected years in severe disability increased by about half a year, also mostly
+due to improved mortality in all health states. 
+\absdiv{Conclusions}
+Healthy life expectancy at age 50 increased relatively faster than disabled life
+expectancy, both driven by mortality improvements. Years spent in disability
+have been pushed into higher ages, indicating a slight delay of onset.
+\end{abstract}
+
+
+
+% bibliography
+%\bibliographystyle{spbasic}
+%\bibliography{references}  
+\end{document}
