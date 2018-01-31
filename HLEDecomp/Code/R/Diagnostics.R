@@ -11,12 +11,42 @@ source("Code/R/Functions.R")
 version    <- "01"
 sex        <- "m" # "m","f",or"b"
 educlevel  <- "0.All edu"
+edus <- c("0.All edu", "1.Less HS" , "4.HS/GED/Sm coll ex AA", "5.AA/BS/+"  )
+N <- 20
+Sex        <- ifelse(sex == "m", "1.men", ifelse(sex == "f", "2.wmn", "0.all"))
+
 # let sex recode
 
 file.name  <- paste0(paste("dec",version,sex,educlevel,N,sep="_"),".Rdata")
 path       <- file.path("Data","Results",paste0("mspec",version))
 
 dec.i      <- local(get(load(file.path(path, file.name))))
+
+file.name  <- paste0(paste("prev",version,sex,educlevel,N,sep="_"),".pdf")
+path <- file.path("Figures",file.name)
+
+# plot prevalence
+prev       <- do_prev(times = c(1995,2004,2014), version = version, sex = Sex, educlevel = educlevel, deduct = FALSE)
+
+colss      <- c("#1B9E77", "#E6AB02", "#D95F02")
+colst      <- c("#6BAED6", "#3182BD", "#08519C")
+
+pdf(path)
+
+plot_prev(prev, type = "l", to = 1, lty = 1, lwd = 2, col = colst, main = "Health, males 1995,2004,2014, all edu")
+plot_prev(prev, type = "l", to = 2, lty = 1, lwd = 2, col = colst, main = "ADL1, males 1995,2004,2014, all edu")
+plot_prev(prev, type = "l", to = 3, lty = 1, lwd = 2, col = colst, main = "ADL2p, males 1995,2004,2014, all edu")
+
+plot_prev(prev, type = "bar", time = 1995, scale = FALSE, col = colss,main = "Prevalence break down (Health, ADL1, ADL2p) males, 1995, all edu")
+plot_prev(prev, type = "bar", time = 2004, scale = FALSE, col = colss,main = "Prevalence break down (Health, ADL1, ADL2p) males, 2004, all edu")
+plot_prev(prev, type = "bar", time = 2014, scale = FALSE, col = colss,main = "Prevalence break down (Health, ADL1, ADL2p) males, 2014, all edu")
+
+plot_prev(prev, type = "bar", time = 1995, scale = TRUE, col = colss,main = "Prevalence break down (Health, ADL1, ADL2p) males, 1995, all edu")
+plot_prev(prev, type = "bar", time = 2004, scale = TRUE, col = colss,main = "Prevalence break down (Health, ADL1, ADL2p) males, 2004, all edu")
+plot_prev(prev, type = "bar", time = 2014, scale = TRUE, col = colss,main = "Prevalence break down (Health, ADL1, ADL2p) males, 2014, all edu")
+
+dev.off()
+
 
 # ------------------------------------------------------
 # MARGINS PLOTS
@@ -28,29 +58,6 @@ dec.i$decnr   <- recvec[sets]
 # transition margins
 trmargins     <- acast(dec.i, transition ~ state ~ decnr, sum, value.var = "value")
 
-barmargins <- function(dec.i){
-	trmargins     <- acast(dec.i, transition ~ state ~ decnr, sum, value.var = "value")
-	
-	
-	trp <- trn <-trmargins
-	trp[trp < 0] <- NA
-	trn[trn > 0] <- NA
-	
-	ylim <- c(min(apply(trn,3,rowSums,na.rm=TRUE)), max(apply(trp,3,rowSums,na.rm=TRUE)))
-	barplot(t(trp[,,1]), ylim = ylim, legend.text=c("HLE","ADL1","ADL2p"), main = "1995 vs 2004, Males All edu",
-			ylab = "contribution to difference in e50")
-	barplot(t(trn[,,1]),add=TRUE)
-	
-# 1995 vs 2014
-	barplot(t(trp[,,2]), ylim = ylim, legend.text=c("HLE","ADL1","ADL2p"), main = "1995 vs 2014, Males All edu",
-			ylab = "contribution to difference in e50")
-	barplot(t(trn[,,2]),add=TRUE)
-	
-# 2004 vs 2014
-	barplot(t(trp[,,3]), ylim = range(trmargins), legend.text=c("HLE","ADL1","ADL2p"), main = "2004 vs 2014, Males All edu",
-			ylab = "contribution to difference in e50")
-	barplot(t(trn[,,3]),add=TRUE)
-}
 
 
 trp <- trn <-trmargins
@@ -64,20 +71,7 @@ figpath <-  file.path("Figures","margins",paste0("mspec",version))
 fig.name <- gsub(".Rdata","",file.name)
 fig.name <- paste0(fig.name,"trmargins.pdf")
 pdf(file.path(figpath,fig.name))
-# 1995 vs 2004
-barplot(t(trp[,,1]), ylim = ylim, legend.text=c("HLE","ADL1","ADL2p"), main = "1995 vs 2004, Males All edu",
-		ylab = "contribution to difference in e50")
-barplot(t(trn[,,1]),add=TRUE)
-
-# 1995 vs 2014
-barplot(t(trp[,,2]), ylim = ylim, legend.text=c("HLE","ADL1","ADL2p"), main = "1995 vs 2014, Males All edu",
-		ylab = "contribution to difference in e50")
-barplot(t(trn[,,2]),add=TRUE)
-
-# 2004 vs 2014
-barplot(t(trp[,,3]), ylim = range(trmargins), legend.text=c("HLE","ADL1","ADL2p"), main = "2004 vs 2014, Males All edu",
-		ylab = "contribution to difference in e50")
-barplot(t(trn[,,3]),add=TRUE)
+barmargins(dec.i)
 dev.off()
 
 #----------------------------

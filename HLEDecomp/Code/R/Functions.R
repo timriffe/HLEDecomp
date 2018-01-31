@@ -36,8 +36,7 @@ get_data <- function(path = "N:\\dcs\\proj\\hledecomp\\results\\margins",
 		sex = "1.men",
 		time = 2004,
 		educlevel = "0.All edu",
-        self = TRUE,
-		matrix = TRUE){
+        self = TRUE){
 	# this works on Tim's MPIDR PC, Windows machine...
 	final_path    <- file.path(path, paste0("mspec", version), paste0("transp_m", version, ".dta"))
 	Dat           <- foreign::read.dta(final_path)
@@ -65,9 +64,7 @@ get_data <- function(path = "N:\\dcs\\proj\\hledecomp\\results\\margins",
 	sprop          <-  unlist(sprop)
 	sprop          <- sprop / sum(sprop)
 	attr(DatS, "initprop") <- sprop
-    if (matrix){
-		DatS <- DatS
-	}
+	attr(DatS, "time")     <- time
 	DatS
 }
 
@@ -324,6 +321,31 @@ do_le <- function(times = c(1995,2004,2014),age = 52, version, sex, educlevel, d
 	
 }
 
+do_prev <- function(times = c(1995,2004,2014),age = 52, version, sex, educlevel, deduct = TRUE, dcs = FALSE){
+	DatL   <- lapply(times, 
+			get_data, 
+			self = TRUE, 
+			version = version, 
+			sex = Sex, 
+			educlevel = educlevel,
+			path = "N:\\dcs\\proj\\hledecomp\\results\\margins")
+	
+	names(DatL) <- times
+	
+	prev <- do.call("rbind",lapply(DatL, function(X,deduct,dcs){
+						prop <- attr(X, "initprop")
+						time <- attr(X, "time")
+						U    <- data_2_U(X)
+						N    <- U2N(U)
+						cind <- rep(seq(50,112,by=2), 3) == age
+						DF <- as.data.frame(matrix(rowSums(N[,cind] %*% diag(prop)),ncol=3,dimnames=list(NULL,1:3)))
+						DF$time <- time
+						DF
+					}, deduct = deduct, dcs = dcs))
+	
+}
+
+
 
 # functions for figures. geometric color blending
 
@@ -343,4 +365,52 @@ get_colors <- function(){
 	cols3[3] <- blend(cols3[3],"#6E3A07")
 	cols     <- c(cols1,cols2,cols3)
 	cols
+}
+
+plot_prev <- function(prev, type = "bar", scale = FALSE, time = 1995, to = 1,col,...){
+	a <- seq(50,110,by=2)
+	if (type == "bar"){
+		prevm <- as.matrix(prev[prev$time == time, 1:3])[-1, ]
+		rownames(prevm) <- NULL
+		if (scale){
+			prevm <- prevm / rowSums(prevm)
+		}
+		a10 <-seq(50,110,by=10) - 50
+		p10 <- seq(.2,1,by=.2)
+		barplot(t(prevm),axes=FALSE,space = 0,width=2,border=NA,xlab = "Age",ylab = ifelse(scale,"Proportion","Prevalence"),col=col,...)
+		segments(a10,0,a10,1,col="#FFFFFF50",lwd=.5)
+		segments(0,p10,nrow(prevm)*2,p10,col="#FFFFFF50",lwd=.5)
+		text(a10,0,a10+50,pos=1,xpd=TRUE)
+		text(0,seq(0,1,by=.2),seq(0,1,by=.2),pos=2,xpd=TRUE)
+	}
+	if (type == 'l'){
+		prevt <- matrix(prev[, to], ncol = 3)[-1, ]
+		ma    <- colSums(prevt * (a+1)) / colSums(prevt)
+		matplot(a, prevt, type = 'l',col=col,xlab = "Age",ylab = "prevalence",...)
+		segments(ma,0,ma,1,lwd=1,col=col)
+	}
+	
+}
+barmargins <- function(dec.i){
+	trmargins     <- acast(dec.i, transition ~ state ~ decnr, sum, value.var = "value")
+	
+	
+	trp <- trn <-trmargins
+	trp[trp < 0] <- NA
+	trn[trn > 0] <- NA
+	
+	ylim <- c(min(apply(trn,3,rowSums,na.rm=TRUE)), max(apply(trp,3,rowSums,na.rm=TRUE)))
+	barplot(t(trp[,,1]), ylim = ylim, legend.text=c("HLE","ADL1","ADL2p"), main = "1995 vs 2004, Males All edu",
+			ylab = "contribution to difference in e50")
+	barplot(t(trn[,,1]),add=TRUE)
+	
+# 1995 vs 2014
+	barplot(t(trp[,,2]), ylim = ylim, legend.text=c("HLE","ADL1","ADL2p"), main = "1995 vs 2014, Males All edu",
+			ylab = "contribution to difference in e50")
+	barplot(t(trn[,,2]),add=TRUE)
+	
+# 2004 vs 2014
+	barplot(t(trp[,,3]), ylim = range(trmargins), legend.text=c("HLE","ADL1","ADL2p"), main = "2004 vs 2014, Males All edu",
+			ylab = "contribution to difference in e50")
+	barplot(t(trn[,,3]),add=TRUE)
 }
