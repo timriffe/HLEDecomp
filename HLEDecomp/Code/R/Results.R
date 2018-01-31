@@ -1,3 +1,6 @@
+# TODO consider parallelsugar on Windows if this is too slow
+
+
 me <- system("whoami",intern=TRUE)
 if (me == "mpidr_d\\riffe"){
 	setwd("U:/git/HLEDecomp/HLEDecomp")
@@ -6,77 +9,121 @@ if (me == "tim"){
 	setwd("/home/tim/git/HLEDecomp/HLEDecomp")
 }
 source("Code/R/Functions.R")
+library(reshape2)
+# set this to rerun
+version    <- "01"
+N <- 20
+# let sex recode
+
+source("Code/R/Functions.R")
 
 
-m1995    <- get_data(time = 1995, self = FALSE)
-m2004    <- get_data(time = 2004, self = FALSE)
-m2014    <- get_data(time = 2014, self = FALSE)
+#sex        <- "m" # "m","f",or"b"
+sexes        <- c("m", "f", "b")
+edus         <- c("all_edu", "primary" , "secondary", "terciary"  )
+edusl        <- c("0.All edu", "1.Less HS" , "4.HS/GED/Sm coll ex AA", "5.AA/BS/+"  )
+names(edusl) <- edus
 
-# decompose 1995 vs 2004
-dec1.1   <- HLEDecomp(m1995, m2004, N = 100, to = 1)[-1, ]
-dec1.2   <- HLEDecomp(m1995, m2004, N = 100, to = 2)[-1, ]
-dec1.3   <- HLEDecomp(m1995, m2004, N = 100, to = 3)[-1, ]
-dec1.tot <- dec1.1 + dec1.2 + dec1.3
-
-# decompose 2004 vs 2014
-dec2.1   <- HLEDecomp(m2004, m2014, N = 100, to = 1)[-1, ]
-dec2.2   <- HLEDecomp(m2004, m2014, N = 100, to = 2)[-1, ]
-dec2.3   <- HLEDecomp(m2004, m2014, N = 100, to = 3)[-1, ]
-dec2.tot <- dec2.1 + dec2.2 + dec2.3
-
-# decompose 1995 vs 2014
-dec3.1   <- HLEDecomp(m1995, m2014, N = 100, to = 1)[-1, ]
-dec3.2   <- HLEDecomp(m1995, m2014, N = 100, to = 2)[-1, ]
-dec3.3   <- HLEDecomp(m1995, m2014, N = 100, to = 3)[-1, ]
-dec3.tot <- dec3.1 + dec3.2 + dec3.3
-
-1+1
-
-library(popbio)
-out2U <- function(datout){
-	data_2_U(out2self(datout))
+for (sex in sexes){
+	Sex        <- ifelse(sex == "m", "1.men", ifelse(sex == "f", "2.wmn", "0.all"))
+	for (edu in edus){
+		educlevel  <- edusl[edu]
+		dec.i      <- do_decomp(times = c(1995,2004,2014), ntrans = 3, version = version, sex = Sex, educlevel = educlevel, N = N, deduct = FALSE)
+		file.name  <- paste0(paste("dec", version, sex, edu, N, sep = "_"), ".Rdata")
+		path       <- file.path("Data","Results",paste0("mspec",version))
+		if (!dir.exists(path)){
+			dir.create(path)
+		}
+		save(dec.i, file = file.path(path, file.name))
+	}
 }
-U1995 <- out2U(m1995)
-U2004 <- out2U(m2004)
-U2014 <- out2U(m2014)
-colSums(U1995)
+#
+#
+#dec.i <- do_decomp(times = c(1995,2004,2014), ntrans = 3, version = version, sex = Sex, educlevel = educlevel, N = N, deduct = TRUE, dcs = FALSE)
+## save out results systematically
+#file.name <- paste0(paste("dec", version, sex, edu, N, sep = "_"), ".Rdata")
+#path <- file.path("Data","Results",paste0("mspec",version))
+#if (!dir.exists(path)){
+#	dir.create(path)
+#}
+#save(dec.i, file = file.path(path, file.name))
 
-Dm <- U2004 - U1995
-Ac <- (U2004 + U1995) / 2
-SAc <- sensitivity(Ac)
+# define results container
+# easier
+#dec.1 <- do_decomp(times = c(1995,2004,2014), ntrans = 3, version = version, sex = Sex, educlevel = educlevel, N = N, deduct = TRUE, dcs = FALSE)
+#dec.2 <- do_decomp(times = c(1995,2004,2014), ntrans = 3, version = version, sex = Sex, educlevel = educlevel, N = N, deduct = TRUE, dcs = TRUE)
+#dec.3 <- do_decomp(times = c(1995,2004,2014), ntrans = 3, version = version, sex = Sex, educlevel = educlevel, N = N, deduct = FALSE)
+#
+#sets          <- paste(dec.1$year1,dec.1$year2)
+#code          <- unique(sets)
+#recvec        <- 1:length(code)
+#names(recvec) <- code
+#dec.1$decnr   <- recvec[sets]
+#dec.2$decnr   <- recvec[sets]
+#dec.3$decnr   <- recvec[sets]
+#path <- file.path("Data","Results",paste0("mspec",version))
+#save(dec.1, file = file.path(path, "dec1.Rdata"))
+#save(dec.2, file = file.path(path, "dec2.Rdata"))
+#save(dec.3, file = file.path(path, "dec3.Rdata"))
 
-ev <- eigen(Ac)
-lmax <- which.max(Re(ev$values))
-W <- ev$vectors
 
-w <- abs(Re(W[, lmax]))
-V <- try(Conj(solve(W)), silent = TRUE)
-if (class(V) == "try-error") {
-	stop("matrix A is singular")
-}
-v <- abs(Re(V[lmax, ]))
-s <- v %o% w
+# once-off diagnostic:
+#figpath <-  file.path("Figures","margins",paste0("mspec",version))
+#pdf(file.path(figpath,"dec1margins.pdf"))
+#barmargins(dec.1)
+#dev.off()
+#
+#pdf(file.path(figpath,"dec2margins.pdf"))
+#barmargins(dec.2)
+#dev.off()
+#
+#pdf(file.path(figpath,"dec3margins.pdf"))
+#barmargins(dec.3)
+#dev.off()
 
+# -------------------------------------------------------
+# compare HLE with and without deduction.
 
-Cm <- Dm * SAc
+# a once-off diagnostic.
+#e50m1 <- do_le(times = c(1995,2004,2014), version = version, sex = Sex, educlevel = educlevel, deduct = TRUE, dcs = FALSE) 
+#e50m2 <- do_le(times = c(1995,2004,2014), version = version, sex = Sex, educlevel = educlevel, deduct = TRUE, dcs = TRUE)
+#e50m3 <- do_le(times = c(1995,2004,2014), version = version, sex = Sex, educlevel = educlevel, deduct = FALSE)
+#
+#e50m1 - e50m2
+#
+#e50m2 - e50m3
+#
+#e50m1 - e50m3
+#
+## -------------------------------------------------------
+#
+#
+#
+## ------------------------------------------------------
+## repeat with logit decomp
+#do.this <- FALSE
+#if (do.this){
+## decompose 1995 vs 2004
+#dec1.1.l   <- HLEDecomp_logit(m1995, m2004, N = 100, to = 1)[-1, ]
+#dec1.2.l   <- HLEDecomp_logit(m1995, m2004, N = 100, to = 2)[-1, ]
+#dec1.3.l   <- HLEDecomp_logit(m1995, m2004, N = 100, to = 3)[-1, ]
+#dec1.tot.l <- dec1.1.l + dec1.2.l + dec1.3.l
+#
+## decompose 2004 vs 2014
+#dec2.1.l   <- HLEDecomp_logit(m2004, m2014, N = 100, to = 1)[-1, ]
+#dec2.2.l   <- HLEDecomp_logit(m2004, m2014, N = 100, to = 2)[-1, ]
+#dec2.3.l   <- HLEDecomp_logit(m2004, m2014, N = 100, to = 3)[-1, ]
+#dec2.tot.l <- dec2.1.l + dec2.2.l + dec2.3.l
+#
+## decompose 1995 vs 2014
+#dec3.1.l   <- HLEDecomp_logit(m1995, m2014, N = 100, to = 1)[-1, ]
+#dec3.2.l   <- HLEDecomp_logit(m1995, m2014, N = 100, to = 2)[-1, ]
+#dec3.3.l   <- HLEDecomp_logit(m1995, m2014, N = 100, to = 3)[-1, ]
+#dec3.tot.l <- dec3.1.l + dec3.2.l + dec3.3.l
+#
+#1+1
+#}
 
-image(eigen(Ac)$vectors)
-
-data(calathea)
-calathea_pool<-calathea[['pooled']]
-
-## Create plots like FIGURE 7 in Horvitz et al 1997
-##PLOTS
-plots<- split(calathea[-17], rep(1:4,each=4))
-## use Mean matrix since pooled not available by plot
-plots<- lapply(plots, mean)
-Cm<-LTRE(plots, calathea_pool)
-pe<-sapply(Cm, sum)
-barplot(pe, xlab="Plot", ylab="Plot effect" , ylim=c(-.25, .25),
-		col="blue", las=1)
-abline(h=0)
-box()
-title(expression(italic("Calathea ovandensis")))
 #matplot(out2self(m2004)-out2self(m2014),type='l')
 
 #

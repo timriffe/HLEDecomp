@@ -36,8 +36,7 @@ get_data <- function(path = "N:\\dcs\\proj\\hledecomp\\results\\margins",
 		sex = "1.men",
 		time = 2004,
 		educlevel = "0.All edu",
-        self = TRUE,
-		matrix = TRUE){
+        self = TRUE){
 	# this works on Tim's MPIDR PC, Windows machine...
 	final_path    <- file.path(path, paste0("mspec", version), paste0("transp_m", version, ".dta"))
 	Dat           <- foreign::read.dta(final_path)
@@ -65,9 +64,7 @@ get_data <- function(path = "N:\\dcs\\proj\\hledecomp\\results\\margins",
 	sprop          <-  unlist(sprop)
 	sprop          <- sprop / sum(sprop)
 	attr(DatS, "initprop") <- sprop
-    if (matrix){
-		DatS <- DatS
-	}
+	attr(DatS, "time")     <- time
 	DatS
 }
 
@@ -107,7 +104,8 @@ U2N <- function(U){
 	Nsx 
 }
 
-e50 <- function(dat,to=1,age=50,prop=attr(dat,"initprop")){
+# TR: added deduct switch to test for differences re DCS email
+e50 <- function(dat, to = 1, age = 50, prop = attr(dat, "initprop"), deduct = TRUE){
 	#prop <- attr(dat,"initprop")
 	U    <- data_2_U(dat)
 	N    <- U2N(U)
@@ -116,11 +114,14 @@ e50 <- function(dat,to=1,age=50,prop=attr(dat,"initprop")){
 	
 	e50  <- colSums(N[rind,cind]) * 2
 	# subtract half interval from self-state
-	e50[to] <- e50[to] - 1 
+	if (deduct){
+	  e50[to] <- e50[to] - 1 
+    }
 	sum(e50 * prop)
 }
 
-e50dcs <- function(dat,age=50,prop=attr(dat,"initprop"),deduct=FALSE){
+e50dcs <- function(dat,age=50,prop=attr(dat,"initprop"),deduct=FALSE,to = 4){
+	
 	#prop <- attr(dat,"initprop")
 	U    <- data_2_U(dat)
 	N    <- U2N(U)
@@ -140,14 +141,24 @@ e50dcs <- function(dat,age=50,prop=attr(dat,"initprop"),deduct=FALSE){
 		Nprop <- t(t(Ntab) / colSums(Ntab))
 		Ntab  <- Ntab - Nprop
 	}
-
-	sum(colSums(Ntab) * prop)
+	ei <- rowSums(Ntab %*% diag(prop))
+    if (is.integer(to) & to <= 3){
+		out <- ei[to]
+	} else {
+		out <- sum(ei)
+	}
+	out
 }
 
-dec_fun <- function(datoutvec,to=1,age=52, prop){
+dec_fun <- function(datoutvec,to=1,age=52, prop, deduct = TRUE, dcs = FALSE){
 	datout  <- v2m(datoutvec, 3)
 	datself <- out2self(datout)
-	e50(datself, to = to, age = age, prop = prop)
+	if (!dcs){
+		dc <- e50(datself, to = to, age = age, prop = prop)
+	} else {
+		dc <- e50dcs(datself, to = to, age = age, prop = prop, deduct = deduct)
+	}
+	dc
 }
 
 # preliminary results to cross-check w DCS
@@ -171,7 +182,7 @@ dec_fun <- function(datoutvec,to=1,age=52, prop){
 # state-specific expectancies will not agree until we decide where to deduct from.
 
 
-HLEDecomp <- function(datout1, datout2, N = 10, prop = attr(datout1,"initprop"), to=1){
+HLEDecomp <- function(datout1, datout2, N = 10, prop = attr(datout1,"initprop"), to=1, deduct = TRUE, dcs = FALSE){
 	
 	datout1vec <- c(as.matrix(datout1))
 	datout2vec <- c(as.matrix(datout2))
@@ -182,11 +193,156 @@ HLEDecomp <- function(datout1, datout2, N = 10, prop = attr(datout1,"initprop"),
 			        rates2 = datout2vec, 
 			        N = N, 
 			        prop = prop,
-					to = to)
+					to = to,
+					deduct = deduct,
+					dcs = dcs)
 	dim(dec)      <- dim(datout1)
 	dimnames(dec) <- dimnames(datout1)
 	# no dim reduction here
 	dec
+}
+
+logit <- function(x){
+	log(x / (1 - x))
+}
+expit <- function(x){
+	exp(x )/ (1 + exp(x))
+}
+dec_fun_logit <- function(datoutvec,to=1,age=52, prop){
+	datoutvec <- expit(datoutvec)
+	datout    <- v2m(datoutvec, 3)
+	
+	datself   <- out2self(datout)
+	e50(datself, to = to, age = age, prop = prop)
+}
+HLEDecomp_logit <- function(datout1, datout2, N = 10, prop = attr(datout1,"initprop"), to=1){
+	
+	datout1vec <- c(as.matrix(datout1))
+	datout2vec <- c(as.matrix(datout2))
+	
+	# impute 0s (none are structural
+	datout1vec[datout1vec == 0] <- 1e-7
+	datout2vec[datout2vec == 0] <- 1e-7
+	
+	# logit transform
+	datout1vec <- logit(datout1vec)
+	datout2vec <- logit(datout2vec)
+	# arrow decomposition:
+	dec      <- DecompHoriuchi::DecompContinuousOrig(
+			      func = dec_fun_logit, 
+			      rates1 = datout1vec, 
+			      rates2 = datout2vec, 
+			      N = N, 
+			      prop = prop,
+			      to = to)
+	dim(dec)      <- dim(datout1)
+	dimnames(dec) <- dimnames(datout1)
+	# no dim reduction here
+	dec
+}
+
+# not implemented for logit transform. Could add in logical switch tho
+do_decomp <- function(times = c(1995,2004,2014), ntrans = 3, version, sex, educlevel, N = 20, deduct = TRUE, dcs = FALSE){
+	
+	# get transition rate sets
+	DatL   <- lapply(times, 
+			get_data, 
+			self = FALSE, 
+			version = version, 
+			sex = Sex, 
+			educlevel = educlevel,
+			path = "N:\\dcs\\proj\\hledecomp\\results\\margins")
+	
+	names(DatL) <- times
+		
+	# make from-to pairlist
+	comparisons <- outer(times, times, '<')
+	from        <- row(comparisons)[comparisons]
+	to          <- col(comparisons)[comparisons]
+	ft          <- mapply(c, from, to, SIMPLIFY = FALSE)
+	
+	# looping. Can be swapped w parallel decomp
+	dec <- do.call("rbind",lapply(ft, function(fromto, DatL, ntrans, N, deduct, dcs){
+						A1   <- DatL[[fromto[1]]]
+						A2   <- DatL[[fromto[2]]]
+						yrs  <- as.integer(names(DatL)[fromto])
+						decx <- do.call("rbind", lapply(1:ntrans, function(sto, A1, A2, N = N, deduct, dcs){
+											dec.i <- melt(HLEDecomp(A1, A2, N = N, to = sto, deduct = deduct, dcs = dcs)[-1, ],
+													varnames = c("age","transition"))
+											dec.i$state <- sto
+											dec.i
+										}, A1 = A1, A2 = A2, N = N, deduct = deduct, dcs = dcs))
+						decx$year1 <- yrs[1]
+						decx$year2 <- yrs[2]
+						decx
+					}, DatL = DatL, ntrans = ntrans, N = N, deduct = deduct, dcs = dcs))  
+	
+	# add metadata
+	dec$sex       <- sex
+	dec$educlevel <- educlevel
+	dec$version   <- version
+	dec$N         <- N
+	
+	dec
+}
+
+
+do_le <- function(times = c(1995,2004,2014),age = 52, version, sex, educlevel, deduct = TRUE, dcs = FALSE){
+	DatL   <- lapply(times, 
+			get_data, 
+			self = TRUE, 
+			version = version, 
+			sex = Sex, 
+			educlevel = educlevel,
+			path = "N:\\dcs\\proj\\hledecomp\\results\\margins")
+	
+	names(DatL) <- times
+
+	do.call("rbind",lapply(DatL, function(X,deduct,dcs){
+				prop <- attr(X, "initprop")
+				U    <- data_2_U(X)
+				N    <- U2N(U)
+				cind <- rep(seq(50,112,by=2), 3) == age
+				
+				rgroups <- rep(1:3, each = 32)
+				Ntab <- apply(N[, cind], 2, function(x, rgroups){
+							tapply(x, rgroups, sum) * 2
+						}, rgroups = rgroups)
+				if (deduct & !dcs){
+					Ntab <- Ntab - diag(3)
+				}
+				if (deduct & dcs){
+			
+					Nprop <- t(t(Ntab) / colSums(Ntab))
+					Ntab  <- Ntab - Nprop
+				}
+				rowSums(Ntab  %*% diag(prop))
+			}, deduct = deduct, dcs = dcs))
+	
+}
+
+do_prev <- function(times = c(1995,2004,2014),age = 52, version, sex, educlevel, deduct = TRUE, dcs = FALSE){
+	DatL   <- lapply(times, 
+			get_data, 
+			self = TRUE, 
+			version = version, 
+			sex = Sex, 
+			educlevel = educlevel,
+			path = "N:\\dcs\\proj\\hledecomp\\results\\margins")
+	
+	names(DatL) <- times
+	
+	prev <- do.call("rbind",lapply(DatL, function(X,deduct,dcs){
+						prop <- attr(X, "initprop")
+						time <- attr(X, "time")
+						U    <- data_2_U(X)
+						N    <- U2N(U)
+						cind <- rep(seq(50,112,by=2), 3) == age
+						DF <- as.data.frame(matrix(rowSums(N[,cind] %*% diag(prop)),ncol=3,dimnames=list(NULL,1:3)))
+						DF$time <- time
+						DF
+					}, deduct = deduct, dcs = dcs))
+	
 }
 
 
@@ -209,4 +365,52 @@ get_colors <- function(){
 	cols3[3] <- blend(cols3[3],"#6E3A07")
 	cols     <- c(cols1,cols2,cols3)
 	cols
+}
+
+plot_prev <- function(prev, type = "bar", scale = FALSE, time = 1995, to = 1,col,...){
+	a <- seq(50,110,by=2)
+	if (type == "bar"){
+		prevm <- as.matrix(prev[prev$time == time, 1:3])[-1, ]
+		rownames(prevm) <- NULL
+		if (scale){
+			prevm <- prevm / rowSums(prevm)
+		}
+		a10 <-seq(50,110,by=10) - 50
+		p10 <- seq(.2,1,by=.2)
+		barplot(t(prevm),axes=FALSE,space = 0,width=2,border=NA,xlab = "Age",ylab = ifelse(scale,"Proportion","Prevalence"),col=col,...)
+		segments(a10,0,a10,1,col="#FFFFFF50",lwd=.5)
+		segments(0,p10,nrow(prevm)*2,p10,col="#FFFFFF50",lwd=.5)
+		text(a10,0,a10+50,pos=1,xpd=TRUE)
+		text(0,seq(0,1,by=.2),seq(0,1,by=.2),pos=2,xpd=TRUE)
+	}
+	if (type == 'l'){
+		prevt <- matrix(prev[, to], ncol = 3)[-1, ]
+		ma    <- colSums(prevt * (a+1)) / colSums(prevt)
+		matplot(a, prevt, type = 'l',col=col,xlab = "Age",ylab = "prevalence",...)
+		segments(ma,0,ma,1,lwd=1,col=col)
+	}
+	
+}
+barmargins <- function(dec.i){
+	trmargins     <- acast(dec.i, transition ~ state ~ decnr, sum, value.var = "value")
+	
+	
+	trp <- trn <-trmargins
+	trp[trp < 0] <- NA
+	trn[trn > 0] <- NA
+	
+	ylim <- c(min(apply(trn,3,rowSums,na.rm=TRUE)), max(apply(trp,3,rowSums,na.rm=TRUE)))
+	barplot(t(trp[,,1]), ylim = ylim, legend.text=c("HLE","ADL1","ADL2p"), main = "1995 vs 2004, Males All edu",
+			ylab = "contribution to difference in e50")
+	barplot(t(trn[,,1]),add=TRUE)
+	
+# 1995 vs 2014
+	barplot(t(trp[,,2]), ylim = ylim, legend.text=c("HLE","ADL1","ADL2p"), main = "1995 vs 2014, Males All edu",
+			ylab = "contribution to difference in e50")
+	barplot(t(trn[,,2]),add=TRUE)
+	
+# 2004 vs 2014
+	barplot(t(trp[,,3]), ylim = range(trmargins), legend.text=c("HLE","ADL1","ADL2p"), main = "2004 vs 2014, Males All edu",
+			ylab = "contribution to difference in e50")
+	barplot(t(trn[,,3]),add=TRUE)
 }
