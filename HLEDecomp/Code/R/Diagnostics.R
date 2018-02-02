@@ -25,27 +25,29 @@ dec.i      <- local(get(load(file.path(path, file.name))))
 file.name  <- paste0(paste("prev",version,sex,educlevel,N,sep="_"),".pdf")
 path <- file.path("Figures",file.name)
 
-# plot prevalence
-prev       <- do_prev(times = c(1995,2004,2014), version = version, sex = Sex, educlevel = educlevel, deduct = FALSE)
 
-colss      <- c("#1B9E77", "#E6AB02", "#D95F02")
-colst      <- c("#6BAED6", "#3182BD", "#08519C")
-
-pdf(path)
-
-plot_prev(prev, type = "l", to = 1, lty = 1, lwd = 2, col = colst, main = "Health, males 1995,2004,2014, all edu")
-plot_prev(prev, type = "l", to = 2, lty = 1, lwd = 2, col = colst, main = "ADL1, males 1995,2004,2014, all edu")
-plot_prev(prev, type = "l", to = 3, lty = 1, lwd = 2, col = colst, main = "ADL2p, males 1995,2004,2014, all edu")
-
-plot_prev(prev, type = "bar", time = 1995, scale = FALSE, col = colss,main = "Prevalence break down (Health, ADL1, ADL2p) males, 1995, all edu")
-plot_prev(prev, type = "bar", time = 2004, scale = FALSE, col = colss,main = "Prevalence break down (Health, ADL1, ADL2p) males, 2004, all edu")
-plot_prev(prev, type = "bar", time = 2014, scale = FALSE, col = colss,main = "Prevalence break down (Health, ADL1, ADL2p) males, 2014, all edu")
-
-plot_prev(prev, type = "bar", time = 1995, scale = TRUE, col = colss,main = "Prevalence break down (Health, ADL1, ADL2p) males, 1995, all edu")
-plot_prev(prev, type = "bar", time = 2004, scale = TRUE, col = colss,main = "Prevalence break down (Health, ADL1, ADL2p) males, 2004, all edu")
-plot_prev(prev, type = "bar", time = 2014, scale = TRUE, col = colss,main = "Prevalence break down (Health, ADL1, ADL2p) males, 2014, all edu")
-
-dev.off()
+## TR: now in Diagnostics_prevalence.R
+## plot prevalence
+#prev       <- do_prev(times = c(1995,2004,2014), version = version, sex = Sex, educlevel = educlevel, deduct = FALSE)
+#
+#colss      <- c("#1B9E77", "#E6AB02", "#D95F02")
+#colst      <- c("#6BAED6", "#3182BD", "#08519C")
+#
+#pdf(path)
+#
+#plot_prev(prev, type = "l", to = 1, lty = 1, lwd = 2, col = colst, main = "Health, males 1995,2004,2014, all edu")
+#plot_prev(prev, type = "l", to = 2, lty = 1, lwd = 2, col = colst, main = "ADL1, males 1995,2004,2014, all edu")
+#plot_prev(prev, type = "l", to = 3, lty = 1, lwd = 2, col = colst, main = "ADL2p, males 1995,2004,2014, all edu")
+#
+#plot_prev(prev, type = "bar", time = 1995, scale = FALSE, col = colss,main = "Prevalence break down (Health, ADL1, ADL2p) males, 1995, all edu")
+#plot_prev(prev, type = "bar", time = 2004, scale = FALSE, col = colss,main = "Prevalence break down (Health, ADL1, ADL2p) males, 2004, all edu")
+#plot_prev(prev, type = "bar", time = 2014, scale = FALSE, col = colss,main = "Prevalence break down (Health, ADL1, ADL2p) males, 2014, all edu")
+#
+#plot_prev(prev, type = "bar", time = 1995, scale = TRUE, col = colss,main = "Prevalence break down (Health, ADL1, ADL2p) males, 1995, all edu")
+#plot_prev(prev, type = "bar", time = 2004, scale = TRUE, col = colss,main = "Prevalence break down (Health, ADL1, ADL2p) males, 2004, all edu")
+#plot_prev(prev, type = "bar", time = 2014, scale = TRUE, col = colss,main = "Prevalence break down (Health, ADL1, ADL2p) males, 2014, all edu")
+#
+#dev.off()
 
 
 # ------------------------------------------------------
