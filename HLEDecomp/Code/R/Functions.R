@@ -242,15 +242,23 @@ HLEDecomp_logit <- function(datout1, datout2, N = 10, prop = attr(datout1,"initp
 }
 
 # not implemented for logit transform. Could add in logical switch tho
-do_decomp <- function(years = c(1995,2004,2014), ntrans = 3, version, sex, 
-		educlevel, N = 20, deduct = TRUE, dcs = FALSE, path = "N:\\dcs\\proj\\hledecomp\\results"){
+do_decomp <- function(
+		years = c(1995,2004,2014), 
+		ntrans = 3, # number of states
+		version,    # character 2 digits
+		sex,       
+		educlevel, 
+		N = 20, 
+		deduct = TRUE, 
+		dcs = FALSE, 
+		path = "N:\\dcs\\proj\\hledecomp\\results"){
 	
 	# get transition rate sets
 	DatL   <- lapply(years, 
 			get_data, 
 			self = FALSE, 
 			version = version, 
-			sex = Sex, 
+			sex = sex, 
 			educlevel = educlevel,
 			path = path)
 	

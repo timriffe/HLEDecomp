@@ -16,31 +16,44 @@ library(reshape2)
 #version    <- "01"
 version    <- "03"
 N          <- 20
+# temporary until years straightened out:
+if (version %in% c("01","02")){
+	years  <-  c(1995,2004,2014)
+	dcs    <- ifelse(version == "01",TRUE,FALSE)
+	deduct <- ifelse(version == "01",FALSE,TRUE)
+} 
+if (version == "03"){
+	years  <- c(1996,2006,2014)
+	dec    <- FALSE
+	deduct <- TRUE
+}
+
+
 # let sex recode
 
 source("Code/R/Functions.R")
-
-
 #sex        <- "m" # "m","f",or"b"
 sexes        <- c("m", "f", "b")
 edus         <- c("all_edu", "primary" , "secondary", "terciary"  )
 edusl        <- c("0.All edu", "1.Less HS" , "4.HS/GED/Sm coll ex AA", "5.AA/BS/+"  )
 names(edusl) <- edus
 
+
 for (sex in sexes){
 	Sex        <- ifelse(sex == "m", "1.men", ifelse(sex == "f", "2.wmn", "0.all"))
 	for (edu in edus){
 		educlevel  <- edusl[edu]
-		dec.i      <- do_decomp(years = c(1995,2004,2014), 
+		dec.i      <- do_decomp(years = years, 
 				                ntrans = 3, 
 								version = version, 
 								sex = Sex, 
 								educlevel = educlevel, 
 								N = N, 
+								dcs = dcs,
 								deduct = FALSE,
 								path = read.path)
 		file.name  <- paste0(paste("dec", version, sex, edu, N, sep = "_"), ".Rdata")
-		path       <- file.path("Data","Results",paste0("mspec",version))
+		path       <- file.path("Data","Results",paste0("mspec",version),"dec")
 		if (!dir.exists(path)){
 			dir.create(path)
 		}
