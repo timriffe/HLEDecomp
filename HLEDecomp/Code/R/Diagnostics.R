@@ -11,8 +11,8 @@ source("Code/R/Functions.R")
 version    <- "01"
 sex        <- "m" # "m","f",or"b"
 educlevel  <- "0.All edu"
-edus <- c("0.All edu", "1.Less HS" , "4.HS/GED/Sm coll ex AA", "5.AA/BS/+"  )
-N <- 20
+edus       <- c("0.All edu", "1.Less HS" , "4.HS/GED/Sm coll ex AA", "5.AA/BS/+"  )
+N          <- 20
 Sex        <- ifelse(sex == "m", "1.men", ifelse(sex == "f", "2.wmn", "0.all"))
 
 # let sex recode
@@ -23,7 +23,7 @@ path       <- file.path("Data","Results",paste0("mspec",version))
 dec.i      <- local(get(load(file.path(path, file.name))))
 
 file.name  <- paste0(paste("prev",version,sex,educlevel,N,sep="_"),".pdf")
-path <- file.path("Figures",file.name)
+fig.path       <- file.path("Figures",file.name)
 
 
 ## TR: now in Diagnostics_prevalence.R

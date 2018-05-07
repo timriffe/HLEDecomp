@@ -7,9 +7,9 @@ if (me == "tim"){
 	setwd("/home/tim/git/HLEDecomp/HLEDecomp")
 }
 source("Code/R/Functions.R")
-version    <- "01"
+version      <- "01"
 
-#sex        <- "m" # "m","f",or"b"
+#sex          <- "m" # "m","f",or"b"
 sexes        <- c("m", "f", "b")
 edus         <- c("all_edu", "primary" , "secondary", "terciary"  )
 edusl        <- c("0.All edu", "1.Less HS" , "4.HS/GED/Sm coll ex AA", "5.AA/BS/+"  )

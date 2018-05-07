@@ -31,16 +31,16 @@ getcols <- function(ntrans = 3,self=TRUE){
 	}
 }
 
-get_data <- function(path = "N:\\dcs\\proj\\hledecomp\\results\\margins", 
+get_data <- function(path = "N:\\dcs\\proj\\hledecomp\\results", 
 		version = "01",
 		sex = "1.men",
-		time = 2004,
+		year = 2004,
 		educlevel = "0.All edu",
         self = TRUE){
 	# this works on Tim's MPIDR PC, Windows machine...
-	final_path    <- file.path(path, paste0("mspec", version), paste0("transp_m", version, ".dta"))
+	final_path    <- file.path(path, "margins",paste0("mspec", version), paste0("transp_m", version, ".dta"))
 	Dat           <- foreign::read.dta(final_path)
-	sprop         <- foreign::read.dta("N:\\dcs\\proj\\hledecomp\\results\\initprop\\initprop2.dta")
+	sprop         <- foreign::read.dta(file.path(path,"initprop","initprop2.dta"))
 	# read.dta() has no stringsAsFactors argument...
 	facs          <- sapply(Dat,class) == "factor"
     Dat[, facs]   <- lapply(Dat[,facs], fac2ch)
@@ -49,7 +49,7 @@ get_data <- function(path = "N:\\dcs\\proj\\hledecomp\\results\\margins",
 	
 	# subset() or with() don't like it when your args have same names as cols, so
 	# here's a verbose subset
-	ind            <- Dat$sex == sex & Dat$educlevel == educlevel & Dat$time == time 
+	ind            <- Dat$sex == sex & Dat$educlevel == educlevel & Dat$time == year 
     DatS           <- Dat[ind, ]
 	
 	ind            <- sprop$sex == sex & sprop$educlevel == educlevel & sprop$propweighted == 1 & grepl(pattern = "age 50-54", sprop[,1])
@@ -64,7 +64,7 @@ get_data <- function(path = "N:\\dcs\\proj\\hledecomp\\results\\margins",
 	sprop          <-  unlist(sprop)
 	sprop          <- sprop / sum(sprop)
 	attr(DatS, "initprop") <- sprop
-	attr(DatS, "time")     <- time
+	attr(DatS, "time")     <- year
 	DatS
 }
 
@@ -242,21 +242,22 @@ HLEDecomp_logit <- function(datout1, datout2, N = 10, prop = attr(datout1,"initp
 }
 
 # not implemented for logit transform. Could add in logical switch tho
-do_decomp <- function(times = c(1995,2004,2014), ntrans = 3, version, sex, educlevel, N = 20, deduct = TRUE, dcs = FALSE){
+do_decomp <- function(years = c(1995,2004,2014), ntrans = 3, version, sex, 
+		educlevel, N = 20, deduct = TRUE, dcs = FALSE, path = "N:\\dcs\\proj\\hledecomp\\results"){
 	
 	# get transition rate sets
-	DatL   <- lapply(times, 
+	DatL   <- lapply(years, 
 			get_data, 
 			self = FALSE, 
 			version = version, 
 			sex = Sex, 
 			educlevel = educlevel,
-			path = "N:\\dcs\\proj\\hledecomp\\results\\margins")
+			path = path)
 	
-	names(DatL) <- times
+	names(DatL) <- years
 		
 	# make from-to pairlist
-	comparisons <- outer(times, times, '<')
+	comparisons <- outer(years, years, '<')
 	from        <- row(comparisons)[comparisons]
 	to          <- col(comparisons)[comparisons]
 	ft          <- mapply(c, from, to, SIMPLIFY = FALSE)
@@ -287,16 +288,17 @@ do_decomp <- function(times = c(1995,2004,2014), ntrans = 3, version, sex, educl
 }
 
 
-do_le <- function(times = c(1995,2004,2014),age = 52, version, sex, educlevel, deduct = TRUE, dcs = FALSE){
-	DatL   <- lapply(times, 
+do_le <- function(years = c(1995,2004,2014),age = 52, version, sex, 
+		educlevel, deduct = TRUE, dcs = FALSE, path = "N:\\dcs\\proj\\hledecomp\\results\\margins"){
+	DatL   <- lapply(years, 
 			get_data, 
 			self = TRUE, 
 			version = version, 
 			sex = Sex, 
 			educlevel = educlevel,
-			path = "N:\\dcs\\proj\\hledecomp\\results\\margins")
+			path = path)
 	
-	names(DatL) <- times
+	names(DatL) <- years
 
 	do.call("rbind",lapply(DatL, function(X,deduct,dcs){
 				prop <- attr(X, "initprop")
@@ -321,25 +323,25 @@ do_le <- function(times = c(1995,2004,2014),age = 52, version, sex, educlevel, d
 	
 }
 
-do_prev <- function(times = c(1995,2004,2014),age = 52, version, sex, educlevel, deduct = TRUE, dcs = FALSE){
-	DatL   <- lapply(times, 
+do_prev <- function(years = c(1995,2004,2014),age = 52, version, sex, educlevel, deduct = TRUE, dcs = FALSE, path = "N:\\dcs\\proj\\hledecomp\\results\\margins"){
+	DatL   <- lapply(years, 
 			get_data, 
 			self = TRUE, 
 			version = version, 
 			sex = Sex, 
 			educlevel = educlevel,
-			path = "N:\\dcs\\proj\\hledecomp\\results\\margins")
+			path = path)
 	
-	names(DatL) <- times
+	names(DatL) <- years
 	
 	prev <- do.call("rbind",lapply(DatL, function(X,deduct,dcs){
 						prop <- attr(X, "initprop")
-						time <- attr(X, "time")
+						year <- attr(X, "time")
 						U    <- data_2_U(X)
 						N    <- U2N(U)
 						cind <- rep(seq(50,112,by=2), 3) == age
 						DF <- as.data.frame(matrix(rowSums(N[,cind] %*% diag(prop)),ncol=3,dimnames=list(NULL,1:3)))
-						DF$time <- time
+						DF$time <- year
 						DF
 					}, deduct = deduct, dcs = dcs))
 	

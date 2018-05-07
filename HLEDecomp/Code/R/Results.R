@@ -4,15 +4,18 @@
 me <- system("whoami",intern=TRUE)
 if (me == "mpidr_d\\riffe"){
 	setwd("U:/git/HLEDecomp/HLEDecomp")
+	read.path <- "N:\\dcs\\proj\\hledecomp\\results"
 }
 if (me == "tim"){
 	setwd("/home/tim/git/HLEDecomp/HLEDecomp")
+	read.path <- "/home/tim/Data/hledecomp/results"
 }
 source("Code/R/Functions.R")
 library(reshape2)
 # set this to rerun
-version    <- "01"
-N <- 20
+#version    <- "01"
+version    <- "03"
+N          <- 20
 # let sex recode
 
 source("Code/R/Functions.R")
@@ -28,7 +31,14 @@ for (sex in sexes){
 	Sex        <- ifelse(sex == "m", "1.men", ifelse(sex == "f", "2.wmn", "0.all"))
 	for (edu in edus){
 		educlevel  <- edusl[edu]
-		dec.i      <- do_decomp(times = c(1995,2004,2014), ntrans = 3, version = version, sex = Sex, educlevel = educlevel, N = N, deduct = FALSE)
+		dec.i      <- do_decomp(years = c(1995,2004,2014), 
+				                ntrans = 3, 
+								version = version, 
+								sex = Sex, 
+								educlevel = educlevel, 
+								N = N, 
+								deduct = FALSE,
+								path = read.path)
 		file.name  <- paste0(paste("dec", version, sex, edu, N, sep = "_"), ".Rdata")
 		path       <- file.path("Data","Results",paste0("mspec",version))
 		if (!dir.exists(path)){
