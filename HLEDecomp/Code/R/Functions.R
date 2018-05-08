@@ -410,7 +410,7 @@ plot_prev <- function(prev, type = "bar", scale = FALSE, time = 1995, to = 1,col
 	
 }
 
-barmargins <- function(dec.i){
+barmargins <- function(dec.i,ylim){
 	
 	sets          <- paste(dec.i$year1,"vs",dec.i$year2)
 	code          <- unique(sets)
@@ -434,18 +434,27 @@ barmargins <- function(dec.i){
 	trp[trp < 0] <- NA
 	trn[trn > 0] <- NA
 	
-	ylim <- c(min(apply(trn,3,rowSums,na.rm=TRUE)), max(apply(trp,3,rowSums,na.rm=TRUE)))
+	lab.extra <- rownames(trmargins)
+	names(lab.extra) <- c("onset 1","onset 2", "mort 1", "rec 1", "onset 2", "mort 2", "rec 2", "rec part", "mort 3")
+	
+	if (missing(ylim)){
+		ylim <- range(pretty(c(apply(trn,3,rowSums,na.rm=TRUE), apply(trp,3,rowSums,na.rm=TRUE))))	
+	}
+	
 	barplot(t(trp[,,1]), ylim = ylim, legend.text=c("HLE","ADL1","ADL2p"), main = paste(code[1],sex,edu),
-			ylab = "contribution to difference in e50")
-	barplot(t(trn[,,1]),add=TRUE)
+			ylab = "contribution to difference in e50", space = 0)
+	text(1:length(lab.extra) - .5,ylim[1] - .25,names(lab.extra),srt=90,xpd=TRUE,cex = .8,pos=2)
+	barplot(t(trn[,,1]),add=TRUE,space=0)
 	
 # 1995 vs 2014
 	barplot(t(trp[,,2]), ylim = ylim, legend.text=c("HLE","ADL1","ADL2p"), main = paste(code[2],sex,edu),
-			ylab = "contribution to difference in e50")
-	barplot(t(trn[,,2]),add=TRUE)
+			ylab = "contribution to difference in e50",space=0)
+	text(1:length(lab.extra) - .5,ylim[1] - .25,names(lab.extra),srt=90,xpd=TRUE,cex = .8,pos=2)
+	barplot(t(trn[,,2]),add=TRUE,space=0)
 	
 # 2004 vs 2014
 	barplot(t(trp[,,3]), ylim = range(trmargins), legend.text=c("HLE","ADL1","ADL2p"), main = paste(code[3],sex,edu),
-			ylab = "contribution to difference in e50")
-	barplot(t(trn[,,3]),add=TRUE)
+			ylab = "contribution to difference in e50",space=0)
+	text(1:length(lab.extra) - .5,ylim[1] - .25,names(lab.extra),srt=90,xpd=TRUE,cex = .8,pos=2)
+	barplot(t(trn[,,3]),add=TRUE,space=0)
 }

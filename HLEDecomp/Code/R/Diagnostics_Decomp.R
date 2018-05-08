@@ -36,7 +36,7 @@ for (version in c("01","02","03")){
 			fig.name   <- paste0(fig.name,"_trmargins.pdf")
 			
 			pdf(file.path(figpath,fig.name))
-			barmargins(dec.i)
+			barmargins(dec.i, ylim=c(-1,3))
 			dev.off()
 		}
 	}
