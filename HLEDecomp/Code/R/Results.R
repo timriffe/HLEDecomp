@@ -1,5 +1,7 @@
-# TODO consider parallelsugar on Windows if this is too slow
-
+# Consider parallelsugar on Windows if this is too slow
+# the decomps are slow but not too slow. Work fine on old laptop anyway.
+# This script does decomposition, stationary prevalence, and state expectancies.
+# -----------------------------------------
 
 me <- system("whoami",intern=TRUE)
 if (me == "mpidr_d\\riffe"){
@@ -14,8 +16,13 @@ if (me == "tim"){
 library(reshape2)
 source("Code/R/Functions.R")
 # set this to rerun
-##version    <- "01"
-#version    <- "02"
+
+# The mpsec version, as defined by DCS. The early mspecs have rates on different scales
+# that require some arguments to be toggled. In general, later mspecs require the arguments
+# dcs = FALSE and deduct = TRUE (deduct half interval width)
+
+#version    <- "01" # change this to run a single version and comment out decomp loop.
+
 N            <- 20 # higher N = more precision
 sexes        <- c("m", "f", "b")
 edus         <- c("all_edu", "primary" , "secondary", "terciary"  )
@@ -34,10 +41,11 @@ for (version in c("01","02","03")){
 		deduct <- FALSE
 	} 
 	if (version %in% c("02","03")){
-		years  <- c(1996,2006,2014)
-		dcs    <- FALSE
+		years  <- c(1996,2006,2014) # these may become single years for splines
+		dcs    <- FALSE             # in future mspecs
 		deduct <- TRUE
 	}
+	# path to place decomp results
 	path       <- file.path("Data","Results",paste0("mspec",version),"dec")
 	if (!dir.exists(path)){
 		dir.create(path,recursive=TRUE)
@@ -78,6 +86,7 @@ for (version in c("01","02","03")){
 		dcs    <- FALSE
 		deduct <- TRUE
 	}
+	# path for prev and le
 	path       <- file.path("Data","Results",paste0("mspec",version),"prev")
 	if (!dir.exists(path)){
 		dir.create(path,recursive=TRUE)
@@ -110,10 +119,11 @@ for (version in c("01","02","03")){
 		}
 	}
 }
+# no visualizations done here. Scripts for diagnostic visualizations of results are
+# found in R scripts whose file names start with Diagnostics_*.R
 
-
-# generate life expectancy
-
+# ---------------------------------------------
+# old code, deprecated
 #
 #
 #dec.i <- do_decomp(times = c(1995,2004,2014), ntrans = 3, version = version, sex = Sex, educlevel = educlevel, N = N, deduct = TRUE, dcs = FALSE)
