@@ -10,56 +10,110 @@ if (me == "tim"){
 	setwd("/home/tim/git/HLEDecomp/HLEDecomp")
 	read.path <- "/home/tim/Data/hledecomp/results"
 }
-source("Code/R/Functions.R")
+
 library(reshape2)
-# set this to rerun
-#version    <- "01"
-version    <- "03"
-N          <- 20
-# temporary until years straightened out:
-if (version %in% c("01","02")){
-	years  <-  c(1995,2004,2014)
-	dcs    <- ifelse(version == "01",TRUE,FALSE)
-	deduct <- ifelse(version == "01",FALSE,TRUE)
-} 
-if (version == "03"){
-	years  <- c(1996,2006,2014)
-	dec    <- FALSE
-	deduct <- TRUE
-}
-
-
-# let sex recode
-
 source("Code/R/Functions.R")
-#sex        <- "m" # "m","f",or"b"
+# set this to rerun
+##version    <- "01"
+#version    <- "02"
+N            <- 20 # higher N = more precision
 sexes        <- c("m", "f", "b")
 edus         <- c("all_edu", "primary" , "secondary", "terciary"  )
 edusl        <- c("0.All edu", "1.Less HS" , "4.HS/GED/Sm coll ex AA", "5.AA/BS/+"  )
 names(edusl) <- edus
 
+# version loop (temporary)-- long run times. Later once everything straightened out
+# verify deduction procedures and each mspec def w DCS
 
-for (sex in sexes){
-	Sex        <- ifelse(sex == "m", "1.men", ifelse(sex == "f", "2.wmn", "0.all"))
-	for (edu in edus){
-		educlevel  <- edusl[edu]
-		dec.i      <- do_decomp(years = years, 
-				                ntrans = 3, 
-								version = version, 
-								sex = Sex, 
-								educlevel = educlevel, 
-								N = N, 
-								dcs = dcs,
-								deduct = FALSE,
-								path = read.path)
-		file.name  <- paste0(paste("dec", version, sex, edu, N, sep = "_"), ".Rdata")
-		path       <- file.path("Data","Results",paste0("mspec",version),"dec")
-		if (!dir.exists(path)){
-			dir.create(path)
+# eliminate this loop once things are stable
+for (version in c("01","02","03")){
+# temporary until years straightened out:
+	if (version == "01"){
+		years  <-  c(1995,2004,2014)
+		dcs    <- TRUE
+		deduct <- FALSE
+	} 
+	if (version %in% c("02","03")){
+		years  <- c(1996,2006,2014)
+		dcs    <- FALSE
+		deduct <- TRUE
+	}
+	path       <- file.path("Data","Results",paste0("mspec",version),"dec")
+	if (!dir.exists(path)){
+		dir.create(path,recursive=TRUE)
+	}
+    # sex loop	
+	for (sex in sexes){
+		Sex        <- ifelse(sex == "m", "1.men", ifelse(sex == "f", "2.wmn", "0.all"))
+		
+		# education loop
+		for (edu in edus){
+			educlevel  <- edusl[edu]
+			dec.i      <- do_decomp(years = years, 
+					ntrans = 3, 
+					version = version, 
+					sex = Sex, 
+					educlevel = educlevel, 
+					N = N, 
+					dcs = dcs,
+					deduct = FALSE,
+					path = read.path)
+			file.name  <- paste0(paste("dec", version, sex, edu, N, sep = "_"), ".Rdata")
+			
+			save(dec.i, file = file.path(path, file.name))
+		} # close education loop
+	} # close sex loop
+} # close version loop
+
+# generate results for prevalence and LE (faster than the above loop)
+for (version in c("01","02","03")){
+# temporary until years straightened out:
+	if (version == "01"){
+		years  <-  c(1995,2004,2014)
+		dcs    <- TRUE
+		deduct <- FALSE
+	} 
+	if (version %in% c("02","03")){
+		years  <- c(1996,2006,2014)
+		dcs    <- FALSE
+		deduct <- TRUE
+	}
+	path       <- file.path("Data","Results",paste0("mspec",version),"prev")
+	if (!dir.exists(path)){
+		dir.create(path,recursive=TRUE)
+	}
+	pathe       <- file.path("Data","Results",paste0("mspec",version),"le")
+	if (!dir.exists(pathe)){
+		dir.create(pathe,recursive=TRUE)
+	}
+	# sex loop	
+	for (sex in sexes){
+		for (edu in edus){
+			educlevel  <- edusl[edu]
+# get prevalence saved for all combos:
+			prev.i <- do_prev(years = years,
+					age = 52, 
+					version = version, 
+					sex = sex, 
+					educlevel = educlevel, 
+					deduct = deduct, 
+					dcs = dcs, 
+					path = read.path)
+			file.name  <- paste0(paste("prev", version, sex, edu, N, sep = "_"), ".Rdata")
+			
+			save(prev.i, file = file.path(path, file.name))
+			
+			prevL <- split(prev.i, list(prev.i$time))
+			ex.i  <- do.call("rbind",lapply(prevL, colSums))
+			file.name.i  <- paste0(paste("le", version, sex, edu, N, sep = "_"), ".Rdata")
+			save(ex.i, file = file.path(pathe, file.name.i))
 		}
-		save(dec.i, file = file.path(path, file.name))
 	}
 }
+
+
+# generate life expectancy
+
 #
 #
 #dec.i <- do_decomp(times = c(1995,2004,2014), ntrans = 3, version = version, sex = Sex, educlevel = educlevel, N = N, deduct = TRUE, dcs = FALSE)

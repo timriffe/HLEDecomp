@@ -331,7 +331,15 @@ do_le <- function(years = c(1995,2004,2014),age = 52, version, sex,
 	
 }
 
-do_prev <- function(years = c(1995,2004,2014),age = 52, version, sex, educlevel, deduct = TRUE, dcs = FALSE, path = "N:\\dcs\\proj\\hledecomp\\results\\margins"){
+do_prev <- function(
+		years = c(1995,2004,2014),
+		age = 52, 
+		version, 
+		sex, 
+		educlevel, 
+		deduct = TRUE, 
+		dcs = FALSE, 
+		path = "N:\\dcs\\proj\\hledecomp\\results\\margins"){
 	DatL   <- lapply(years, 
 			get_data, 
 			self = TRUE, 
