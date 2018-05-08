@@ -50,31 +50,7 @@ fig.path       <- file.path("Figures",file.name)
 #dev.off()
 
 
-# ------------------------------------------------------
-# MARGINS PLOTS
-sets          <- paste(dec.i$year1,dec.i$year2)
-code          <- unique(sets)
-recvec        <- 1:length(code)
-names(recvec) <- code
-dec.i$decnr   <- recvec[sets]
-# transition margins
-trmargins     <- acast(dec.i, transition ~ state ~ decnr, sum, value.var = "value")
 
-
-
-trp <- trn <-trmargins
-trp[trp < 0] <- NA
-trn[trn > 0] <- NA
-
-ylim <- c(min(apply(trn,3,rowSums,na.rm=TRUE)), max(apply(trp,3,rowSums,na.rm=TRUE)))
-
-
-figpath <-  file.path("Figures","margins",paste0("mspec",version))
-fig.name <- gsub(".Rdata","",file.name)
-fig.name <- paste0(fig.name,"trmargins.pdf")
-pdf(file.path(figpath,fig.name))
-barmargins(dec.i)
-dev.off()
 
 #----------------------------
 
@@ -111,5 +87,5 @@ decomp_lines(dec3.tot, main = "Males, all edu, LE50 1995 vs 2014")
 dev.off()
 
 # notion of decomp error. Things should sum tho?
-decomp_lines(dec1.1 + dec2.1 - dec3.1)
+#decomp_lines(dec1.1 + dec2.1 - dec3.1)
 # decomp_lines(dec3.tot - dec3.tot.l)
