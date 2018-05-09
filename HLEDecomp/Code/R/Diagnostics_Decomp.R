@@ -7,14 +7,8 @@ if (me == "tim"){
 	setwd("/home/tim/git/HLEDecomp/HLEDecomp")
 }
 source("Code/R/Functions.R")
+source("Code/R/Preamble.R")
 
-
-#sex          <- "m" # "m","f",or"b"
-sexes        <- c("m", "f", "b")
-edus         <- c("all_edu", "primary" , "secondary", "terciary"  )
-edusl        <- c("0.All edu", "1.Less HS" , "4.HS/GED/Sm coll ex AA", "5.AA/BS/+"  )
-names(edusl) <- edus
-N            <- 20
 
 for (version in c("01","02","03")){
 	figpath      <- file.path("Figures","margins",paste0("mspec",version))

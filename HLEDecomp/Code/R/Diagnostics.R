@@ -8,13 +8,7 @@ if (me == "tim"){
 	setwd("/home/tim/git/HLEDecomp/HLEDecomp")
 }
 source("Code/R/Functions.R")
-version    <- "01"
-sex        <- "m" # "m","f",or"b"
-educlevel  <- "0.All edu"
-edus       <- c("0.All edu", "1.Less HS" , "4.HS/GED/Sm coll ex AA", "5.AA/BS/+"  )
-N          <- 20
-Sex        <- ifelse(sex == "m", "1.men", ifelse(sex == "f", "2.wmn", "0.all"))
-
+source("Code/R/Preamble.R")
 # let sex recode
 
 file.name  <- paste0(paste("dec",version,sex,educlevel,N,sep="_"),".Rdata")

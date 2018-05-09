@@ -15,6 +15,8 @@ if (me == "tim"){
 
 library(reshape2)
 source("Code/R/Functions.R")
+source("Code/R/Preamble.R")
+
 # set this to rerun
 
 # The mpsec version, as defined by DCS. The early mspecs have rates on different scales
@@ -23,17 +25,12 @@ source("Code/R/Functions.R")
 
 #version    <- "01" # change this to run a single version and comment out decomp loop.
 
-N            <- 20 # higher N = more precision
-sexes        <- c("m", "f", "b")
-edus         <- c("all_edu", "primary" , "secondary", "terciary"  )
-edusl        <- c("0.All edu", "1.Less HS" , "4.HS/GED/Sm coll ex AA", "5.AA/BS/+"  )
-names(edusl) <- edus
 
 # version loop (temporary)-- long run times. Later once everything straightened out
 # verify deduction procedures and each mspec def w DCS
 
 # eliminate this loop once things are stable
-for (version in c("01","02","03")){
+for (version in versions){ # 1-3 now
 # temporary until years straightened out:
 	if (version == "01"){
 		years  <-  c(1995,2004,2014)
@@ -73,6 +70,7 @@ for (version in c("01","02","03")){
 	} # close sex loop
 } # close version loop
 
+# version <- "02"; sex <- "m"; edu <- "all_edu"
 # generate results for prevalence and LE (faster than the above loop)
 for (version in c("01","02","03")){
 # temporary until years straightened out:
@@ -97,13 +95,15 @@ for (version in c("01","02","03")){
 	}
 	# sex loop	
 	for (sex in sexes){
+		Sex        <- ifelse(sex == "m", "1.men", ifelse(sex == "f", "2.wmn", "0.all"))
+		
 		for (edu in edus){
 			educlevel  <- edusl[edu]
 # get prevalence saved for all combos:
 			prev.i <- do_prev(years = years,
 					age = 52, 
 					version = version, 
-					sex = sex, 
+					sex = Sex, 
 					educlevel = educlevel, 
 					deduct = deduct, 
 					dcs = dcs, 
@@ -112,9 +112,9 @@ for (version in c("01","02","03")){
 			
 			save(prev.i, file = file.path(path, file.name))
 			
-			prevL <- split(prev.i, list(prev.i$time))
+			prevL <- split(prev.i[,1:3], list(prev.i$time))
 			ex.i  <- do.call("rbind",lapply(prevL, colSums))
-			ex.i$time <- years
+			#ex.i$time <- years
 			file.name.i  <- paste0(paste("le", version, sex, edu, N, sep = "_"), ".Rdata")
 			save(ex.i, file = file.path(pathe, file.name.i))
 		}

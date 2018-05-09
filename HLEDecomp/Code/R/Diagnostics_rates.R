@@ -29,7 +29,7 @@ if (me == "tim"){
 
 library(reshape2)
 source("Code/R/Functions.R")
-
+source("Code/R/Preamble.R")
 #sex          <- "m" # "m","f",or"b"
 sexes        <- c("m", "f", "b")
 edus         <- c("all_edu", "primary" , "secondary", "terciary"  )
