@@ -114,6 +114,7 @@ for (version in c("01","02","03")){
 			
 			prevL <- split(prev.i, list(prev.i$time))
 			ex.i  <- do.call("rbind",lapply(prevL, colSums))
+			ex.i$time <- years
 			file.name.i  <- paste0(paste("le", version, sex, edu, N, sep = "_"), ".Rdata")
 			save(ex.i, file = file.path(pathe, file.name.i))
 		}

@@ -31,6 +31,17 @@ getcols <- function(ntrans = 3,self=TRUE){
 	}
 }
 
+get_rates_all <- function(path = "N:\\dcs\\proj\\hledecomp\\results", 
+		version = "01",
+		self = TRUE){
+	final_path    <- file.path(path, "margins",paste0("mspec", version), paste0("transp_m", version, ".dta"))
+	Dat           <- foreign::read.dta(final_path)
+	# read.dta() has no stringsAsFactors argument...
+	facs          <- sapply(Dat,class) == "factor"
+	Dat[, facs]   <- lapply(Dat[,facs], fac2ch)
+	Dat
+}
+
 get_data <- function(path = "N:\\dcs\\proj\\hledecomp\\results", 
 		version = "01",
 		sex = "1.men",
@@ -38,34 +49,33 @@ get_data <- function(path = "N:\\dcs\\proj\\hledecomp\\results",
 		educlevel = "0.All edu",
         self = TRUE){
 	# this works on Tim's MPIDR PC, Windows machine...
-	final_path    <- file.path(path, "margins",paste0("mspec", version), paste0("transp_m", version, ".dta"))
-	Dat           <- foreign::read.dta(final_path)
+	Dat           <- get_rates_all(path = path, version = version, self = self)
+
 	sprop         <- foreign::read.dta(file.path(path,"initprop","initprop2.dta"))
-	# read.dta() has no stringsAsFactors argument...
-	facs          <- sapply(Dat,class) == "factor"
-    Dat[, facs]   <- lapply(Dat[,facs], fac2ch)
+	
 	facs          <- sapply(sprop,class) == "factor"
 	sprop[, facs] <- lapply(sprop[,facs], fac2ch)
 	
 	# subset() or with() don't like it when your args have same names as cols, so
 	# here's a verbose subset
 	ind            <- Dat$sex == sex & Dat$educlevel == educlevel & Dat$time == year 
-    DatS           <- Dat[ind, ]
-	
+    Dat            <- Dat[ind, ]
+	Dat            <- Dat[order(Dat$age), ]
+
 	ind            <- sprop$sex == sex & sprop$educlevel == educlevel & sprop$propweighted == 1 & grepl(pattern = "age 50-54", sprop[,1])
 	sprop          <- sprop[ind, c("s1_prop","s2_prop","s3_prop")]
 	
-	DatS           <- DatS[order(DatS$age), ]
-	age            <- DatS$age
+	Dat            <- Dat[order(Dat$age), ]
+	age            <- Dat$age
 	cols           <- getcols(ntrans = 3, self = self)
-	DatS           <- DatS[, cols]
-	rownames(DatS) <- age
+	Dat            <- Dat[, cols]
+	rownames(Dat)  <- age
 	
 	sprop          <-  unlist(sprop)
 	sprop          <- sprop / sum(sprop)
-	attr(DatS, "initprop") <- sprop
-	attr(DatS, "time")     <- year
-	DatS
+	attr(Dat, "initprop") <- sprop
+	attr(Dat, "time")     <- year
+	Dat
 }
 
 out2self <- function(datout){
@@ -351,16 +361,16 @@ do_prev <- function(
 	names(DatL) <- years
 	
 	prev <- do.call("rbind",lapply(DatL, function(X,deduct,dcs){
-						prop <- attr(X, "initprop")
-						year <- attr(X, "time")
-						U    <- data_2_U(X)
-						N    <- U2N(U)
-						cind <- rep(seq(50,112,by=2), 3) == age
-						DF <- as.data.frame(matrix(rowSums(N[,cind] %*% diag(prop)),ncol=3,dimnames=list(NULL,1:3)))
+						prop    <- attr(X, "initprop")
+						year    <- attr(X, "time")
+						U       <- data_2_U(X)
+						N       <- U2N(U)
+						cind    <- rep(seq(50,112,by=2), 3) == age
+						DF      <- as.data.frame(matrix(rowSums(N[,cind] %*% diag(prop)),ncol=3,dimnames=list(NULL,1:3)))
 						DF$time <- year
 						DF
 					}, deduct = deduct, dcs = dcs))
-	
+	prev
 }
 
 
