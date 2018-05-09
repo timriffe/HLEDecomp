@@ -14,14 +14,6 @@ if (me == "tim"){
 source("Code/R/Functions.R")
 source("Code/R/Preamble.R")
 
-prev <- 
-
-#sex          <- "m" # "m","f",or"b"
-		sexes        <- c("m", "f", "b")
-edus         <- c("all_edu", "primary" , "secondary", "terciary"  )
-edusl        <- c("0.All edu", "1.Less HS" , "4.HS/GED/Sm coll ex AA", "5.AA/BS/+"  )
-names(edusl) <- edus
-N            <- 20
 # version <- "03";sex <- "m";year <- 2006;edu <- "all_edu"
 
 # ON HOLD need functions to do these things.
