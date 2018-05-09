@@ -108,7 +108,7 @@ data_2_U <- function(dat){
 }
 
 
-U2N <- function(U, interval = 2{
+U2N <- function(U, interval = 2){
 	I   <- diag(nrow(U))
 	Nsx <- solve(I - U) * interval
 	Nsx 
