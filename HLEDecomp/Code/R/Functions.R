@@ -108,9 +108,9 @@ data_2_U <- function(dat){
 }
 
 
-U2N <- function(U){
+U2N <- function(U, interval = 2{
 	I   <- diag(nrow(U))
-	Nsx <- solve(I - U)
+	Nsx <- solve(I - U) * interval
 	Nsx 
 }
 
@@ -118,7 +118,7 @@ U2N <- function(U){
 e50 <- function(dat, to = 1, age = 50, prop = attr(dat, "initprop"), deduct = TRUE){
 	#prop <- attr(dat,"initprop")
 	U    <- data_2_U(dat)
-	N    <- U2N(U)
+	N    <- U2N(U, interval = 2)
 	rind <- 1:32 + (to-1) * 32
 	cind <- rep(seq(50,112,by=2), 3) == age
 	
@@ -134,7 +134,7 @@ e50dcs <- function(dat,age=50,prop=attr(dat,"initprop"),deduct=FALSE,to = 4){
 	
 	#prop <- attr(dat,"initprop")
 	U    <- data_2_U(dat)
-	N    <- U2N(U)
+	N    <- U2N(U, interval = 2)
 	cind <- rep(seq(50,112,by=2), 3) == age
 	N2   <- N[, cind]
 	
@@ -144,7 +144,9 @@ e50dcs <- function(dat,age=50,prop=attr(dat,"initprop"),deduct=FALSE,to = 4){
 	for (i in 1:3){
 		Ntab[,i] <- tapply(N2[,i], rgroups, sum)
 	}
-	Ntab  <- Ntab * 2
+	
+	# this should adjust for age groups already...
+	Ntab  <- Ntab #* 2
 	
 	# this is the dcs adjustment...
 	if (deduct){
@@ -168,7 +170,7 @@ dec_fun <- function(datoutvec,to=1,age=52, prop, deduct = TRUE, dcs = FALSE){
 	} else {
 		dc <- e50dcs(datself, to = to, age = age, prop = prop, deduct = deduct)
 	}
-	dc
+	dc 
 }
 
 # preliminary results to cross-check w DCS
@@ -223,7 +225,7 @@ dec_fun_logit <- function(datoutvec,to=1,age=52, prop){
 	datout    <- v2m(datoutvec, 3)
 	
 	datself   <- out2self(datout)
-	e50(datself, to = to, age = age, prop = prop)
+	e50(datself, to = to, age = age, prop = prop) * 2 # age interval
 }
 HLEDecomp_logit <- function(datout1, datout2, N = 10, prop = attr(datout1,"initprop"), to=1){
 	
@@ -321,12 +323,12 @@ do_le <- function(years = c(1995,2004,2014),age = 52, version, sex,
 	do.call("rbind",lapply(DatL, function(X,deduct,dcs){
 				prop <- attr(X, "initprop")
 				U    <- data_2_U(X)
-				N    <- U2N(U)
+				N    <- U2N(U, interval = 2)
 				cind <- rep(seq(50,112,by=2), 3) == age
 				
 				rgroups <- rep(1:3, each = 32)
 				Ntab <- apply(N[, cind], 2, function(x, rgroups){
-							tapply(x, rgroups, sum) * 2
+							tapply(x, rgroups, sum) #* 2
 						}, rgroups = rgroups)
 				if (deduct & !dcs){
 					Ntab <- Ntab - diag(3)
@@ -354,7 +356,7 @@ do_prev <- function(
 			get_data, 
 			self = TRUE, 
 			version = version, 
-			sex = Sex, 
+			sex = sex, 
 			educlevel = educlevel,
 			path = path)
 	
@@ -364,7 +366,7 @@ do_prev <- function(
 						prop    <- attr(X, "initprop")
 						year    <- attr(X, "time")
 						U       <- data_2_U(X)
-						N       <- U2N(U)
+						N       <- U2N(U, interval = 2)
 						cind    <- rep(seq(50,112,by=2), 3) == age
 						DF      <- as.data.frame(matrix(rowSums(N[,cind] %*% diag(prop)),ncol=3,dimnames=list(NULL,1:3)))
 						DF$time <- year
