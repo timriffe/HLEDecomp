@@ -16,12 +16,31 @@ if (me == "tim"){
 source("Code/R/Functions.R")
 source("Code/R/Preamble.R")
 #
+sprop         <- foreign::read.dta(file.path(read.path,"initprop","initprop2.dta"))
+facs          <- sapply(sprop,class) == "factor"
+sprop[, facs] <- lapply(sprop[,facs], fac2ch)
+sprop         <- sprop[sprop$propweighted == 1 & grepl(pattern = "age 50-54", sprop[,1]), ]
 
+# we'll append to age 50 and pad with NAs in other ages.
+# inefficient, but keeps things together.
+sprop$age     <- 50
+
+# now slim down to needed columns
+pcols         <- c("s1_prop", "s2_prop", "s3_prop")
+colskeep      <- c("sex", "educlevel","age", pcols)
+sprop         <- sprop[,colskeep]
+# now rescale to proportions rather than 10k radix
+sprop[,pcols] <- sprop[,pcols] / rowSums(sprop[,pcols])
+
+# now create version-specific data objects.
 for (i in 1:length(versions)){
 	TR.i <- get_rates_all(
 			  path = read.path, 
 			  version = versions[i],
 			  self = TRUE)
+	  
+	TR.i     <-  merge(TR.i,sprop[,colskeep],all.x=TRUE,fill=NA)
+	  
 	TR.i$edu <- edus[TR.i$educlevel]
 	TR.i$Sex <- TR.i$sex
 	TR.i$sex <- sexes[TR.i$sex]
