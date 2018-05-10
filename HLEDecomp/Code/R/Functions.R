@@ -78,6 +78,13 @@ get_data <- function(path = "N:\\dcs\\proj\\hledecomp\\results",
 	Dat
 }
 
+get_TR_all <- function(version = "02",home = getwd(),...){
+	path <- file.path(home,"Data","Transitions","DCS",paste0("TR_v",version,".Rdata"))
+	Dat  <- local(get(load(path)))
+	subset(Dat, ...)
+}
+
+
 out2self <- function(datout){
 	colsself      <- getcols(ntrans = 3, self = TRUE)
 		
