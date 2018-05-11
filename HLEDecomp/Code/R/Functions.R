@@ -147,18 +147,18 @@ e50 <- function(dat, to, age = 50, prop, deduct = TRUE){
 	# all self-arrows are deducted. This subtotals
 	# code is R-esoteric. Basically take colsums for 
 	# 3 block rows.
-	e50 <- do.call("rbind",
+	e.50 <- do.call("rbind",
 			lapply(
 					split(as.data.frame(N[, cind]), rep(1:3, each = 32)),
 					colSums)
 	)
 	# this is the Dudel deduction.
 	if (deduct){
-	  e50 <- e50 - diag(3) # because 1 is half an interval width
+	  e.50 <- e.50 - diag(3) # because 1 is half an interval width
     }
 	# each to state weighted because person years can originate
 	# in any from state.
-	e50all <- e50 %*% prop
+	e50all <- e.50 %*% prop
 	
 	# this if we only want a destination state subset.
 	if (!missing(to)){
@@ -173,15 +173,18 @@ e50 <- function(dat, to, age = 50, prop, deduct = TRUE){
 
 
 dec_fun <- function(datoutvec, to, age = 50, prop, deduct = TRUE){
+	# requires input as vector, first reshape to matrix or df
 	datout  <- v2m(datoutvec, 3)
+	# remove death rates and replace with self-arrows, needed to make
+	# transition matrices
 	datself <- out2self(datout)
-	
+	# then compute e50 using the correct transition rates
 	dc <- e50(datself, to = to, age = age, prop = prop, deduct = deduct)
 
 	dc 
 }
 
-HLEDecomp <- function(datout1, datout2, N = 10, prop, to, deduct = TRUE, dcs = FALSE){
+HLEDecomp <- function(datout1, datout2, N = 10, prop, to, deduct = TRUE){
 	
 	# TR: we don't decompose wrt differences in initial proportions
 	# so we can siphen prop from the first data object, using for both.
@@ -194,7 +197,7 @@ HLEDecomp <- function(datout1, datout2, N = 10, prop, to, deduct = TRUE, dcs = F
 	}
 	# just to be sure we're rodered correctly.
 	datout1            <- datout1[order(datout1$age), ]
-	datout2            <- datout1[order(datout2$age), ]
+	datout2            <- datout2[order(datout2$age), ]
 	
 	age                <- datout1$age
 	rownames(datout1)  <- age
@@ -213,56 +216,7 @@ HLEDecomp <- function(datout1, datout2, N = 10, prop, to, deduct = TRUE, dcs = F
 			        N = N, 
 			        prop = prop,
 					to = to,
-					deduct = deduct,
-					dcs = dcs)
-	dim(dec)      <- dim(datout1)
-	dimnames(dec) <- dimnames(datout1)
-	# no dim reduction here
-	dec
-}
-
-logit <- function(x){
-	log(x / (1 - x))
-}
-expit <- function(x){
-	exp(x )/ (1 + exp(x))
-}
-dec_fun_logit <- function(datoutvec,to=1,age=52, prop){
-	datoutvec <- expit(datoutvec)
-	datout    <- v2m(datoutvec, 3)
-	
-	datself   <- out2self(datout)
-	e50(datself, to = to, age = age, prop = prop) * 2 # age interval
-}
-HLEDecomp_logit <- function(datout1, datout2, N = 10, prop, to=1){
-	# TR: we don't decompose wrt differences in initial proportions
-	# so we can siphen prop from the first data object, using for both.
-	if (missing(prop)){
-		if ("initprop" %in% names(attributes(dat))){
-			prop <- attr(datout1,"initprop")
-		} else {
-			prop <- unlist(datout1[1,c("s1_prop","s2_prop","s3_prop")])
-		}
-	}
-	
-	datout1vec <- c(as.matrix(datout1))
-	datout2vec <- c(as.matrix(datout2))
-	
-	# impute 0s (none are structural
-	datout1vec[datout1vec == 0] <- 1e-7
-	datout2vec[datout2vec == 0] <- 1e-7
-	
-	# logit transform
-	datout1vec <- logit(datout1vec)
-	datout2vec <- logit(datout2vec)
-	# arrow decomposition:
-	dec      <- DecompHoriuchi::DecompContinuousOrig(
-			      func = dec_fun_logit, 
-			      rates1 = datout1vec, 
-			      rates2 = datout2vec, 
-			      N = N, 
-			      prop = prop,
-			      to = to)
+					deduct = deduct)
 	dim(dec)      <- dim(datout1)
 	dimnames(dec) <- dimnames(datout1)
 	# no dim reduction here
@@ -272,107 +226,93 @@ HLEDecomp_logit <- function(datout1, datout2, N = 10, prop, to=1){
 # not implemented for logit transform. Could add in logical switch tho
 #dec<- do_decomp(years = c(2006,2014),version = "02",sex = "f", edu = "all_edu")
 # This function needs to be reworked to work w new HLEDECOMP output. Simplify ugly inner functions too.
+# just make it do a single comparison.
 do_decomp <- function(
-		years = c(1995,2004,2014), 
-		ntrans = 3, # number of states
+		years = c(1996,2014), 
+		ntrans = 3,        # number of states
 		version = "02",    # character 2 digits
 		sex = "f",       
 		edu = "all_edu", 
-		sto, # i.e. do we decompose wrt HLE, ADL1, ADL2p, or LE. leave missing for LE
+		to, # i.e. do we decompose wrt HLE, ADL1, ADL2p, or LE. leave missing for LE
 		N = 20, 
 		deduct = TRUE){
-	
-	# get transition rate sets
-#	DatL   <- lapply(years, 
-#			get_data, 
-#			self = FALSE, 
-#			version = version, 
-#			sex = sex, 
-#			educlevel = educlevel,
-#			path = path)
-	# name change due to scoping, since subset passes in an expression.
+	years <- years[1:2]
+	# if it's missing then it means LE, so make LE beyond the state count.
+	if (missing(to)){
+		to <- 5
+	}
 	# it'd get confused otherwise and not down-select as needed
 	.edu <- edu
 	.sex <- sex
 	TR          <- get_TR(version = version, 
 			              subset = sex == .sex & edu == .edu & time %in% years)
-	
-				
-				  
+					  
 	DatL        <- split(TR, TR$time)
 	names(DatL) <- years
-		
-	# make from-to pairlist
-	comparisons <- outer(years, years, '<')
-	from        <- row(comparisons)[comparisons]
-	to          <- col(comparisons)[comparisons]
-	ft          <- mapply(c, from, to, SIMPLIFY = FALSE)
 	
-	# looping. Can be swapped w parallel decomp
-	dec <- do.call("rbind",lapply(ft, function(fromto, DatL, ntrans = 3, N, deduct, sto){
-						A1   <- DatL[[fromto[1]]]
-						A2   <- DatL[[fromto[2]]]
-						yrs  <- as.integer(names(DatL)[fromto])
-						decx <- do.call("rbind", lapply(1:ntrans, function(sto, A1, A2, N = N, deduct, sto){
-											dec.i <- melt(HLEDecomp(
-															A1, 
-															A2, 
-															N = N, 
-															to = sto, 
-															deduct = deduct)[-1, ],
-													varnames = c("age","transition"))
-											dec.i$state <- to
-											dec.i
-										}, A1 = A1, A2 = A2, N = N, deduct = deduct, sto = sto))
-						decx$year1 <- yrs[1]
-						decx$year2 <- yrs[2]
-						decx
-					}, DatL = DatL, ntrans = ntrans, N = N, deduct = deduct, sto = sto))  
+	dec <- HLEDecomp(DatL[[1]],
+			DatL[[2]],
+			N = N, 
+			to = to, 
+			deduct = deduct)#[-1, ]
+	
+	dec  <- melt(dec, varnames = c("age", "transition"))
+		
+	dec$statedec  <- to
+	dec$year1     <- years[1]
+	dec$year2     <- years[2]
 	
 	# add metadata
 	dec$sex       <- sex
 	dec$edu       <- edu
 	dec$version   <- version
 	dec$N         <- N
+	dec$state1    <- substr(dec$transition,2,2)
+	dec$state2    <- substr(dec$transition,3,3)
 	
 	dec
 }
 
-
-do_le <- function(years = c(1995,2004,2014),age = 52, version, sex, 
-		educlevel, deduct = TRUE, dcs = FALSE, path = "N:\\dcs\\proj\\hledecomp\\results\\margins"){
-	DatL   <- lapply(years, 
-			get_data, 
-			self = TRUE, 
-			version = version, 
-			sex = Sex, 
-			educlevel = educlevel,
-			path = path)
-	
-	names(DatL) <- years
-
-	do.call("rbind",lapply(DatL, function(X,deduct,dcs){
-				prop <- attr(X, "initprop")
-				U    <- data_2_U(X)
-				N    <- U2N(U, interval = 2)
-				cind <- rep(seq(50,112,by=2), 3) == age
-				
-				rgroups <- rep(1:3, each = 32)
-				Ntab <- apply(N[, cind], 2, function(x, rgroups){
-							tapply(x, rgroups, sum) #* 2
-						}, rgroups = rgroups)
-				if (deduct & !dcs){
-					Ntab <- Ntab - diag(3)
-				}
-				if (deduct & dcs){
-			
-					Nprop <- t(t(Ntab) / colSums(Ntab))
-					Ntab  <- Ntab - Nprop
-				}
-				rowSums(Ntab  %*% diag(prop))
-			}, deduct = deduct, dcs = dcs))
-	
-}
+#dec <- do_decomp(to=1)
+head(dec)
+#LE1 <- e50(DatL[[1]],to=1)
+#LE2 <- e50(DatL[[2]],to=1)
+#LE2 - LE1
+#sum(dec$value)
+#do_le <- function(years = c(1995,2004,2014),age = 50, version, sex, 
+#		educlevel, deduct = TRUE, dcs = FALSE, path = "N:\\dcs\\proj\\hledecomp\\results\\margins"){
+#	DatL   <- lapply(years, 
+#			get_data, 
+#			self = TRUE, 
+#			version = version, 
+#			sex = Sex, 
+#			educlevel = educlevel,
+#			path = path)
+#	
+#	names(DatL) <- years
+#
+#	do.call("rbind",lapply(DatL, function(X,deduct,dcs){
+#				prop <- attr(X, "initprop")
+#				U    <- data_2_U(X)
+#				N    <- U2N(U, interval = 2)
+#				cind <- rep(seq(50,112,by=2), 3) == age
+#				
+#				rgroups <- rep(1:3, each = 32)
+#				Ntab <- apply(N[, cind], 2, function(x, rgroups){
+#							tapply(x, rgroups, sum) #* 2
+#						}, rgroups = rgroups)
+#				if (deduct & !dcs){
+#					Ntab <- Ntab - diag(3)
+#				}
+#				if (deduct & dcs){
+#			
+#					Nprop <- t(t(Ntab) / colSums(Ntab))
+#					Ntab  <- Ntab - Nprop
+#				}
+#				rowSums(Ntab  %*% diag(prop))
+#			}, deduct = deduct, dcs = dcs))
+#	
+#}
 
 do_prev <- function(
 		years = c(1995,2004,2014),
@@ -406,6 +346,54 @@ do_prev <- function(
 	prev
 }
 
+
+logit <- function(x){
+	log(x / (1 - x))
+}
+expit <- function(x){
+	exp(x )/ (1 + exp(x))
+}
+dec_fun_logit <- function(datoutvec,to=1,age=52, prop){
+	datoutvec <- expit(datoutvec)
+	datout    <- v2m(datoutvec, 3)
+	
+	datself   <- out2self(datout)
+	e50(datself, to = to, age = age, prop = prop) * 2 # age interval
+}
+HLEDecomp_logit <- function(datout1, datout2, N = 10, prop, to){
+	# TR: we don't decompose wrt differences in initial proportions
+	# so we can siphen prop from the first data object, using for both.
+	if (missing(prop)){
+		if ("initprop" %in% names(attributes(dat))){
+			prop <- attr(datout1,"initprop")
+		} else {
+			prop <- unlist(datout1[1,c("s1_prop","s2_prop","s3_prop")])
+		}
+	}
+	
+	datout1vec <- c(as.matrix(datout1))
+	datout2vec <- c(as.matrix(datout2))
+	
+	# impute 0s (none are structural
+	datout1vec[datout1vec == 0] <- 1e-7
+	datout2vec[datout2vec == 0] <- 1e-7
+	
+	# logit transform
+	datout1vec <- logit(datout1vec)
+	datout2vec <- logit(datout2vec)
+	# arrow decomposition:
+	dec      <- DecompHoriuchi::DecompContinuousOrig(
+			func = dec_fun_logit, 
+			rates1 = datout1vec, 
+			rates2 = datout2vec, 
+			N = N, 
+			prop = prop,
+			to = to)
+	dim(dec)      <- dim(datout1)
+	dimnames(dec) <- dimnames(datout1)
+	# no dim reduction here
+	dec
+}
 
 
 # functions for figures. geometric color blending
