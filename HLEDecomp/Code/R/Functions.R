@@ -42,6 +42,8 @@ get_rates_all <- function(path = "N:\\dcs\\proj\\hledecomp\\results",
 	Dat
 }
 
+
+
 get_data <- function(path = "N:\\dcs\\proj\\hledecomp\\results", 
 		version = "01",
 		sex = "1.men",
@@ -71,19 +73,19 @@ get_data <- function(path = "N:\\dcs\\proj\\hledecomp\\results",
 	Dat            <- Dat[, cols]
 	rownames(Dat)  <- age
 	
-	sprop          <-  unlist(sprop)
+	sprop          <- unlist(sprop)
 	sprop          <- sprop / sum(sprop)
 	attr(Dat, "initprop") <- sprop
 	attr(Dat, "time")     <- year
 	Dat
 }
 
-get_TR_all <- function(version = "02",home = getwd(),...){
+get_TR <- function(version = "02",home = getwd(),...){
 	path <- file.path(home,"Data","Transitions","DCS",paste0("TR_v",version,".Rdata"))
 	Dat  <- local(get(load(path)))
 	subset(Dat, ...)
 }
-
+#get_TR(version = "02", subset = sex == "f")
 
 out2self <- function(datout){
 	colsself      <- getcols(ntrans = 3, self = TRUE)
@@ -120,91 +122,89 @@ U2N <- function(U, interval = 2){
 	Nsx <- solve(I - U) * interval
 	Nsx 
 }
-
+#dat <- get_TR_all(version = "02",subset = sex == "f" & edu == "all_edu" & time == 2006)
 # TR: added deduct switch to test for differences re DCS email
-e50 <- function(dat, to = 1, age = 50, prop = attr(dat, "initprop"), deduct = TRUE){
-	#prop <- attr(dat,"initprop")
-	U    <- data_2_U(dat)
-	N    <- U2N(U, interval = 2)
-	rind <- 1:32 + (to-1) * 32
-	cind <- rep(seq(50,112,by=2), 3) == age
+#dat <- A1
+
+e50 <- function(dat, to, age = 50, prop, deduct = TRUE){
 	
-	e50  <- colSums(N[rind,cind]) * 2
+	
+	if (missing(prop)){
+		if ("initprop" %in% names(attributes(dat))){
+			prop <- attr(dat,"initprop")
+		} else {
+			prop <- unlist(dat[1,c("s1_prop","s2_prop","s3_prop")])
+		}
+	}
+	n    <- nrow(dat) + 1
+	U    <- data_2_U(dat[,getcols(3,self=TRUE)])
+	N    <- U2N(U, interval = 2)
+	
+	cind <- rep(seq(50, 112, by = 2), 3) == age
+	
 	# subtract half interval from self-state
+    # we do so in the block subdiagonal. Now
+	# all self-arrows are deducted. This subtotals
+	# code is R-esoteric. Basically take colsums for 
+	# 3 block rows.
+	e50 <- do.call("rbind",
+			lapply(
+					split(as.data.frame(N[, cind]), rep(1:3, each = 32)),
+					colSums)
+	)
+	# this is the Dudel deduction.
 	if (deduct){
-	  e50[to] <- e50[to] - 1 
+	  e50 <- e50 - diag(3) # because 1 is half an interval width
     }
-	sum(e50 * prop)
+	# each to state weighted because person years can originate
+	# in any from state.
+	e50all <- e50 %*% prop
+	
+	# this if we only want a destination state subset.
+	if (!missing(to)){
+		if (to <= 3){
+			return(e50all[to])
+		}
+	}
+	# otherwise return LE
+	sum(e50all)
+	
 }
 
-e50dcs <- function(dat,age=50,prop=attr(dat,"initprop"),deduct=FALSE,to = 4){
-	
-	#prop <- attr(dat,"initprop")
-	U    <- data_2_U(dat)
-	N    <- U2N(U, interval = 2)
-	cind <- rep(seq(50,112,by=2), 3) == age
-	N2   <- N[, cind]
-	
-	# get proportions in each 
-	rgroups <- rep(1:3,each=32)
-	Ntab <- matrix(0,3,3)
-	for (i in 1:3){
-		Ntab[,i] <- tapply(N2[,i], rgroups, sum)
-	}
-	
-	# this should adjust for age groups already...
-	Ntab  <- Ntab #* 2
-	
-	# this is the dcs adjustment...
-	if (deduct){
-		Nprop <- t(t(Ntab) / colSums(Ntab))
-		Ntab  <- Ntab - Nprop
-	}
-	ei <- rowSums(Ntab %*% diag(prop))
-    if (is.integer(to) & to <= 3){
-		out <- ei[to]
-	} else {
-		out <- sum(ei)
-	}
-	out
-}
 
-dec_fun <- function(datoutvec,to=1,age=52, prop, deduct = TRUE, dcs = FALSE){
+dec_fun <- function(datoutvec, to, age = 50, prop, deduct = TRUE){
 	datout  <- v2m(datoutvec, 3)
 	datself <- out2self(datout)
-	if (!dcs){
-		dc <- e50(datself, to = to, age = age, prop = prop)
-	} else {
-		dc <- e50dcs(datself, to = to, age = age, prop = prop, deduct = deduct)
-	}
+	
+	dc <- e50(datself, to = to, age = age, prop = prop, deduct = deduct)
+
 	dc 
 }
 
-# preliminary results to cross-check w DCS
-# AGREEMENT w DCS on 23-01-2018
-#m1995 <- get_data(time = 1995)
-#m2004 <- get_data(time = 2004)
-#m2014 <- get_data(time = 2014)
-#
-#e50dcs(m1995,age=52) - 1
-#e50dcs(m2004,age=52) - 1
-#e50dcs(m2014,age=52) - 1
-#
-#e50dcs(m1995,age=52, deduct = TRUE) 
-#e50dcs(m2004,age=52, deduct = TRUE) 
-#e50dcs(m2014,age=52, deduct = TRUE) 
-#
-#e50(m1995,age=52, to = 1) + e50(m1995,age=52, to = 2) + e50(m1995,age=52, to = 3)
-#e50(m2004,age=52) + e50(m2004,age=52, to = 2) + e50(m2004,age=52, to = 3)
-#e50(m2014,age=52) + e50(m2014,age=52, to = 2) + e50(m2014,age=52, to = 3)
-
-# state-specific expectancies will not agree until we decide where to deduct from.
-
-
-HLEDecomp <- function(datout1, datout2, N = 10, prop = attr(datout1,"initprop"), to=1, deduct = TRUE, dcs = FALSE){
+HLEDecomp <- function(datout1, datout2, N = 10, prop, to, deduct = TRUE, dcs = FALSE){
 	
-	datout1vec <- c(as.matrix(datout1))
-	datout2vec <- c(as.matrix(datout2))
+	# TR: we don't decompose wrt differences in initial proportions
+	# so we can siphen prop from the first data object, using for both.
+	if (missing(prop)){
+		if ("initprop" %in% names(attributes(datout1))){
+			prop <- attr(datout1,"initprop")
+		} else {
+			prop <- unlist(datout1[1,c("s1_prop","s2_prop","s3_prop")])
+		}
+	}
+	# just to be sure we're rodered correctly.
+	datout1            <- datout1[order(datout1$age), ]
+	datout2            <- datout1[order(datout2$age), ]
+	
+	age                <- datout1$age
+	rownames(datout1)  <- age
+	rownames(datout2)  <- age
+	cols               <- getcols(ntrans = 3, self = FALSE)
+	datout1            <- datout1[, cols]
+	datout2            <- datout2[, cols]
+	
+	datout1vec         <- c(as.matrix(datout1))
+	datout2vec         <- c(as.matrix(datout2))
 	# arrow decomposition:
 	dec      <- DecompHoriuchi::DecompContinuousOrig(
 			        func = dec_fun, 
@@ -234,7 +234,16 @@ dec_fun_logit <- function(datoutvec,to=1,age=52, prop){
 	datself   <- out2self(datout)
 	e50(datself, to = to, age = age, prop = prop) * 2 # age interval
 }
-HLEDecomp_logit <- function(datout1, datout2, N = 10, prop = attr(datout1,"initprop"), to=1){
+HLEDecomp_logit <- function(datout1, datout2, N = 10, prop, to=1){
+	# TR: we don't decompose wrt differences in initial proportions
+	# so we can siphen prop from the first data object, using for both.
+	if (missing(prop)){
+		if ("initprop" %in% names(attributes(dat))){
+			prop <- attr(datout1,"initprop")
+		} else {
+			prop <- unlist(datout1[1,c("s1_prop","s2_prop","s3_prop")])
+		}
+	}
 	
 	datout1vec <- c(as.matrix(datout1))
 	datout2vec <- c(as.matrix(datout2))
@@ -261,26 +270,36 @@ HLEDecomp_logit <- function(datout1, datout2, N = 10, prop = attr(datout1,"initp
 }
 
 # not implemented for logit transform. Could add in logical switch tho
+#dec<- do_decomp(years = c(2006,2014),version = "02",sex = "f", edu = "all_edu")
+# This function needs to be reworked to work w new HLEDECOMP output. Simplify ugly inner functions too.
 do_decomp <- function(
 		years = c(1995,2004,2014), 
 		ntrans = 3, # number of states
-		version,    # character 2 digits
-		sex,       
-		educlevel, 
+		version = "02",    # character 2 digits
+		sex = "f",       
+		edu = "all_edu", 
+		sto, # i.e. do we decompose wrt HLE, ADL1, ADL2p, or LE. leave missing for LE
 		N = 20, 
-		deduct = TRUE, 
-		dcs = FALSE, 
-		path = "N:\\dcs\\proj\\hledecomp\\results"){
+		deduct = TRUE){
 	
 	# get transition rate sets
-	DatL   <- lapply(years, 
-			get_data, 
-			self = FALSE, 
-			version = version, 
-			sex = sex, 
-			educlevel = educlevel,
-			path = path)
+#	DatL   <- lapply(years, 
+#			get_data, 
+#			self = FALSE, 
+#			version = version, 
+#			sex = sex, 
+#			educlevel = educlevel,
+#			path = path)
+	# name change due to scoping, since subset passes in an expression.
+	# it'd get confused otherwise and not down-select as needed
+	.edu <- edu
+	.sex <- sex
+	TR          <- get_TR(version = version, 
+			              subset = sex == .sex & edu == .edu & time %in% years)
 	
+				
+				  
+	DatL        <- split(TR, TR$time)
 	names(DatL) <- years
 		
 	# make from-to pairlist
@@ -290,24 +309,29 @@ do_decomp <- function(
 	ft          <- mapply(c, from, to, SIMPLIFY = FALSE)
 	
 	# looping. Can be swapped w parallel decomp
-	dec <- do.call("rbind",lapply(ft, function(fromto, DatL, ntrans, N, deduct, dcs){
+	dec <- do.call("rbind",lapply(ft, function(fromto, DatL, ntrans = 3, N, deduct, sto){
 						A1   <- DatL[[fromto[1]]]
 						A2   <- DatL[[fromto[2]]]
 						yrs  <- as.integer(names(DatL)[fromto])
-						decx <- do.call("rbind", lapply(1:ntrans, function(sto, A1, A2, N = N, deduct, dcs){
-											dec.i <- melt(HLEDecomp(A1, A2, N = N, to = sto, deduct = deduct, dcs = dcs)[-1, ],
+						decx <- do.call("rbind", lapply(1:ntrans, function(sto, A1, A2, N = N, deduct, sto){
+											dec.i <- melt(HLEDecomp(
+															A1, 
+															A2, 
+															N = N, 
+															to = sto, 
+															deduct = deduct)[-1, ],
 													varnames = c("age","transition"))
-											dec.i$state <- sto
+											dec.i$state <- to
 											dec.i
-										}, A1 = A1, A2 = A2, N = N, deduct = deduct, dcs = dcs))
+										}, A1 = A1, A2 = A2, N = N, deduct = deduct, sto = sto))
 						decx$year1 <- yrs[1]
 						decx$year2 <- yrs[2]
 						decx
-					}, DatL = DatL, ntrans = ntrans, N = N, deduct = deduct, dcs = dcs))  
+					}, DatL = DatL, ntrans = ntrans, N = N, deduct = deduct, sto = sto))  
 	
 	# add metadata
 	dec$sex       <- sex
-	dec$educlevel <- educlevel
+	dec$edu       <- edu
 	dec$version   <- version
 	dec$N         <- N
 	
@@ -477,3 +501,58 @@ barmargins <- function(dec.i,ylim){
 	text(1:length(lab.extra) - .5,ylim[1] - .25,names(lab.extra),srt=90,xpd=TRUE,cex = .8,pos=2)
 	barplot(t(trn[,,3]),add=TRUE,space=0)
 }
+
+# deprecated as of 10-May 2018. Functions were revamped to account for different
+# input data format, and allow for more general deduction procedure.
+
+#e50dcs <- function(dat,age=50,prop,deduct=FALSE,to = 4){
+#	
+#	if (missing(prop)){
+#		if ("initprop" %in% names(attributes(dat))){
+#			prop <- attr(dat,"initprop")
+#		} else {
+#			prop <- unlist(dat[1,c("s1_prop","s2_prop","s3_prop")])
+#		}
+#	}
+#	
+#	#prop <- attr(dat,"initprop")
+#	U    <- data_2_U(dat)
+#	N    <- U2N(U, interval = 2)
+#	cind <- rep(seq(50,112,by=2), 3) == age
+#	N2   <- N[, cind]
+#	
+#	# get proportions in each 
+#	rgroups <- rep(1:3,each=32)
+#	Ntab <- matrix(0,3,3)
+#	for (i in 1:3){
+#		Ntab[,i] <- tapply(N2[,i], rgroups, sum)
+#	}
+#	
+#	# this should adjust for age groups already...
+#	Ntab  <- Ntab #* 2
+#	
+#	# this is the dcs adjustment...
+#	if (deduct){
+#		Nprop <- t(t(Ntab) / colSums(Ntab))
+#		Ntab  <- Ntab - Nprop
+#	}
+#	ei <- rowSums(Ntab %*% diag(prop))
+#    if (is.integer(to) & to <= 3){
+#		out <- ei[to]
+#	} else {
+#		out <- sum(ei)
+#	}
+#	out
+#}
+
+# deprecated
+#dec_fun <- function(datoutvec,to=1,age=52, prop, deduct = TRUE, dcs = FALSE){
+#	datout  <- v2m(datoutvec, 3)
+#	datself <- out2self(datout)
+#	if (!dcs){
+#		dc <- e50(datself, to = to, age = age, prop = prop)
+#	} else {
+#		dc <- e50dcs(datself, to = to, age = age, prop = prop, deduct = deduct)
+#	}
+#	dc 
+#}
