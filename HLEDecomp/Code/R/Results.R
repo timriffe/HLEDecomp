@@ -24,55 +24,82 @@ source("Code/R/Preamble.R")
 # dcs = FALSE and deduct = TRUE (deduct half interval width)
 
 #version    <- "01" # change this to run a single version and comment out decomp loop.
+years      <- c(1996,2014)
+version    <- "02"
+path       <- file.path("Data", "Results", paste0("mspec", version), "dec")
+if (!dir.exists(path)){
+	dir.create(path, recursive = TRUE)
+}
+
+# really this could be done with data.table too.
+# do_decomp would need to remove the data read part,
+# which sort of makes sense too.
+# DT[,do_decomp(.SD),by=list(sex,edu)]
+for (sex in sexes){
+	for (edu in edus){
+		# years can be done more systematically as well, for all possible combos,
+		# but really we need to simplify rather than complicate things.
+		dec.i      <- do_decomp(years = c(1996,2014), # whole period
+				ntrans = 3, 
+				version = version, 
+				sex = sex, 
+				edu = edu, 
+				N = N, 
+				deduct = TRUE)
+		# now save year pair in name
+		file.name  <- paste0(paste("dec", version, sex, edu, N, years[1],years[2],sep = "_"), ".Rdata")
+		save(dec.i, file = file.path(path, file.name))
+	}
+}
 
 
 # version loop (temporary)-- long run times. Later once everything straightened out
 # verify deduction procedures and each mspec def w DCS
 
 # eliminate this loop once things are stable
-for (version in versions){ # 1-3 now
-# temporary until years straightened out:
-	if (version == "01"){
-		years  <-  c(1995,2004,2014)
-		dcs    <- TRUE
-		deduct <- FALSE
-	} 
-	if (version %in% c("02","03")){
-		years  <- c(1996,2006,2014) # these may become single years for splines
-		dcs    <- FALSE             # in future mspecs
-		deduct <- TRUE
-	}
-	# path to place decomp results
-	path       <- file.path("Data","Results",paste0("mspec",version),"dec")
-	if (!dir.exists(path)){
-		dir.create(path,recursive=TRUE)
-	}
-    # sex loop	
-	for (sex in sexes){
-		Sex        <- ifelse(sex == "m", "1.men", ifelse(sex == "f", "2.wmn", "0.all"))
-		
-		# education loop
-		for (edu in edus){
-			educlevel  <- edusl[edu]
-			dec.i      <- do_decomp(years = years, 
-					ntrans = 3, 
-					version = version, 
-					sex = Sex, 
-					educlevel = educlevel, 
-					N = N, 
-					dcs = dcs,
-					deduct = FALSE,
-					path = read.path)
-			file.name  <- paste0(paste("dec", version, sex, edu, N, sep = "_"), ".Rdata")
-			
-			save(dec.i, file = file.path(path, file.name))
-		} # close education loop
-	} # close sex loop
-} # close version loop
+#for (version in versions){ # 1-3 now
+## temporary until years straightened out:
+#	if (version == "01"){
+#		years  <-  c(1995,2004,2014)
+#		dcs    <- TRUE
+#		deduct <- FALSE
+#	} 
+#	if (version %in% c("02","03")){
+#		years  <- c(1996,2006,2014) # these may become single years for splines
+#		dcs    <- FALSE             # in future mspecs
+#		deduct <- TRUE
+#	}
+#	# path to place decomp results
+#	path       <- file.path("Data","Results",paste0("mspec",version),"dec")
+#	if (!dir.exists(path)){
+#		dir.create(path,recursive=TRUE)
+#	}
+#    # sex loop	
+#	for (sex in sexes){
+#		Sex        <- ifelse(sex == "m", "1.men", ifelse(sex == "f", "2.wmn", "0.all"))
+#		
+#		# education loop
+#		for (edu in edus){
+#			educlevel  <- edusl[edu]
+#			dec.i      <- do_decomp(years = years, 
+#					ntrans = 3, 
+#					version = version, 
+#					sex = Sex, 
+#					educlevel = educlevel, 
+#					N = N, 
+#					dcs = dcs,
+#					deduct = FALSE,
+#					path = read.path)
+#			file.name  <- paste0(paste("dec", version, sex, edu, N, sep = "_"), ".Rdata")
+#			
+#			save(dec.i, file = file.path(path, file.name))
+#		} # close education loop
+#	} # close sex loop
+#} # close version loop
 
 # version <- "02"; sex <- "m"; edu <- "all_edu"
 # generate results for prevalence and LE (faster than the above loop)
-for (version in c("01","02","03")){
+for (version in c("02","03")){
 # temporary until years straightened out:
 	if (version == "01"){
 		years  <-  c(1995,2004,2014)
