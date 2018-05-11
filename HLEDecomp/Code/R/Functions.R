@@ -273,8 +273,54 @@ do_decomp <- function(
 	dec
 }
 
+do_decomp_dt <- function( DAT,
+		ntrans = 3,        # number of states
+		to, # i.e. do we decompose wrt HLE, ADL1, ADL2p, or LE. leave missing for LE
+		N = 20, 
+		deduct = TRUE){
+	DAT   <- as.data.frame(DAT)
+	years <- sort(unique(DAT$time))
+	years <- years[1:2]
+	
+	# if it's missing then it means LE, so make LE beyond the state count.
+	if (missing(to)){
+		to <- 5
+	}
+	edu  <- unique(DAT$edu)
+	sex  <- unique(DAT$sex)
+	# it'd get confused otherwise and not down-select as needed
+	.edu <- edu
+	.sex <- sex
+
+	DatL        <- split(DAT, DAT$time)
+	names(DatL) <- years
+	
+	dec <- HLEDecomp(DatL[[1]],
+			DatL[[2]],
+			N = N, 
+			to = to, 
+			deduct = deduct)#[-1, ]
+	
+	dec  <- melt(dec, varnames = c("age", "transition"))
+	
+	dec$statedec  <- to
+	dec$year1     <- years[1]
+	dec$year2     <- years[2]
+	
+	# add metadata
+	dec$sex       <- sex
+	dec$edu       <- edu
+	dec$version   <- version
+	dec$N         <- N
+	dec$state1    <- substr(dec$transition,2,2)
+	dec$state2    <- substr(dec$transition,3,3)
+	
+	data.table(dec)
+}
+
+
 #dec <- do_decomp(to=1)
-head(dec)
+#head(dec)
 #LE1 <- e50(DatL[[1]],to=1)
 #LE2 <- e50(DatL[[2]],to=1)
 #LE2 - LE1

@@ -34,24 +34,29 @@ if (!dir.exists(path)){
 # really this could be done with data.table too.
 # do_decomp would need to remove the data read part,
 # which sort of makes sense too.
-# DT[,do_decomp(.SD),by=list(sex,edu)]
-for (sex in sexes){
-	for (edu in edus){
-		# years can be done more systematically as well, for all possible combos,
-		# but really we need to simplify rather than complicate things.
-		dec.i      <- do_decomp(years = c(1996,2014), # whole period
-				ntrans = 3, 
-				version = version, 
-				sex = sex, 
-				edu = edu, 
-				N = N, 
-				deduct = TRUE)
-		# now save year pair in name
-		file.name  <- paste0(paste("dec", version, sex, edu, N, years[1],years[2],sep = "_"), ".Rdata")
-		save(dec.i, file = file.path(path, file.name))
-	}
-}
+TR          <- get_TR(version = version, 
+		              subset = time %in% years)
+TR          <- data.table(TR)
+DEC         <- TR[,do_decomp_dt(.SD),by=list(sex,edu)]
 
+#
+#for (sex in sexes){
+#	for (edu in edus){
+#		# years can be done more systematically as well, for all possible combos,
+#		# but really we need to simplify rather than complicate things.
+#		dec.i      <- do_decomp(years = c(1996,2014), # whole period
+#				ntrans = 3, 
+#				version = version, 
+#				sex = sex, 
+#				edu = edu, 
+#				N = N, 
+#				deduct = TRUE)
+#		# now save year pair in name
+#		file.name  <- paste0(paste("dec", version, sex, edu, N, years[1],years[2],sep = "_"), ".Rdata")
+#		save(dec.i, file = file.path(path, file.name))
+#	}
+#}
+#
 
 # version loop (temporary)-- long run times. Later once everything straightened out
 # verify deduction procedures and each mspec def w DCS
