@@ -9,7 +9,7 @@ if (me == "tim"){
 	setwd("/home/tim/git/HLEDecomp/HLEDecomp")
 }
 source("R/Functions.R")
-
+source("Code/R/Preamble.R")
 
 
 cols     <- get_colors()

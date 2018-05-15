@@ -31,41 +31,51 @@ getcols <- function(ntrans = 3,self=TRUE){
 	}
 }
 
-get_data <- function(path = "N:\\dcs\\proj\\hledecomp\\results\\margins", 
+get_rates_all <- function(path = "N:\\dcs\\proj\\hledecomp\\results", 
+		version = "01",
+		self = TRUE){
+	final_path    <- file.path(path, "margins",paste0("mspec", version), paste0("transp_m", version, ".dta"))
+	Dat           <- foreign::read.dta(final_path)
+	# read.dta() has no stringsAsFactors argument...
+	facs          <- sapply(Dat,class) == "factor"
+	Dat[, facs]   <- lapply(Dat[,facs], fac2ch)
+	Dat
+}
+
+get_data <- function(path = "N:\\dcs\\proj\\hledecomp\\results", 
 		version = "01",
 		sex = "1.men",
-		time = 2004,
+		year = 2004,
 		educlevel = "0.All edu",
         self = TRUE){
 	# this works on Tim's MPIDR PC, Windows machine...
-	final_path    <- file.path(path, paste0("mspec", version), paste0("transp_m", version, ".dta"))
-	Dat           <- foreign::read.dta(final_path)
-	sprop         <- foreign::read.dta("N:\\dcs\\proj\\hledecomp\\results\\initprop\\initprop2.dta")
-	# read.dta() has no stringsAsFactors argument...
-	facs          <- sapply(Dat,class) == "factor"
-    Dat[, facs]   <- lapply(Dat[,facs], fac2ch)
+	Dat           <- get_rates_all(path = path, version = version, self = self)
+
+	sprop         <- foreign::read.dta(file.path(path,"initprop","initprop2.dta"))
+	
 	facs          <- sapply(sprop,class) == "factor"
 	sprop[, facs] <- lapply(sprop[,facs], fac2ch)
 	
 	# subset() or with() don't like it when your args have same names as cols, so
 	# here's a verbose subset
-	ind            <- Dat$sex == sex & Dat$educlevel == educlevel & Dat$time == time 
-    DatS           <- Dat[ind, ]
-	
+	ind            <- Dat$sex == sex & Dat$educlevel == educlevel & Dat$time == year 
+    Dat            <- Dat[ind, ]
+	Dat            <- Dat[order(Dat$age), ]
+
 	ind            <- sprop$sex == sex & sprop$educlevel == educlevel & sprop$propweighted == 1 & grepl(pattern = "age 50-54", sprop[,1])
 	sprop          <- sprop[ind, c("s1_prop","s2_prop","s3_prop")]
 	
-	DatS           <- DatS[order(DatS$age), ]
-	age            <- DatS$age
+	Dat            <- Dat[order(Dat$age), ]
+	age            <- Dat$age
 	cols           <- getcols(ntrans = 3, self = self)
-	DatS           <- DatS[, cols]
-	rownames(DatS) <- age
+	Dat            <- Dat[, cols]
+	rownames(Dat)  <- age
 	
 	sprop          <-  unlist(sprop)
 	sprop          <- sprop / sum(sprop)
-	attr(DatS, "initprop") <- sprop
-	attr(DatS, "time")     <- time
-	DatS
+	attr(Dat, "initprop") <- sprop
+	attr(Dat, "time")     <- year
+	Dat
 }
 
 out2self <- function(datout){
@@ -98,9 +108,9 @@ data_2_U <- function(dat){
 }
 
 
-U2N <- function(U){
+U2N <- function(U, interval = 2){
 	I   <- diag(nrow(U))
-	Nsx <- solve(I - U)
+	Nsx <- solve(I - U) * interval
 	Nsx 
 }
 
@@ -108,7 +118,7 @@ U2N <- function(U){
 e50 <- function(dat, to = 1, age = 50, prop = attr(dat, "initprop"), deduct = TRUE){
 	#prop <- attr(dat,"initprop")
 	U    <- data_2_U(dat)
-	N    <- U2N(U)
+	N    <- U2N(U, interval = 2)
 	rind <- 1:32 + (to-1) * 32
 	cind <- rep(seq(50,112,by=2), 3) == age
 	
@@ -124,7 +134,7 @@ e50dcs <- function(dat,age=50,prop=attr(dat,"initprop"),deduct=FALSE,to = 4){
 	
 	#prop <- attr(dat,"initprop")
 	U    <- data_2_U(dat)
-	N    <- U2N(U)
+	N    <- U2N(U, interval = 2)
 	cind <- rep(seq(50,112,by=2), 3) == age
 	N2   <- N[, cind]
 	
@@ -134,7 +144,9 @@ e50dcs <- function(dat,age=50,prop=attr(dat,"initprop"),deduct=FALSE,to = 4){
 	for (i in 1:3){
 		Ntab[,i] <- tapply(N2[,i], rgroups, sum)
 	}
-	Ntab  <- Ntab * 2
+	
+	# this should adjust for age groups already...
+	Ntab  <- Ntab #* 2
 	
 	# this is the dcs adjustment...
 	if (deduct){
@@ -158,7 +170,7 @@ dec_fun <- function(datoutvec,to=1,age=52, prop, deduct = TRUE, dcs = FALSE){
 	} else {
 		dc <- e50dcs(datself, to = to, age = age, prop = prop, deduct = deduct)
 	}
-	dc
+	dc 
 }
 
 # preliminary results to cross-check w DCS
@@ -213,7 +225,7 @@ dec_fun_logit <- function(datoutvec,to=1,age=52, prop){
 	datout    <- v2m(datoutvec, 3)
 	
 	datself   <- out2self(datout)
-	e50(datself, to = to, age = age, prop = prop)
+	e50(datself, to = to, age = age, prop = prop) * 2 # age interval
 }
 HLEDecomp_logit <- function(datout1, datout2, N = 10, prop = attr(datout1,"initprop"), to=1){
 	
@@ -242,21 +254,30 @@ HLEDecomp_logit <- function(datout1, datout2, N = 10, prop = attr(datout1,"initp
 }
 
 # not implemented for logit transform. Could add in logical switch tho
-do_decomp <- function(times = c(1995,2004,2014), ntrans = 3, version, sex, educlevel, N = 20, deduct = TRUE, dcs = FALSE){
+do_decomp <- function(
+		years = c(1995,2004,2014), 
+		ntrans = 3, # number of states
+		version,    # character 2 digits
+		sex,       
+		educlevel, 
+		N = 20, 
+		deduct = TRUE, 
+		dcs = FALSE, 
+		path = "N:\\dcs\\proj\\hledecomp\\results"){
 	
 	# get transition rate sets
-	DatL   <- lapply(times, 
+	DatL   <- lapply(years, 
 			get_data, 
 			self = FALSE, 
 			version = version, 
-			sex = Sex, 
+			sex = sex, 
 			educlevel = educlevel,
-			path = "N:\\dcs\\proj\\hledecomp\\results\\margins")
+			path = path)
 	
-	names(DatL) <- times
+	names(DatL) <- years
 		
 	# make from-to pairlist
-	comparisons <- outer(times, times, '<')
+	comparisons <- outer(years, years, '<')
 	from        <- row(comparisons)[comparisons]
 	to          <- col(comparisons)[comparisons]
 	ft          <- mapply(c, from, to, SIMPLIFY = FALSE)
@@ -287,26 +308,27 @@ do_decomp <- function(times = c(1995,2004,2014), ntrans = 3, version, sex, educl
 }
 
 
-do_le <- function(times = c(1995,2004,2014),age = 52, version, sex, educlevel, deduct = TRUE, dcs = FALSE){
-	DatL   <- lapply(times, 
+do_le <- function(years = c(1995,2004,2014),age = 52, version, sex, 
+		educlevel, deduct = TRUE, dcs = FALSE, path = "N:\\dcs\\proj\\hledecomp\\results\\margins"){
+	DatL   <- lapply(years, 
 			get_data, 
 			self = TRUE, 
 			version = version, 
 			sex = Sex, 
 			educlevel = educlevel,
-			path = "N:\\dcs\\proj\\hledecomp\\results\\margins")
+			path = path)
 	
-	names(DatL) <- times
+	names(DatL) <- years
 
 	do.call("rbind",lapply(DatL, function(X,deduct,dcs){
 				prop <- attr(X, "initprop")
 				U    <- data_2_U(X)
-				N    <- U2N(U)
+				N    <- U2N(U, interval = 2)
 				cind <- rep(seq(50,112,by=2), 3) == age
 				
 				rgroups <- rep(1:3, each = 32)
 				Ntab <- apply(N[, cind], 2, function(x, rgroups){
-							tapply(x, rgroups, sum) * 2
+							tapply(x, rgroups, sum) #* 2
 						}, rgroups = rgroups)
 				if (deduct & !dcs){
 					Ntab <- Ntab - diag(3)
@@ -321,28 +343,36 @@ do_le <- function(times = c(1995,2004,2014),age = 52, version, sex, educlevel, d
 	
 }
 
-do_prev <- function(times = c(1995,2004,2014),age = 52, version, sex, educlevel, deduct = TRUE, dcs = FALSE){
-	DatL   <- lapply(times, 
+do_prev <- function(
+		years = c(1995,2004,2014),
+		age = 52, 
+		version, 
+		sex, 
+		educlevel, 
+		deduct = TRUE, 
+		dcs = FALSE, 
+		path = "N:\\dcs\\proj\\hledecomp\\results\\margins"){
+	DatL   <- lapply(years, 
 			get_data, 
 			self = TRUE, 
 			version = version, 
-			sex = Sex, 
+			sex = sex, 
 			educlevel = educlevel,
-			path = "N:\\dcs\\proj\\hledecomp\\results\\margins")
+			path = path)
 	
-	names(DatL) <- times
+	names(DatL) <- years
 	
 	prev <- do.call("rbind",lapply(DatL, function(X,deduct,dcs){
-						prop <- attr(X, "initprop")
-						time <- attr(X, "time")
-						U    <- data_2_U(X)
-						N    <- U2N(U)
-						cind <- rep(seq(50,112,by=2), 3) == age
-						DF <- as.data.frame(matrix(rowSums(N[,cind] %*% diag(prop)),ncol=3,dimnames=list(NULL,1:3)))
-						DF$time <- time
+						prop    <- attr(X, "initprop")
+						year    <- attr(X, "time")
+						U       <- data_2_U(X)
+						N       <- U2N(U, interval = 2)
+						cind    <- rep(seq(50,112,by=2), 3) == age
+						DF      <- as.data.frame(matrix(rowSums(N[,cind] %*% diag(prop)),ncol=3,dimnames=list(NULL,1:3)))
+						DF$time <- year
 						DF
 					}, deduct = deduct, dcs = dcs))
-	
+	prev
 }
 
 
@@ -392,7 +422,7 @@ plot_prev <- function(prev, type = "bar", scale = FALSE, time = 1995, to = 1,col
 	
 }
 
-barmargins <- function(dec.i){
+barmargins <- function(dec.i,ylim){
 	
 	sets          <- paste(dec.i$year1,"vs",dec.i$year2)
 	code          <- unique(sets)
@@ -416,18 +446,27 @@ barmargins <- function(dec.i){
 	trp[trp < 0] <- NA
 	trn[trn > 0] <- NA
 	
-	ylim <- c(min(apply(trn,3,rowSums,na.rm=TRUE)), max(apply(trp,3,rowSums,na.rm=TRUE)))
+	lab.extra <- rownames(trmargins)
+	names(lab.extra) <- c("onset 1","onset 2", "mort 1", "rec 1", "onset 2", "mort 2", "rec 2", "rec part", "mort 3")
+	
+	if (missing(ylim)){
+		ylim <- range(pretty(c(apply(trn,3,rowSums,na.rm=TRUE), apply(trp,3,rowSums,na.rm=TRUE))))	
+	}
+	
 	barplot(t(trp[,,1]), ylim = ylim, legend.text=c("HLE","ADL1","ADL2p"), main = paste(code[1],sex,edu),
-			ylab = "contribution to difference in e50")
-	barplot(t(trn[,,1]),add=TRUE)
+			ylab = "contribution to difference in e50", space = 0)
+	text(1:length(lab.extra) - .5,ylim[1] - .25,names(lab.extra),srt=90,xpd=TRUE,cex = .8,pos=2)
+	barplot(t(trn[,,1]),add=TRUE,space=0)
 	
 # 1995 vs 2014
 	barplot(t(trp[,,2]), ylim = ylim, legend.text=c("HLE","ADL1","ADL2p"), main = paste(code[2],sex,edu),
-			ylab = "contribution to difference in e50")
-	barplot(t(trn[,,2]),add=TRUE)
+			ylab = "contribution to difference in e50",space=0)
+	text(1:length(lab.extra) - .5,ylim[1] - .25,names(lab.extra),srt=90,xpd=TRUE,cex = .8,pos=2)
+	barplot(t(trn[,,2]),add=TRUE,space=0)
 	
 # 2004 vs 2014
 	barplot(t(trp[,,3]), ylim = range(trmargins), legend.text=c("HLE","ADL1","ADL2p"), main = paste(code[3],sex,edu),
-			ylab = "contribution to difference in e50")
-	barplot(t(trn[,,3]),add=TRUE)
+			ylab = "contribution to difference in e50",space=0)
+	text(1:length(lab.extra) - .5,ylim[1] - .25,names(lab.extra),srt=90,xpd=TRUE,cex = .8,pos=2)
+	barplot(t(trn[,,3]),add=TRUE,space=0)
 }

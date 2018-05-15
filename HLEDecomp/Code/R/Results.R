@@ -1,42 +1,130 @@
-# TODO consider parallelsugar on Windows if this is too slow
-
+# Consider parallelsugar on Windows if this is too slow
+# the decomps are slow but not too slow. Work fine on old laptop anyway.
+# This script does decomposition, stationary prevalence, and state expectancies.
+# -----------------------------------------
 
 me <- system("whoami",intern=TRUE)
 if (me == "mpidr_d\\riffe"){
 	setwd("U:/git/HLEDecomp/HLEDecomp")
+	read.path <- "N:\\dcs\\proj\\hledecomp\\results"
 }
 if (me == "tim"){
 	setwd("/home/tim/git/HLEDecomp/HLEDecomp")
+	read.path <- "/home/tim/Data/hledecomp/results"
 }
-source("Code/R/Functions.R")
+
 library(reshape2)
-# set this to rerun
-version    <- "01"
-N <- 20
-# let sex recode
-
 source("Code/R/Functions.R")
+source("Code/R/Preamble.R")
+
+# set this to rerun
+
+# The mpsec version, as defined by DCS. The early mspecs have rates on different scales
+# that require some arguments to be toggled. In general, later mspecs require the arguments
+# dcs = FALSE and deduct = TRUE (deduct half interval width)
+
+#version    <- "01" # change this to run a single version and comment out decomp loop.
 
 
-#sex        <- "m" # "m","f",or"b"
-sexes        <- c("m", "f", "b")
-edus         <- c("all_edu", "primary" , "secondary", "terciary"  )
-edusl        <- c("0.All edu", "1.Less HS" , "4.HS/GED/Sm coll ex AA", "5.AA/BS/+"  )
-names(edusl) <- edus
+# version loop (temporary)-- long run times. Later once everything straightened out
+# verify deduction procedures and each mspec def w DCS
 
-for (sex in sexes){
-	Sex        <- ifelse(sex == "m", "1.men", ifelse(sex == "f", "2.wmn", "0.all"))
-	for (edu in edus){
-		educlevel  <- edusl[edu]
-		dec.i      <- do_decomp(times = c(1995,2004,2014), ntrans = 3, version = version, sex = Sex, educlevel = educlevel, N = N, deduct = FALSE)
-		file.name  <- paste0(paste("dec", version, sex, edu, N, sep = "_"), ".Rdata")
-		path       <- file.path("Data","Results",paste0("mspec",version))
-		if (!dir.exists(path)){
-			dir.create(path)
+# eliminate this loop once things are stable
+for (version in versions){ # 1-3 now
+# temporary until years straightened out:
+	if (version == "01"){
+		years  <-  c(1995,2004,2014)
+		dcs    <- TRUE
+		deduct <- FALSE
+	} 
+	if (version %in% c("02","03")){
+		years  <- c(1996,2006,2014) # these may become single years for splines
+		dcs    <- FALSE             # in future mspecs
+		deduct <- TRUE
+	}
+	# path to place decomp results
+	path       <- file.path("Data","Results",paste0("mspec",version),"dec")
+	if (!dir.exists(path)){
+		dir.create(path,recursive=TRUE)
+	}
+    # sex loop	
+	for (sex in sexes){
+		Sex        <- ifelse(sex == "m", "1.men", ifelse(sex == "f", "2.wmn", "0.all"))
+		
+		# education loop
+		for (edu in edus){
+			educlevel  <- edusl[edu]
+			dec.i      <- do_decomp(years = years, 
+					ntrans = 3, 
+					version = version, 
+					sex = Sex, 
+					educlevel = educlevel, 
+					N = N, 
+					dcs = dcs,
+					deduct = FALSE,
+					path = read.path)
+			file.name  <- paste0(paste("dec", version, sex, edu, N, sep = "_"), ".Rdata")
+			
+			save(dec.i, file = file.path(path, file.name))
+		} # close education loop
+	} # close sex loop
+} # close version loop
+
+# version <- "02"; sex <- "m"; edu <- "all_edu"
+# generate results for prevalence and LE (faster than the above loop)
+for (version in c("01","02","03")){
+# temporary until years straightened out:
+	if (version == "01"){
+		years  <-  c(1995,2004,2014)
+		dcs    <- TRUE
+		deduct <- FALSE
+	} 
+	if (version %in% c("02","03")){
+		years  <- c(1996,2006,2014)
+		dcs    <- FALSE
+		deduct <- TRUE
+	}
+	# path for prev and le
+	path       <- file.path("Data","Results",paste0("mspec",version),"prev")
+	if (!dir.exists(path)){
+		dir.create(path,recursive=TRUE)
+	}
+	pathe       <- file.path("Data","Results",paste0("mspec",version),"le")
+	if (!dir.exists(pathe)){
+		dir.create(pathe,recursive=TRUE)
+	}
+	# sex loop	
+	for (sex in sexes){
+		Sex        <- ifelse(sex == "m", "1.men", ifelse(sex == "f", "2.wmn", "0.all"))
+		
+		for (edu in edus){
+			educlevel  <- edusl[edu]
+# get prevalence saved for all combos:
+			prev.i <- do_prev(years = years,
+					age = 52, 
+					version = version, 
+					sex = Sex, 
+					educlevel = educlevel, 
+					deduct = deduct, 
+					dcs = dcs, 
+					path = read.path)
+			file.name  <- paste0(paste("prev", version, sex, edu, N, sep = "_"), ".Rdata")
+			
+			save(prev.i, file = file.path(path, file.name))
+			
+			prevL <- split(prev.i[,1:3], list(prev.i$time))
+			ex.i  <- do.call("rbind",lapply(prevL, colSums))
+			#ex.i$time <- years
+			file.name.i  <- paste0(paste("le", version, sex, edu, N, sep = "_"), ".Rdata")
+			save(ex.i, file = file.path(pathe, file.name.i))
 		}
-		save(dec.i, file = file.path(path, file.name))
 	}
 }
+# no visualizations done here. Scripts for diagnostic visualizations of results are
+# found in R scripts whose file names start with Diagnostics_*.R
+
+# ---------------------------------------------
+# old code, deprecated
 #
 #
 #dec.i <- do_decomp(times = c(1995,2004,2014), ntrans = 3, version = version, sex = Sex, educlevel = educlevel, N = N, deduct = TRUE, dcs = FALSE)
