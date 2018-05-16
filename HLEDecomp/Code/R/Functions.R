@@ -31,73 +31,80 @@ getcols <- function(ntrans = 3,self=TRUE){
 	}
 }
 
-get_rates_all <- function(path = "N:\\dcs\\proj\\hledecomp\\results", 
-		version = "01",
-		self = TRUE){
-	final_path    <- file.path(path, "margins",paste0("mspec", version), paste0("transp_m", version, ".dta"))
-	Dat           <- foreign::read.dta(final_path)
-	# read.dta() has no stringsAsFactors argument...
-	facs          <- sapply(Dat,class) == "factor"
-	Dat[, facs]   <- lapply(Dat[,facs], fac2ch)
-	Dat
-}
+#get_rates_all <- function(path = "N:\\dcs\\proj\\hledecomp\\results", 
+#		version = "01",
+#		self = TRUE){
+#	final_path    <- file.path(path, "margins",paste0("mspec", version), paste0("transp_m", version, ".dta"))
+#	Dat           <- foreign::read.dta(final_path)
+#	# read.dta() has no stringsAsFactors argument...
+#	facs          <- sapply(Dat,class) == "factor"
+#	Dat[, facs]   <- lapply(Dat[,facs], fac2ch)
+#	Dat
+#}
 
 
 
-get_data <- function(path = "N:\\dcs\\proj\\hledecomp\\results", 
-		version = "01",
-		sex = "1.men",
-		year = 2004,
-		educlevel = "0.All edu",
-        self = TRUE){
-	# this works on Tim's MPIDR PC, Windows machine...
-	Dat           <- get_rates_all(path = path, version = version, self = self)
-
-	sprop         <- foreign::read.dta(file.path(path,"initprop","initprop2.dta"))
-	
-	facs          <- sapply(sprop,class) == "factor"
-	sprop[, facs] <- lapply(sprop[,facs], fac2ch)
-	
-	# subset() or with() don't like it when your args have same names as cols, so
-	# here's a verbose subset
-	ind            <- Dat$sex == sex & Dat$educlevel == educlevel & Dat$time == year 
-    Dat            <- Dat[ind, ]
-	Dat            <- Dat[order(Dat$age), ]
-
-	ind            <- sprop$sex == sex & sprop$educlevel == educlevel & sprop$propweighted == 1 & grepl(pattern = "age 50-54", sprop[,1])
-	sprop          <- sprop[ind, c("s1_prop","s2_prop","s3_prop")]
-	
-	Dat            <- Dat[order(Dat$age), ]
-	age            <- Dat$age
-	cols           <- getcols(ntrans = 3, self = self)
-	Dat            <- Dat[, cols]
-	rownames(Dat)  <- age
-	
-	sprop          <- unlist(sprop)
-	sprop          <- sprop / sum(sprop)
-	attr(Dat, "initprop") <- sprop
-	attr(Dat, "time")     <- year
-	Dat
-}
+#get_data <- function(path = "N:\\dcs\\proj\\hledecomp\\results", 
+#		version = "01",
+#		sex = "1.men",
+#		year = 2004,
+#		educlevel = "0.All edu",
+#        self = TRUE){
+#	# this works on Tim's MPIDR PC, Windows machine...
+#	Dat           <- get_rates_all(path = path, version = version, self = self)
+#
+#	sprop         <- foreign::read.dta(file.path(path,"initprop","initprop2.dta"))
+#	
+#	facs          <- sapply(sprop,class) == "factor"
+#	sprop[, facs] <- lapply(sprop[,facs], fac2ch)
+#	
+#	# subset() or with() don't like it when your args have same names as cols, so
+#	# here's a verbose subset
+#	ind            <- Dat$sex == sex & Dat$educlevel == educlevel & Dat$time == year 
+#    Dat            <- Dat[ind, ]
+#	Dat            <- Dat[order(Dat$age), ]
+#
+#	ind            <- sprop$sex == sex & sprop$educlevel == educlevel & sprop$propweighted == 1 & grepl(pattern = "age 50-54", sprop[,1])
+#	sprop          <- sprop[ind, c("s1_prop","s2_prop","s3_prop")]
+#	
+#	Dat            <- Dat[order(Dat$age), ]
+#	age            <- Dat$age
+#	cols           <- getcols(ntrans = 3, self = self)
+#	Dat            <- Dat[, cols]
+#	rownames(Dat)  <- age
+#	
+#	sprop          <- unlist(sprop)
+#	sprop          <- sprop / sum(sprop)
+#	attr(Dat, "initprop") <- sprop
+#	attr(Dat, "time")     <- year
+#	Dat
+#}
 
 get_TR <- function(version = "02",home = getwd(),...){
 	path <- file.path(home,"Data","Transitions","DCS",paste0("TR_v",version,".Rdata"))
-	Dat  <- local(get(load(path)))
+	Dat           <- local(get(load(path)))
+	Dat$educlevel <- NULL
+	Dat$spec      <- NULL
+	Dat$specnum   <- NULL
+	Dat$specgr    <- NULL
+	Dat$specnum2  <- NULL
+	Dat$specgr    <- NULL
 	subset(Dat, ...)
 }
-#get_TR(version = "02", subset = sex == "f")
+#DAT <- get_TR(version = "02", subset = sex == "f")
+#DAT <- get_TR("02",subset = sex == "f" & edu == "all_edu" & time == 1996)
 
-out2self <- function(datout){
-	colsself      <- getcols(ntrans = 3, self = TRUE)
-		
-	colsout       <- getcols(ntrans = 3, self = FALSE)
-	dim(colsout)  <- c(3, 3)
-    colnames(datout) <- colsout
-	self1          <- matrix(1 - rowSums(datout[,colsout[,1]]), ncol = 1, dimnames = list(NULL, "m11"))
-	self2          <- matrix(1 - rowSums(datout[,colsout[,2]]), ncol = 1, dimnames = list(NULL, "m22"))
-	self3          <- matrix(1 - rowSums(datout[,colsout[,3]]), ncol = 1, dimnames = list(NULL, "m33"))
+out2self <- function(datout, ntrans = 3){
+	trans.self      <- getcols(ntrans = ntrans, self = TRUE)
+	trans.out       <- getcols(ntrans = ntrans, self = FALSE)
+	out.order       <- as.data.frame(matrix(trans.out, ntrans, byrow = TRUE))
 	
-	out <- cbind(datout, self1, self2, self3)[, colsself]
+	selfs           <- apply(out.order, 1, function(x, datout){
+				            1 - rowSums(datout[, x])
+			          }, datout = datout)
+	colnames(selfs) <- paste0("m", 1:ntrans, 1:ntrans)
+	
+	out             <- cbind(datout, selfs)[, trans.self]
 	out
 }
 
@@ -106,13 +113,21 @@ v2m <- function(vec, ntrans = 3){
 	dim(vec) <- c(N / (ntrans^2), ntrans^2)
 	vec
 }
-
-data_2_U <- function(dat){
-	UL <- lapply(as.data.frame(dat),pi2u)
-	U <- cbind(
-					do.call("rbind",UL[c("m11","m12","m13")]),
-					do.call("rbind",UL[c("m21","m22","m23")]),
-					do.call("rbind",UL[c("m31","m32","m33")]))
+#datself <- get_TR("02",subset = sex == "f" & edu == "all_edu" & time == 1996)
+# just transition rates, excluding to death, single sex, edu, year
+data_2_U <- function(datself, ntrans = 3){
+	# get the block order
+	trans.self <- getcols(ntrans = ntrans, self = TRUE)
+	this.order <- as.data.frame(matrix(trans.self, ntrans, byrow = TRUE))
+	
+	# take advantage of data.frame columns as list elements
+	UL         <- lapply(as.data.frame(datself[,trans.self]), pi2u)
+	
+	U          <- do.call("rbind", 
+			              lapply(this.order, function(x, UL){
+				             do.call("cbind", UL[x])
+			              }, UL = UL)
+                          )
 	U
 }
 
@@ -127,21 +142,17 @@ U2N <- function(U, interval = 2){
 #dat <- A1
 
 # for a single year-sex-edu
-e50 <- function(dat, to, age = 50, prop, deduct = TRUE){
-	
-	
+e50 <- function(DAT, to, age = 50, prop, ntrans = 3, deduct = TRUE){
 	if (missing(prop)){
-		if ("initprop" %in% names(attributes(dat))){
-			prop <- attr(dat,"initprop")
-		} else {
-			prop <- unlist(dat[1,c("s1_prop","s2_prop","s3_prop")])
-		}
+		pnames <- paste0("s", 1:ntrans, "_prop")
+        prop <- unlist(DAT[1, pnames])
 	}
-	n    <- nrow(dat) + 1
-	U    <- data_2_U(dat[,getcols(3,self=TRUE)])
+	n    <- nrow(DAT) + 1
+	selfcols <- getcols(ntrans, self = TRUE)
+	U    <- data_2_U(DAT[, selfcols], ntrans = ntrans)
 	N    <- U2N(U, interval = 2)
 	
-	cind <- rep(seq(50, 112, by = 2), 3) == age
+	cind <- rep(seq(50, 112, by = 2), ntrans) == age
 	
 	# subtract half interval from self-state
     # we do so in the block subdiagonal. Now
@@ -150,7 +161,7 @@ e50 <- function(dat, to, age = 50, prop, deduct = TRUE){
 	# 3 block rows.
 	e.50 <- do.call("rbind",
 			lapply(
-					split(as.data.frame(N[, cind]), rep(1:3, each = 32)),
+					split(as.data.frame(N[, cind]), rep(1:ntrans, each = 32)),
 					colSums)
 	)
 	# this is the Dudel deduction.
@@ -169,26 +180,22 @@ e50 <- function(dat, to, age = 50, prop, deduct = TRUE){
 	}
 	# otherwise return LE
 	sum(e50all)
-	
 }
 
 #DAT <- get_TR(version = "02",subset = edu == "all_edu" & sex == "f" & time == 1996)
 # this one is just for generating e0 descriptive results
 # for a single year-sex-edu
-e50_dt <- function(DAT, age = 50, prop, deduct = TRUE){
+e50_dt <- function(DAT, age = 50, ntrans = 3, prop, deduct = TRUE){
 	DAT <- as.data.frame(DAT)
-	edu  <- unique(DAT$edu)
-	sex  <- unique(DAT$sex)
-	year <- unique(DAT$time)
 	if (missing(prop)){
-		prop <- unlist(DAT[1,c("s1_prop","s2_prop","s3_prop")])
-		
+		pnames <- paste0("s",1:ntrans,"_prop")
+		prop   <- unlist(DAT[1, pnames])
 	}
 
-	U    <- data_2_U(DAT[,getcols(3,self=TRUE)])
+	U    <- data_2_U(DAT[, getcols(ntrans, self=TRUE)], ntrans = ntrans)
 	N    <- U2N(U, interval = 2)
 	
-	cind <- rep(seq(50, 112, by = 2), 3) == age
+	cind <- rep(seq(50, 112, by = 2), ntrans) == age
 	
 	# subtract half interval from self-state
 	# we do so in the block subdiagonal. Now
@@ -197,47 +204,41 @@ e50_dt <- function(DAT, age = 50, prop, deduct = TRUE){
 	# 3 block rows.
 	e.50 <- do.call("rbind",
 			lapply(
-					split(as.data.frame(N[, cind]), rep(1:3, each = 32)),
+					split(as.data.frame(N[, cind]), rep(1:ntrans, each = 32)),
 					colSums)
 	)
 	# this is the Dudel deduction.
 	if (deduct){
-		e.50 <- e.50 - diag(3) # because 1 is half an interval width
+		e.50 <- e.50 - diag(ntrans) # because 1 is half an interval width
 	}
 	# each to state weighted because person years can originate
 	# in any from state.
 	e50all     <- e.50 %*% prop
 	
     out        <- as.data.frame(t(e50all))
-	out$sex    <- sex
-	out$edu    <- edu
-	out$time   <- year
 	out
 }
 
 
-dec_fun <- function(datoutvec, to, age = 50, prop, deduct = TRUE){
+dec_fun <- function(datoutvec, to, age = 50, prop, ntrans = 3, deduct = TRUE){
 	# requires input as vector, first reshape to matrix or df
-	datout  <- v2m(datoutvec, 3)
+	datout  <- v2m(datoutvec, ntrans = ntrans)
 	# remove death rates and replace with self-arrows, needed to make
 	# transition matrices
-	datself <- out2self(datout)
+	datself <- out2self(datout, ntrans = ntrans)
 	# then compute e50 using the correct transition rates
-	dc <- e50(datself, to = to, age = age, prop = prop, deduct = deduct)
+	dc      <- e50(datself, to = to, age = age, prop = prop, ntrans = ntrans, deduct = deduct)
 
 	dc 
 }
 
-HLEDecomp <- function(datout1, datout2, N = 10, prop, to, deduct = TRUE){
+HLEDecomp <- function(datout1, datout2, N = 10, ntrans = 3, prop, to, deduct = TRUE){
 	
 	# TR: we don't decompose wrt differences in initial proportions
 	# so we can siphen prop from the first data object, using for both.
 	if (missing(prop)){
-		if ("initprop" %in% names(attributes(datout1))){
-			prop <- attr(datout1,"initprop")
-		} else {
-			prop <- unlist(datout1[1,c("s1_prop","s2_prop","s3_prop")])
-		}
+		pnames <- paste0("s",1:ntrans,"_prop")
+		prop   <- unlist(datout1[1, pnames])
 	}
 	# just to be sure we're rodered correctly.
 	datout1            <- datout1[order(datout1$age), ]
@@ -246,7 +247,7 @@ HLEDecomp <- function(datout1, datout2, N = 10, prop, to, deduct = TRUE){
 	age                <- datout1$age
 	rownames(datout1)  <- age
 	rownames(datout2)  <- age
-	cols               <- getcols(ntrans = 3, self = FALSE)
+	cols               <- getcols(ntrans = ntrans, self = FALSE)
 	datout1            <- datout1[, cols]
 	datout2            <- datout2[, cols]
 	
@@ -259,6 +260,7 @@ HLEDecomp <- function(datout1, datout2, N = 10, prop, to, deduct = TRUE){
 			        rates2 = datout2vec, 
 			        N = N, 
 			        prop = prop,
+					ntrans = ntrans,
 					to = to,
 					deduct = deduct)
 	dim(dec)      <- dim(datout1)
@@ -406,113 +408,113 @@ do_decomp_dt <- function( DAT,
 
 # this runs on a chunk (sex,year,edu)
 #DAT <- get_TR(version = "02",subset = edu == "all_edu" & sex == "f" & time == 1996)
-get_prev_dt <- function(DAT, to, prop, deduct = TRUE,ntrans=3){
+get_prev_dt <- function(DAT, to, prop, deduct = TRUE, ntrans = 3){
 	DAT <- as.data.frame(DAT)
 	if (missing(prop)){
-		prop <- unlist(DAT[1,c("s1_prop","s2_prop","s3_prop")])
+		pnames <- paste0("s", 1:ntrans, "_prop")
+		prop   <- unlist(datout1[1, pnames])
 	}
-	edu       <- unique(DAT$edu)
-	sex       <- unique(DAT$sex)
-	year      <- unique(DAT$time)
-	cols      <- getcols(ntrans,self=TRUE)
+	age       <- DAT$age
+	cols      <- getcols(ntrans, self = TRUE)
 	
 	DAT       <- DAT[, cols]
-	U         <- data_2_U(DAT)
+	U         <- data_2_U(DAT, ntrans = ntrans)
 	N         <- U2N(U, interval = 2)
-	cind      <- rep(seq(50,112,by=2), 3) == 50
+	cind      <- rep(seq(50,112,by=2), ntrans) == 50
 	prev      <- N[,cind] %*% prop
 	
-	dim(prev) <- c(32,3)
+	dim(prev) <- c(32,ntrans)
 	prev      <- prev / 2
-	colnames(prev) <- 1:3
+	colnames(prev) <- paste0("pi",1:ntrans)
+	# verify with DCS re age groups. Why exclude age 50?
+	prev      <- prev[-nrow(prev), ]
 	
 	DF        <- as.data.frame(prev)
-	DF$time   <- year
-	DF$sex    <- sex
-	DF$edu    <- edu
+    DF$age    <- age
+	
 	DF
 }
 
-do_prev <- function(
-		years = c(1995,2004,2014),
-		age = 52, 
-		version, 
-		sex, 
-		educlevel, 
-		deduct = TRUE, 
-		dcs = FALSE, 
-		path = "N:\\dcs\\proj\\hledecomp\\results\\margins"){
-	DatL   <- lapply(years, 
-			get_data, 
-			self = TRUE, 
-			version = version, 
-			sex = sex, 
-			educlevel = educlevel,
-			path = path)
-	
-	names(DatL) <- years
-	
-	prev <- do.call("rbind",lapply(DatL, function(X,deduct,dcs){
-						prop    <- attr(X, "initprop")
-						year    <- attr(X, "time")
-						U       <- data_2_U(X)
-						N       <- U2N(U, interval = 2)
-						cind    <- rep(seq(50,112,by=2), 3) == age
-						DF      <- as.data.frame(matrix(rowSums(N[,cind] %*% diag(prop)),ncol=3,dimnames=list(NULL,1:3)))
-						DF$time <- year
-						DF
-					}, deduct = deduct, dcs = dcs))
-	prev
-}
+#do_prev <- function(
+#		years = c(1995,2004,2014),
+#		age = 52, 
+#		version, 
+#		sex, 
+#		educlevel, 
+#		deduct = TRUE, 
+#		dcs = FALSE, 
+#		path = "N:\\dcs\\proj\\hledecomp\\results\\margins"){
+#	DatL   <- lapply(years, 
+#			get_data, 
+#			self = TRUE, 
+#			version = version, 
+#			sex = sex, 
+#			educlevel = educlevel,
+#			path = path)
+#	
+#	names(DatL) <- years
+#	
+#	prev <- do.call("rbind",lapply(DatL, function(X,deduct,dcs){
+#						prop    <- attr(X, "initprop")
+#						year    <- attr(X, "time")
+#						U       <- data_2_U(X)
+#						N       <- U2N(U, interval = 2)
+#						cind    <- rep(seq(50,112,by=2), 3) == age
+#						DF      <- as.data.frame(matrix(rowSums(N[,cind] %*% diag(prop)),ncol=3,dimnames=list(NULL,1:3)))
+#						DF$time <- year
+#						DF
+#					}, deduct = deduct, dcs = dcs))
+#	prev
+#}
+#
 
-
-logit <- function(x){
-	log(x / (1 - x))
-}
-expit <- function(x){
-	exp(x )/ (1 + exp(x))
-}
-dec_fun_logit <- function(datoutvec,to=1,age=52, prop){
-	datoutvec <- expit(datoutvec)
-	datout    <- v2m(datoutvec, 3)
-	
-	datself   <- out2self(datout)
-	e50(datself, to = to, age = age, prop = prop) * 2 # age interval
-}
-HLEDecomp_logit <- function(datout1, datout2, N = 10, prop, to){
-	# TR: we don't decompose wrt differences in initial proportions
-	# so we can siphen prop from the first data object, using for both.
-	if (missing(prop)){
-		if ("initprop" %in% names(attributes(dat))){
-			prop <- attr(datout1,"initprop")
-		} else {
-			prop <- unlist(datout1[1,c("s1_prop","s2_prop","s3_prop")])
-		}
-	}
-	
-	datout1vec <- c(as.matrix(datout1))
-	datout2vec <- c(as.matrix(datout2))
-	
-	# impute 0s (none are structural
-	datout1vec[datout1vec == 0] <- 1e-7
-	datout2vec[datout2vec == 0] <- 1e-7
-	
-	# logit transform
-	datout1vec <- logit(datout1vec)
-	datout2vec <- logit(datout2vec)
-	# arrow decomposition:
-	dec      <- DecompHoriuchi::DecompContinuousOrig(
-			func = dec_fun_logit, 
-			rates1 = datout1vec, 
-			rates2 = datout2vec, 
-			N = N, 
-			prop = prop,
-			to = to)
-	dim(dec)      <- dim(datout1)
-	dimnames(dec) <- dimnames(datout1)
-	# no dim reduction here
-	dec
-}
+#logit <- function(x){
+#	log(x / (1 - x))
+#}
+#expit <- function(x){
+#	exp(x )/ (1 + exp(x))
+#}
+#dec_fun_logit <- function(datoutvec,to=1,age=52, prop){
+#	datoutvec <- expit(datoutvec)
+#	datout    <- v2m(datoutvec, 3)
+#	
+#	datself   <- out2self(datout,)
+#	e50(datself, to = to, age = age, prop = prop) * 2 # age interval
+#}
+#HLEDecomp_logit <- function(datout1, datout2, N = 10, prop, to){
+#	# TR: we don't decompose wrt differences in initial proportions
+#	# so we can siphen prop from the first data object, using for both.
+#	if (missing(prop)){
+#		if ("initprop" %in% names(attributes(dat))){
+#			prop <- attr(datout1,"initprop")
+#		} else {
+#			prop <- unlist(datout1[1,c("s1_prop","s2_prop","s3_prop")])
+#		}
+#	}
+#	
+#	datout1vec <- c(as.matrix(datout1))
+#	datout2vec <- c(as.matrix(datout2))
+#	
+#	# impute 0s (none are structural
+#	datout1vec[datout1vec == 0] <- 1e-7
+#	datout2vec[datout2vec == 0] <- 1e-7
+#	
+#	# logit transform
+#	datout1vec <- logit(datout1vec)
+#	datout2vec <- logit(datout2vec)
+#	# arrow decomposition:
+#	dec      <- DecompHoriuchi::DecompContinuousOrig(
+#			func = dec_fun_logit, 
+#			rates1 = datout1vec, 
+#			rates2 = datout2vec, 
+#			N = N, 
+#			prop = prop,
+#			to = to)
+#	dim(dec)      <- dim(datout1)
+#	dimnames(dec) <- dimnames(datout1)
+#	# no dim reduction here
+#	dec
+#}
 
 
 # functions for figures. geometric color blending
