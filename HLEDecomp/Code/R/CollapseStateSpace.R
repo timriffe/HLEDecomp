@@ -14,6 +14,11 @@ if (me == "tim"){
 	read.path <- "/home/tim/Data/hledecomp/results"
 }
 
+library(reshape2)
+library(data.table)
+source("Code/R/Functions.R")
+source("Code/R/Preamble.R")
+
 # 2 state model
 # m11 <- m11
 # m14 <- m14 # keep 4 as dead
@@ -24,12 +29,9 @@ if (me == "tim"){
 
 version <- "02"
 
-readTR <- function(version){
-	path <- file.path("Data", "Transitions", "DCS", paste0("TR_v", version, ".Rdata"))
-	TR.i <- local(get(load(path)))
-	TR.i
-}
+
 TR.i <- readTR("02")
+local(get(load("")))
 
 library(data.table)
 TR.i    <- data.table(TR.i)
@@ -37,24 +39,7 @@ TR.i    <- data.table(TR.i)
 # now conundrum, need a good way to attach the initprop info. When in chunks can save as metadata,
 # but how to attach metadata to a .SD chunk?
 
-do_prev_chunk <- function(X,
-		age = 52, 
-		deduct = TRUE, 
-		dcs = FALSE, 
-		path = "N:\\dcs\\proj\\hledecomp\\results\\margins"){
-			
-			prop    <- attr(X, "initprop")
-			year    <- attr(X, "time")
-			
-			U       <- data_2_U(X)
-			N       <- U2N(U, interval = 2)
-			cind    <- rep(seq(50,112,by=2), 3) == age
-			DF      <- as.data.frame(matrix(rowSums(N[,cind] %*% diag(prop)),ncol=3,dimnames=list(NULL,1:3)))
-			DF$time <- year
-			DF
-
-}
-
+?saveRDS
 
 
 

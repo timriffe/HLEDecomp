@@ -41,7 +41,7 @@ TR_96_06          <- get_TR(version = version,
 TR_96_06          <- data.table(TR_96_06)
 DEC_96_06         <- TR_96_06[,do_decomp_dt(.SD),by=list(sex,edu)]
 
-save(DEC_96_06,file=file.path("Data","Results",mspec,"dec",paste0("dec_",years[1],"_",years[2],".Rdata")))
+saveRDS(DEC_96_06,file=file.path("Data","Results",mspec,"dec",paste0("dec_",years[1],"_",years[2],".rds")))
 
 # 1996 vs 2014
 years             <- c(1996, 2014)
@@ -49,7 +49,7 @@ TR_96_14          <- get_TR(version = version,
 		subset = time %in% years)
 TR_96_14          <- data.table(TR_96_14)
 DEC_96_14         <- TR_96_14[,do_decomp_dt(.SD),by=list(sex,edu)]
-save(DEC_96_14,file=file.path("Data","Results",mspec,"dec",paste0("dec_",years[1],"_",years[2],".Rdata")))
+saveRDS(DEC_96_14,file=file.path("Data","Results",mspec,"dec",paste0("dec_",years[1],"_",years[2],".rds")))
 
 # 2006 vs 2014
 years             <- c(2006, 2014)
@@ -57,18 +57,18 @@ TR_06_14          <- get_TR(version = version,
 		subset = time %in% years)
 TR_06_14          <- data.table(TR_06_14)
 DEC_06_14         <- TR_06_14[,do_decomp_dt(.SD),by=list(sex,edu)]
-save(DEC_06_14,file=file.path("Data","Results",mspec,"dec",paste0("dec_",years[1],"_",years[2],".Rdata")))
+saveRDS(DEC_06_14,file=file.path("Data","Results",mspec,"dec",paste0("dec_",years[1],"_",years[2],".rds")))
 
 # this is prevalence for all combos of year,sex,edu
 # super quick
 TR          <- get_TR(version = version)
 TR          <- data.table(TR)
 PREV        <- TR[,get_prev_dt(.SD),by=list(sex,edu,time)]
-save(PREV,file=file.path("Data","Results",mspec,"prev","prev.Rdata"))
+saveRDS(PREV,file=file.path("Data","Results",mspec,"prev","prev.rds"))
 
 # life expectancy at age 50 in each state.
 LE         <- TR[,e50_dt(.SD),by=list(sex,edu,time)]
-save(LE,file=file.path("Data","Results",mspec,"le","le.Rdata"))
+saveRDS(LE,file=file.path("Data","Results",mspec,"le","le.rds"))
 
 
 #
