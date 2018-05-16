@@ -26,7 +26,7 @@ source("Code/R/Preamble.R")
 
 #version    <- "01" # change this to run a single version and comment out decomp loop.
 
-version    <- "02"
+version    <- "03"
 mspec      <- paste0("mspec", version)
 path       <- file.path("Data", "Results", mspec, "dec")
 if (!dir.exists(path)){
