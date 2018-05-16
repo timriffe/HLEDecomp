@@ -26,7 +26,7 @@ source("Code/R/Preamble.R")
 
 #version    <- "01" # change this to run a single version and comment out decomp loop.
 
-version    <- "03"
+version    <- "02"
 mspec      <- paste0("mspec", version)
 path       <- file.path("Data", "Results", mspec, "dec")
 if (!dir.exists(path)){
@@ -69,7 +69,13 @@ saveRDS(LE, file = file.path("Data", "Results", mspec, "le", "le.rds"))
 
 # now collapse states 2 and 3 into state 2 only.
 TR2               <- collapseTR(TR = TR, PREV = PREV)
-saveRDS(TR2, file = file.path("Data","Transitions","Collapsed",paste0("TR_v",version,"_collapsed.rds")))
+saveRDS(TR2, file = file.path("Data", "Transitions", "Collapsed", paste0("TR_v", version, "_collapsed.rds")))
+
+LE2               <- TR2[ , e50_dt(.SD, ntrans = 2), by = list(sex, edu, time)] 
+saveRDS(LE2, file = file.path("Data", "Results", mspec, "le", "le_2.rds"))
+
+PREV2             <- TR2[ , get_prev_dt(.SD, ntrans = 2), by = list(sex, edu, time)]
+saveRDS(PREV2, file = file.path("Data", "Results", mspec, "prev", "prev_2.rds"))
 
 #
 #for (sex in sexes){
