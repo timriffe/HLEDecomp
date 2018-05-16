@@ -145,7 +145,7 @@ U2N <- function(U, interval = 2){
 e50 <- function(DAT, to, age = 50, prop, ntrans = 3, deduct = TRUE){
 	if (missing(prop)){
 		pnames <- paste0("s", 1:ntrans, "_prop")
-        prop <- unlist(DAT[1, pnames])
+        prop   <- unlist(DAT[1, pnames])
 	}
 	n    <- nrow(DAT) + 1
 	selfcols <- getcols(ntrans, self = TRUE)
@@ -412,7 +412,7 @@ get_prev_dt <- function(DAT, to, prop, deduct = TRUE, ntrans = 3){
 	DAT <- as.data.frame(DAT)
 	if (missing(prop)){
 		pnames <- paste0("s", 1:ntrans, "_prop")
-		prop   <- unlist(datout1[1, pnames])
+		prop   <- unlist(DAT[1, pnames])
 	}
 	age       <- DAT$age
 	cols      <- getcols(ntrans, self = TRUE)
@@ -433,6 +433,42 @@ get_prev_dt <- function(DAT, to, prop, deduct = TRUE, ntrans = 3){
     DF$age    <- age
 	
 	DF
+}
+
+
+collapseTR   <- function(TR, PREV, version = "02"){
+	# stationary collapse of states 2 and 3 into state 2
+	
+	if (missing(TR)){
+		TR     <- get_TR(version = version)
+	}
+	TR         <- data.table(TR)
+	if (missing(PREV)){
+		PREV   <- TR[ , get_prev_dt(.SD), by = list(sex, edu, time)]
+	}
+# rates and prev
+	RP         <- merge(TR, PREV)
+# reorder RP
+	RP         <- setorder(RP, time, sex, edu, age)
+# m11 <- m11
+	m11        <- RP$m11
+# m14 <- m14 # keep 4 as dead
+	m14        <- RP$m14
+# m12 <- m12 + m13
+	m12        <- RP$m12 + RP$m13
+# m22 <- (m22 * pi2 + m33 * pi3) / (pi2 + pi3)
+	m21        <- (RP$m21 * RP$pi2 + RP$m31 * RP$pi3) / (RP$pi2 + RP$pi3)
+	m24        <- (RP$m24 * RP$pi2 + RP$m34 * RP$pi3) / (RP$pi2 + RP$pi3)
+	m22        <- 1 - m21 - m24
+	m22i       <- ( (RP$m22 + RP$m23) * RP$pi2 + (RP$m33 + RP$m32) * RP$pi3) / (RP$pi2 + RP$pi3)
+	
+	stopifnot(all(abs(m22 - m22i) < 1e-7)) # sanity check
+	
+	RP         <- data.table(RP)
+	s2_prop    <- RP$s2_prop + RP$s3_prop
+	RP         <- cbind(RP[, c("time", "sex", "edu", "age", "s1_prop")], 
+			s2_prop, m11, m12, m14, m22, m21, m24)
+	RP
 }
 
 #do_prev <- function(

@@ -26,7 +26,7 @@ source("Code/R/Preamble.R")
 
 #version    <- "01" # change this to run a single version and comment out decomp loop.
 
-version    <- "02"
+version    <- "03"
 mspec      <- paste0("mspec", version)
 path       <- file.path("Data", "Results", mspec, "dec")
 if (!dir.exists(path)){
@@ -36,40 +36,40 @@ if (!dir.exists(path)){
 # decompositions (slow)
 # 1996 vs 2006
 years             <- c(1996, 2006)
-TR_96_06          <- get_TR(version = version, 
-		              subset = time %in% years)
+TR_96_06          <- get_TR(version = version, subset = time %in% years)
 TR_96_06          <- data.table(TR_96_06)
-DEC_96_06         <- TR_96_06[,do_decomp_dt(.SD),by=list(sex,edu)]
+DEC_96_06         <- TR_96_06[ , do_decomp_dt(.SD), by = list(sex, edu)]
 
-saveRDS(DEC_96_06,file=file.path("Data","Results",mspec,"dec",paste0("dec_",years[1],"_",years[2],".rds")))
+saveRDS(DEC_96_06, file = file.path("Data", "Results", mspec, "dec", paste0("dec_", years[1],"_", years[2], ".rds")))
 
 # 1996 vs 2014
 years             <- c(1996, 2014)
-TR_96_14          <- get_TR(version = version, 
-		subset = time %in% years)
+TR_96_14          <- get_TR(version = version, subset = time %in% years)
 TR_96_14          <- data.table(TR_96_14)
-DEC_96_14         <- TR_96_14[,do_decomp_dt(.SD),by=list(sex,edu)]
-saveRDS(DEC_96_14,file=file.path("Data","Results",mspec,"dec",paste0("dec_",years[1],"_",years[2],".rds")))
+DEC_96_14         <- TR_96_14[ , do_decomp_dt(.SD), by = list(sex, edu)]
+saveRDS(DEC_96_14, file = file.path("Data", "Results", mspec, "dec", paste0("dec_", years[1], "_", years[2], ".rds")))
 
 # 2006 vs 2014
 years             <- c(2006, 2014)
-TR_06_14          <- get_TR(version = version, 
-		subset = time %in% years)
+TR_06_14          <- get_TR(version = version, subset = time %in% years)
 TR_06_14          <- data.table(TR_06_14)
-DEC_06_14         <- TR_06_14[,do_decomp_dt(.SD),by=list(sex,edu)]
-saveRDS(DEC_06_14,file=file.path("Data","Results",mspec,"dec",paste0("dec_",years[1],"_",years[2],".rds")))
+DEC_06_14         <- TR_06_14[ , do_decomp_dt(.SD), by = list(sex,edu)]
+saveRDS(DEC_06_14, file = file.path("Data", "Results", mspec, "dec", paste0("dec_", years[1], "_", years[2], ".rds")))
 
 # this is prevalence for all combos of year,sex,edu
 # super quick
-TR          <- get_TR(version = version)
-TR          <- data.table(TR)
-PREV        <- TR[,get_prev_dt(.SD),by=list(sex,edu,time)]
-saveRDS(PREV,file=file.path("Data","Results",mspec,"prev","prev.rds"))
+TR                <- get_TR(version = version)
+TR                <- data.table(TR)
+PREV              <- TR[ , get_prev_dt(.SD), by = list(sex, edu, time)]
+saveRDS(PREV, file = file.path("Data", "Results", mspec, "prev", "prev.rds"))
 
 # life expectancy at age 50 in each state.
-LE         <- TR[,e50_dt(.SD),by=list(sex,edu,time)]
-saveRDS(LE,file=file.path("Data","Results",mspec,"le","le.rds"))
+LE                <- TR[ , e50_dt(.SD), by = list(sex, edu, time)]
+saveRDS(LE, file = file.path("Data", "Results", mspec, "le", "le.rds"))
 
+# now collapse states 2 and 3 into state 2 only.
+TR2               <- collapseTR(TR = TR, PREV = PREV)
+saveRDS(TR2, file = file.path("Data","Transitions","Collapsed",paste0("TR_v",version,"_collapsed.rds")))
 
 #
 #for (sex in sexes){
