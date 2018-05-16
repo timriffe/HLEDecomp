@@ -14,6 +14,7 @@ if (me == "tim"){
 }
 
 library(reshape2)
+library(data.table)
 source("Code/R/Functions.R")
 source("Code/R/Preamble.R")
 
@@ -24,20 +25,51 @@ source("Code/R/Preamble.R")
 # dcs = FALSE and deduct = TRUE (deduct half interval width)
 
 #version    <- "01" # change this to run a single version and comment out decomp loop.
-years      <- c(1996,2014)
+
 version    <- "02"
-path       <- file.path("Data", "Results", paste0("mspec", version), "dec")
+mspec      <- paste0("mspec", version)
+path       <- file.path("Data", "Results", mspec, "dec")
 if (!dir.exists(path)){
 	dir.create(path, recursive = TRUE)
 }
 
-# really this could be done with data.table too.
-# do_decomp would need to remove the data read part,
-# which sort of makes sense too.
-TR          <- get_TR(version = version, 
+# decompositions (slow)
+# 1996 vs 2006
+years             <- c(1996, 2006)
+TR_96_06          <- get_TR(version = version, 
 		              subset = time %in% years)
+TR_96_06          <- data.table(TR_96_06)
+DEC_96_06         <- TR_96_06[,do_decomp_dt(.SD),by=list(sex,edu)]
+
+save(DEC_96_06,file=file.path("Data","Results",mspec,"dec",paste0("dec_",years[1],"_",years[2],".Rdata")))
+
+# 1996 vs 2014
+years             <- c(1996, 2014)
+TR_96_14          <- get_TR(version = version, 
+		subset = time %in% years)
+TR_96_14          <- data.table(TR_96_14)
+DEC_96_14         <- TR_96_14[,do_decomp_dt(.SD),by=list(sex,edu)]
+save(DEC_96_14,file=file.path("Data","Results",mspec,"dec",paste0("dec_",years[1],"_",years[2],".Rdata")))
+
+# 2006 vs 2014
+years             <- c(2006, 2014)
+TR_06_14          <- get_TR(version = version, 
+		subset = time %in% years)
+TR_06_14          <- data.table(TR_06_14)
+DEC_06_14         <- TR_06_14[,do_decomp_dt(.SD),by=list(sex,edu)]
+save(DEC_06_14,file=file.path("Data","Results",mspec,"dec",paste0("dec_",years[1],"_",years[2],".Rdata")))
+
+# this is prevalence for all combos of year,sex,edu
+# super quick
+TR          <- get_TR(version = version)
 TR          <- data.table(TR)
-DEC         <- TR[,do_decomp_dt(.SD),by=list(sex,edu)]
+PREV        <- TR[,get_prev_dt(.SD),by=list(sex,edu,time)]
+save(PREV,file=file.path("Data","Results",mspec,"prev","prev.Rdata"))
+
+# life expectancy at age 50 in each state.
+LE         <- TR[,e50_dt(.SD),by=list(sex,edu,time)]
+save(LE,file=file.path("Data","Results",mspec,"le","le.Rdata"))
+
 
 #
 #for (sex in sexes){
@@ -104,54 +136,54 @@ DEC         <- TR[,do_decomp_dt(.SD),by=list(sex,edu)]
 
 # version <- "02"; sex <- "m"; edu <- "all_edu"
 # generate results for prevalence and LE (faster than the above loop)
-for (version in c("02","03")){
+#for (version in c("02","03")){
 # temporary until years straightened out:
-	if (version == "01"){
-		years  <-  c(1995,2004,2014)
-		dcs    <- TRUE
-		deduct <- FALSE
-	} 
-	if (version %in% c("02","03")){
-		years  <- c(1996,2006,2014)
-		dcs    <- FALSE
-		deduct <- TRUE
-	}
-	# path for prev and le
-	path       <- file.path("Data","Results",paste0("mspec",version),"prev")
-	if (!dir.exists(path)){
-		dir.create(path,recursive=TRUE)
-	}
-	pathe       <- file.path("Data","Results",paste0("mspec",version),"le")
-	if (!dir.exists(pathe)){
-		dir.create(pathe,recursive=TRUE)
-	}
-	# sex loop	
-	for (sex in sexes){
-		Sex        <- ifelse(sex == "m", "1.men", ifelse(sex == "f", "2.wmn", "0.all"))
-		
-		for (edu in edus){
-			educlevel  <- edusl[edu]
-# get prevalence saved for all combos:
-			prev.i <- do_prev(years = years,
-					age = 52, 
-					version = version, 
-					sex = Sex, 
-					educlevel = educlevel, 
-					deduct = deduct, 
-					dcs = dcs, 
-					path = read.path)
-			file.name  <- paste0(paste("prev", version, sex, edu, N, sep = "_"), ".Rdata")
-			
-			save(prev.i, file = file.path(path, file.name))
-			
-			prevL <- split(prev.i[,1:3], list(prev.i$time))
-			ex.i  <- do.call("rbind",lapply(prevL, colSums))
-			#ex.i$time <- years
-			file.name.i  <- paste0(paste("le", version, sex, edu, N, sep = "_"), ".Rdata")
-			save(ex.i, file = file.path(pathe, file.name.i))
-		}
-	}
-}
+#	if (version == "01"){
+#		years  <-  c(1995,2004,2014)
+#		dcs    <- TRUE
+#		deduct <- FALSE
+#	} 
+#	if (version %in% c("02","03")){
+#		years  <- c(1996,2006,2014)
+#		dcs    <- FALSE
+#		deduct <- TRUE
+#	}
+#	# path for prev and le
+#	path       <- file.path("Data","Results",paste0("mspec",version),"prev")
+#	if (!dir.exists(path)){
+#		dir.create(path,recursive=TRUE)
+#	}
+#	pathe       <- file.path("Data","Results",paste0("mspec",version),"le")
+#	if (!dir.exists(pathe)){
+#		dir.create(pathe,recursive=TRUE)
+#	}
+#	# sex loop	
+#	for (sex in sexes){
+#		Sex        <- ifelse(sex == "m", "1.men", ifelse(sex == "f", "2.wmn", "0.all"))
+#		
+#		for (edu in edus){
+#			educlevel  <- edusl[edu]
+## get prevalence saved for all combos:
+#			prev.i <- do_prev(years = years,
+#					age = 52, 
+#					version = version, 
+#					sex = Sex, 
+#					educlevel = educlevel, 
+#					deduct = deduct, 
+#					dcs = dcs, 
+#					path = read.path)
+#			file.name  <- paste0(paste("prev", version, sex, edu, N, sep = "_"), ".Rdata")
+#			
+#			save(prev.i, file = file.path(path, file.name))
+#			
+#			prevL <- split(prev.i[,1:3], list(prev.i$time))
+#			ex.i  <- do.call("rbind",lapply(prevL, colSums))
+#			#ex.i$time <- years
+#			file.name.i  <- paste0(paste("le", version, sex, edu, N, sep = "_"), ".Rdata")
+#			save(ex.i, file = file.path(pathe, file.name.i))
+#		}
+#	}
+#}
 # no visualizations done here. Scripts for diagnostic visualizations of results are
 # found in R scripts whose file names start with Diagnostics_*.R
 

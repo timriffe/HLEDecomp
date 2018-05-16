@@ -126,6 +126,7 @@ U2N <- function(U, interval = 2){
 # TR: added deduct switch to test for differences re DCS email
 #dat <- A1
 
+# for a single year-sex-edu
 e50 <- function(dat, to, age = 50, prop, deduct = TRUE){
 	
 	
@@ -169,6 +170,49 @@ e50 <- function(dat, to, age = 50, prop, deduct = TRUE){
 	# otherwise return LE
 	sum(e50all)
 	
+}
+
+#DAT <- get_TR(version = "02",subset = edu == "all_edu" & sex == "f" & time == 1996)
+# this one is just for generating e0 descriptive results
+# for a single year-sex-edu
+e50_dt <- function(DAT, age = 50, prop, deduct = TRUE){
+	DAT <- as.data.frame(DAT)
+	edu  <- unique(DAT$edu)
+	sex  <- unique(DAT$sex)
+	year <- unique(DAT$time)
+	if (missing(prop)){
+		prop <- unlist(DAT[1,c("s1_prop","s2_prop","s3_prop")])
+		
+	}
+
+	U    <- data_2_U(DAT[,getcols(3,self=TRUE)])
+	N    <- U2N(U, interval = 2)
+	
+	cind <- rep(seq(50, 112, by = 2), 3) == age
+	
+	# subtract half interval from self-state
+	# we do so in the block subdiagonal. Now
+	# all self-arrows are deducted. This subtotals
+	# code is R-esoteric. Basically take colsums for 
+	# 3 block rows.
+	e.50 <- do.call("rbind",
+			lapply(
+					split(as.data.frame(N[, cind]), rep(1:3, each = 32)),
+					colSums)
+	)
+	# this is the Dudel deduction.
+	if (deduct){
+		e.50 <- e.50 - diag(3) # because 1 is half an interval width
+	}
+	# each to state weighted because person years can originate
+	# in any from state.
+	e50all     <- e.50 %*% prop
+	
+    out        <- as.data.frame(t(e50all))
+	out$sex    <- sex
+	out$edu    <- edu
+	out$time   <- year
+	out
 }
 
 
@@ -359,6 +403,35 @@ do_decomp_dt <- function( DAT,
 #			}, deduct = deduct, dcs = dcs))
 #	
 #}
+
+# this runs on a chunk (sex,year,edu)
+#DAT <- get_TR(version = "02",subset = edu == "all_edu" & sex == "f" & time == 1996)
+get_prev_dt <- function(DAT, to, prop, deduct = TRUE,ntrans=3){
+	DAT <- as.data.frame(DAT)
+	if (missing(prop)){
+		prop <- unlist(DAT[1,c("s1_prop","s2_prop","s3_prop")])
+	}
+	edu       <- unique(DAT$edu)
+	sex       <- unique(DAT$sex)
+	year      <- unique(DAT$time)
+	cols      <- getcols(ntrans,self=TRUE)
+	
+	DAT       <- DAT[, cols]
+	U         <- data_2_U(DAT)
+	N         <- U2N(U, interval = 2)
+	cind      <- rep(seq(50,112,by=2), 3) == 50
+	prev      <- N[,cind] %*% prop
+	
+	dim(prev) <- c(32,3)
+	prev      <- prev / 2
+	colnames(prev) <- 1:3
+	
+	DF        <- as.data.frame(prev)
+	DF$time   <- year
+	DF$sex    <- sex
+	DF$edu    <- edu
+	DF
+}
 
 do_prev <- function(
 		years = c(1995,2004,2014),
