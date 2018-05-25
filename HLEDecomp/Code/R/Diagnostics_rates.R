@@ -38,52 +38,60 @@ names(edusl) <- edus
 N            <- 20
 # version <- "03";sex <- "m";year <- 2006;edu <- "all_edu"
 
-# ON HOLD need functions to do these things.
-for (version in c("02","03")){
-	figpath      <- file.path("Figures","rates",paste0("mspec",version))
-	if (!dir.exists(figpath)){
-		dir.create(figpath,recursive=TRUE)
-	}
-#	if (version == "01"){
-#		years  <-  c(1995,2004,2014)
-#	} 
-	if (version %in% c("02","03")){
-		years  <- c(1996,2006,2014) # these may become single years for splines
-	}
-	#Rates.v <- get_rates_all(path = read.path, version = version)
-	for (sex in sexes){
-		Sex        <- ifelse(sex == "m", "1.men", ifelse(sex == "f", "2.wmn", "0.all"))
-		for (edu in edus){
-			educlevel  <- edusl[edu]
-#			Prev <- do_prev(years = years,
-#					age = 52, 
+
+
+
+
+
+
+
+
+## ON HOLD need functions to do these things.
+#for (version in c("02","03")){
+#	figpath      <- file.path("Figures","rates",paste0("mspec",version))
+#	if (!dir.exists(figpath)){
+#		dir.create(figpath,recursive=TRUE)
+#	}
+##	if (version == "01"){
+##		years  <-  c(1995,2004,2014)
+##	} 
+#	if (version %in% c("02","03")){
+#		years  <- c(1996,2006,2014) # these may become single years for splines
+#	}
+#	#Rates.v <- get_rates_all(path = read.path, version = version)
+#	for (sex in sexes){
+#		Sex        <- ifelse(sex == "m", "1.men", ifelse(sex == "f", "2.wmn", "0.all"))
+#		for (edu in edus){
+#			educlevel  <- edusl[edu]
+##			Prev <- do_prev(years = years,
+##					age = 52, 
+##					version = version, 
+##					sex = Sex, 
+##					educlevel = educlevel, 
+##					deduct = TRUE, 
+##					dcs = FALSE, 
+##					path = read.path)
+#			DatL   <- lapply(years, 
+#					get_data, 
+#					self = FALSE, 
 #					version = version, 
 #					sex = Sex, 
-#					educlevel = educlevel, 
-#					deduct = TRUE, 
-#					dcs = FALSE, 
+#					educlevel = educlevel,
 #					path = read.path)
-			DatL   <- lapply(years, 
-					get_data, 
-					self = FALSE, 
-					version = version, 
-					sex = Sex, 
-					educlevel = educlevel,
-					path = read.path)
-			
-			age     <- as.integer(rownames(DatL[[1]]))
-			Rates.i <- DatL[[1]]
-			Prev.i  <- as.matrix(Prev[Prev$time == years[1], 1:3])
-			
-			Rw <- rowSums(Prev.i[-1,] * Rates.i[,c("m14","m24","m34")]) / rowSums(Prev.i[-1,]  )
-			plot(Rw,type='l')
-			matplot(age, Rates.i ,type='l', col = gray(seq(0,.7,length=9)),lty=1,lwd=seq(1,3,length=9))
-			
-			getcols(ntrans = 3, self = FALSE)
-			
-		}
-	}
-}
+#			
+#			age     <- as.integer(rownames(DatL[[1]]))
+#			Rates.i <- DatL[[1]]
+#			Prev.i  <- as.matrix(Prev[Prev$time == years[1], 1:3])
+#			
+#			Rw <- rowSums(Prev.i[-1,] * Rates.i[,c("m14","m24","m34")]) / rowSums(Prev.i[-1,]  )
+#			plot(Rw,type='l')
+#			matplot(age, Rates.i ,type='l', col = gray(seq(0,.7,length=9)),lty=1,lwd=seq(1,3,length=9))
+#			
+#			getcols(ntrans = 3, self = FALSE)
+#			
+#		}
+#	}
+#}
 
 
 

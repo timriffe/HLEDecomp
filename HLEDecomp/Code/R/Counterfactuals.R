@@ -12,12 +12,24 @@ if (me == "tim"){
 source("Code/R/Functions.R")
 library(popbio)
 
-m2014      <- get_data(time = 2014)
-U2014      <- data_2_U(m2014)
-U2004      <- data_2_U(get_data(time = 2004))
+# work with mspec 06
+# how much LE could come from everyone being healthy?
+# how much LE could come from everyone being high edu?
+# how much LE could come from everyone reaching age 50 in good health?
 
-U2014[rowSums(U2014) == 0, ] <- .005
-sum(sensitivity(U2014))
 
-LTRE(U2014,U2004,TRUE)
+
+
+
+
+
+
+#m2014      <- get_data(time = 2014)
+#U2014      <- data_2_U(m2014)
+#U2004      <- data_2_U(get_data(time = 2004))
+#
+#U2014[rowSums(U2014) == 0, ] <- .005
+#sum(sensitivity(U2014))
+#
+#LTRE(U2014,U2004,TRUE)
 
