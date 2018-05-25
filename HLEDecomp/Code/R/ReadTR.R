@@ -15,6 +15,8 @@ if (me == "tim"){
 }
 source("Code/R/Functions.R")
 source("Code/R/Preamble.R")
+# this changes: presently code for 3 states!!
+versions      <- sprintf("%02d",c(1:7))
 #
 sprop         <- foreign::read.dta(file.path(read.path,"initprop","initprop2.dta"))
 facs          <- sapply(sprop,class) == "factor"
@@ -47,8 +49,6 @@ for (i in 1:length(versions)){
 	
 	save(TR.i, file = file.path("Data","Transitions","DCS",paste0("TR_v",versions[i],".Rdata")))
 }
-subset(TR.i, sex == "f" & edu == "terciary" & time == 2006)
-
 
 
 
