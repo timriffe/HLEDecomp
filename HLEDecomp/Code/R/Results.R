@@ -26,12 +26,16 @@ source("Code/R/Preamble.R")
 
 #version    <- "01" # change this to run a single version and comment out decomp loop.
 
-version    <- "03"
+version    <- "07"
 mspec      <- paste0("mspec", version)
 path       <- file.path("Data", "Results", mspec, "dec")
 if (!dir.exists(path)){
 	dir.create(path, recursive = TRUE)
+	dir.create(file.path("Data", "Results", mspec, "prev"), recursive = TRUE)
+	dir.create(file.path("Data", "Results", mspec, "le"), recursive = TRUE)
 }
+
+
 
 # decompositions (slow)
 # 1996 vs 2006

@@ -46,7 +46,7 @@ for (i in 1:length(versions)){
 	TR.i$edu <- edus[TR.i$educlevel]
 	TR.i$Sex <- TR.i$sex
 	TR.i$sex <- sexes[TR.i$sex]
-	
+	TR.i     <- TR.i[order(TR.i$time,TR.i$sex,TR.i$edu,TR.i$age),]
 	save(TR.i, file = file.path("Data","Transitions","DCS",paste0("TR_v",versions[i],".Rdata")))
 }
 

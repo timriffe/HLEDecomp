@@ -31,16 +31,16 @@ getcols <- function(ntrans = 3,self=TRUE){
 	}
 }
 
-#get_rates_all <- function(path = "N:\\dcs\\proj\\hledecomp\\results", 
-#		version = "01",
-#		self = TRUE){
-#	final_path    <- file.path(path, "margins",paste0("mspec", version), paste0("transp_m", version, ".dta"))
-#	Dat           <- foreign::read.dta(final_path)
-#	# read.dta() has no stringsAsFactors argument...
-#	facs          <- sapply(Dat,class) == "factor"
-#	Dat[, facs]   <- lapply(Dat[,facs], fac2ch)
-#	Dat
-#}
+get_rates_all <- function(path = "N:\\dcs\\proj\\hledecomp\\results", 
+		version = "01",
+		self = TRUE){
+	final_path    <- file.path(path, "margins",paste0("mspec", version), paste0("transp_m", version, ".dta"))
+	Dat           <- foreign::read.dta(final_path)
+	# read.dta() has no stringsAsFactors argument...
+	facs          <- sapply(Dat,class) == "factor"
+	Dat[, facs]   <- lapply(Dat[,facs], fac2ch)
+	Dat
+}
 
 
 
@@ -98,6 +98,10 @@ out2self <- function(datout, ntrans = 3){
 	trans.self      <- getcols(ntrans = ntrans, self = TRUE)
 	trans.out       <- getcols(ntrans = ntrans, self = FALSE)
 	out.order       <- as.data.frame(matrix(trans.out, ntrans, byrow = TRUE))
+	
+	# TR: 25-05-2018 strong assumption of rate ordering!!
+	# this line could be more robust. pragmatic fix now
+	colnames(datout) <- trans.out 
 	
 	selfs           <- apply(out.order, 1, function(x, datout){
 				            1 - rowSums(datout[, x])
@@ -340,7 +344,8 @@ do_decomp_dt <- function( DAT,
 
 	DatL        <- split(DAT, DAT$time)
 	names(DatL) <- years
-	
+#	datout1 <- DatL[[1]]
+#	datout2 <- DatL[[2]]
 	dec <- HLEDecomp(DatL[[1]],
 			DatL[[2]],
 			N = N, 
