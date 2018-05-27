@@ -26,7 +26,7 @@ source("Code/R/Preamble.R")
 
 #version    <- "01" # change this to run a single version and comment out decomp loop.
 
-version    <- "07"
+version    <- "06"
 mspec      <- paste0("mspec", version)
 path       <- file.path("Data", "Results", mspec, "dec")
 if (!dir.exists(path)){
@@ -80,6 +80,22 @@ saveRDS(LE2, file = file.path("Data", "Results", mspec, "le", "le_2.rds"))
 
 PREV2             <- TR2[ , get_prev_dt(.SD, ntrans = 2), by = list(sex, edu, time)]
 saveRDS(PREV2, file = file.path("Data", "Results", mspec, "prev", "prev_2.rds"))
+
+
+years             <- c(1996, 2006)
+TR2.i             <- TR2[time%in%years]
+DEC2.i            <- TR2.i[ , do_decomp_dt(.SD,ntrans=2), by = list(sex,edu)]
+saveRDS(DEC2.i, file = file.path("Data", "Results", mspec, "dec", paste0("dec2_", years[1],"_", years[2], ".rds")))
+
+years             <- c(2006, 2014)
+TR2.i             <- TR2[time%in%years]
+DEC2.i            <- TR2.i[ , do_decomp_dt(.SD,ntrans=2), by = list(sex,edu)]
+saveRDS(DEC2.i, file = file.path("Data", "Results", mspec, "dec", paste0("dec2_", years[1],"_", years[2], ".rds")))
+
+years             <- c(1996, 2014)
+TR2.i             <- TR2[time%in%years]
+DEC2.i            <- TR2.i[ , do_decomp_dt(.SD,ntrans=2), by = list(sex,edu)]
+saveRDS(DEC2.i, file = file.path("Data", "Results", mspec, "dec", paste0("dec2_", years[1],"_", years[2], ".rds")))
 
 #
 #for (sex in sexes){
