@@ -20,11 +20,11 @@ fac2ch <- function(f){
 }
 
 # determine relevant column names, per DS's standard naming scheme
-getcols <- function(ntrans = 3,self=TRUE){
+getcols <- function(ntrans = 3,self=TRUE,dead="4"){
 	if (self){
 		return(paste0("m",c(t(outer(1:ntrans,1:ntrans,paste0)))))
 	} else {
-		cols <- outer(1:ntrans,1:(ntrans+1),paste0)
+		cols <- outer(1:ntrans,c(1:ntrans,dead),paste0)
 		cols <- sort(cols[lower.tri(cols) | upper.tri(cols)])
 		cols <- paste0("m",cols)
 		return(cols)
@@ -32,8 +32,7 @@ getcols <- function(ntrans = 3,self=TRUE){
 }
 
 get_rates_all <- function(path = "N:\\dcs\\proj\\hledecomp\\results", 
-		version = "01",
-		self = TRUE){
+		version = "01"){
 	final_path    <- file.path(path, "margins",paste0("mspec", version), paste0("transp_m", version, ".dta"))
 	Dat           <- foreign::read.dta(final_path)
 	# read.dta() has no stringsAsFactors argument...
@@ -170,7 +169,7 @@ e50 <- function(DAT, to, age = 50, prop, ntrans = 3, deduct = TRUE){
 	)
 	# this is the Dudel deduction.
 	if (deduct){
-	  e.50 <- e.50 - diag(3) # because 1 is half an interval width
+	  e.50 <- e.50 - diag(ntrans) # because 1 is half an interval width
     }
 	# each to state weighted because person years can originate
 	# in any from state.
@@ -350,7 +349,8 @@ do_decomp_dt <- function( DAT,
 			DatL[[2]],
 			N = N, 
 			to = to, 
-			deduct = deduct)#[-1, ]
+			deduct = deduct,
+			ntrans = ntrans)#[-1, ]
 	
 	dec  <- melt(dec, varnames = c("age", "transition"))
 	
