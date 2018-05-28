@@ -6,14 +6,29 @@ library(reshape2)
 library(data.table)
 source("Code/R/Preamble.R")
 
+#library(HMDHFDplus)
+#mltper <- readHMDweb("USA","mltper_1x1",us,pw)
+#fltper <- readHMDweb("USA","fltper_1x1",us,pw)
+#mltper <- mltper[mltper$Age == 50 & mltper$Year >= 1992, ]
+#fltper <- fltper[fltper$Age == 50 & fltper$Year >= 1992, ]
+#hmdyrs <- unique(mltper$Year)
+hmdyrs <- 1992:2016
+#e50hmdm    <- mltper$ex
+#e50hmdf    <- fltper$ex
+e50hmdm    <- c(26.79, 26.68, 26.89, 27.01, 27.18, 27.39, 27.54, 27.61, 27.81, 
+		28, 28.1, 28.29, 28.67, 28.72, 29.03, 29.25, 29.29, 29.59, 29.71, 
+		29.8, 29.9, 29.89, 29.98, 29.95, 30.07)
+e50hmdf    <- c(31.7, 31.48, 31.59, 31.58, 31.64, 31.73, 31.76, 31.66, 31.73, 
+		31.84, 31.93, 32.05, 32.4, 32.42, 32.7, 32.92, 32.9, 33.24, 33.33, 
+		33.36, 33.47, 33.48, 33.59, 33.53, 33.67)
 # Author: tim
 ###############################################################################
-HMD <- local(get(load("/home/tim/git/DistributionTTD/DistributionTTD/Data/HMDltper.Rdata")))
-
-HMD <- HMD[HMD$CNTRY=="USA",]
-HMD <- HMD[HMD$Year >= 1992 & HMD$Age == 50, ]
+#HMD <- local(get(load("/home/tim/git/DistributionTTD/DistributionTTD/Data/HMDltper.Rdata")))
+#
+#HMD <- HMD[HMD$CNTRY=="USA",]
+#HMD <- HMD[HMD$Year >= 1992 & HMD$Age == 50, ]
 # LE graph
-yrs <- 1992:2010
+#yrs <- 1992:2010
 
 # LE HMD:
 
@@ -37,12 +52,13 @@ ef<-acast(le[le$sex == "f",],time~edu,value.var = "e50")
 
 # need to wait to get HMD update before putting 
 # this in a pdf and in the presentation
+pdf("REVES/Pres/Figures/e50big.pdf")
 par(mai = c(1, 1, 1, 2))
 plot(NULL, type = "n", ylim = c(24, 38), xlim = c(1992, 2015), axes = FALSE, xlab = "", ylab = "")
-lines(yrs, HMD$ex[HMD$Sex == "m"], col = "blue",lwd=2,lty="9292")
-lines(yrs, HMD$ex[HMD$Sex == "f"], col = "red",lwd=2,lty="9292")
-text(1993,HMD$ex[HMD$Sex == "m"][1],"HMD",pos=3,col="blue")
-text(1993,HMD$ex[HMD$Sex == "f"][1],"HMD",pos=3,col="red")
+lines(hmdyrs, e50hmdm, col = "blue",lwd=2,lty="9292")
+lines(hmdyrs, e50hmdf, col = "red",lwd=2,lty="9292")
+text(1993,e50hmdm[1],"HMD",pos=3,col="blue")
+text(1993,e50hmdf[1],"HMD",pos=3,col="red")
 
 #lines(c(1996, 2006, 2014), ef[, 1], lwd = 3, col = "red", lty = "8484")
 #lines(c(1996, 2006, 2014), em[, 1], lwd = 3, col = "blue", lty = "8484")
@@ -66,6 +82,7 @@ rect(2006,em[2,1],2014,em[3,1],col="#0000FF50",border="blue")
 
 text(c(1996,2006)+1,em[2:3,1]-.1,round(diff(em[,1]),2),pos=3,col = "blue",font=2)
 text(c(1996,2006)+1,ef[2:3,1]-.1,round(diff(ef[,1]),2),pos=3,col = "red",font=2)
+dev.off()
 
 # strategy: layer plot into series of plots using foreground/background to tell the story.
 # 1) HMD reference trend, then dim to back- mention gap decreasing
