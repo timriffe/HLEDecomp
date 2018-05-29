@@ -106,28 +106,25 @@ barposneg <- function(mat){
 	list(pos=pos,neg=neg)
 }
 
-years    <- c(1996,2006)
-#path.i   <- file.path("Data", "Results", mspec, "dec", paste0("dec_", years[1],"_", years[2], ".rds"))
-path2.i  <- file.path("Data", "Results", mspec, "dec", paste0("dec2_", "1996_2006.rds"))
-path2.ii <- file.path("Data", "Results", mspec, "dec", paste0("dec2_","2006_2014.rds"))
-dec2     <- rbind(readRDS(path2.i),readRDS(path2.ii))
-dec2     <- data.table(dec2)
-trcols   <- c("orange","red","forestgreen","purple")
-
-dec_barplot_steps <- function(diffs, pnl, decbars, 
+# this now does two time intervals, with total, state breakdown, and a decomp of each
+dec_barplot_steps <- function(diffs, pnl, decbarst, decbars1,decbars2,
 		statecols=c("palegreen2", "yellow1"),
 		trcols = c("orange","red","forestgreen","purple"),...){
 	
-	leip            <- lein   <- matrix(0, nrow = 2, ncol = 7)
-	leip[,c(2,6)]   <- pnl$pos
-	lein[,c(2,6)]   <- pnl$neg
+	leip            <- lein   <- matrix(0, nrow = 2, ncol = 11)
+	leip[,c(2,8)]   <- pnl$pos
+	lein[,c(2,8)]   <- pnl$neg
 	
-	led             <- rep(0, 7)
-	led[c(1,5)]     <- colSums(diffs)
+	led             <- rep(0, 11)
+	led[c(1,7)]     <- colSums(diffs)
 	
-	decmp           <- decmn  <- matrix(0, nrow = 4, ncol = 7)
-	decmp[,c(3,7)]  <- decbars$pos
-	decmn[,c(3,7)]  <- decbars$neg
+	decmp           <- decmn  <- matrix(0, nrow = 4, ncol = 11)
+	decmp[,c(3,9)]  <- decbarst$pos
+	decmn[,c(3,9)]  <- decbarst$neg
+	decmp[,c(4,10)] <- decbars1$pos
+	decmn[,c(4,10)] <- decbars1$neg
+	decmp[,c(5,11)] <- decbars2$pos
+	decmn[,c(5,11)] <- decbars2$neg
 	
 	barplot(led,space=0,width=1,las=1,...)
 	barplot(leip,space=0,width=1,add=TRUE,axes=FALSE,col=statecols)
@@ -136,100 +133,116 @@ dec_barplot_steps <- function(diffs, pnl, decbars,
 	barplot(decmn,space=0,width=1,add=TRUE,axes=FALSE,col=trcols)
 }
 
+# now gets total, state1 and state2
 dec_step_prep <- function(le2,dec2,.sex,.edu){
-	lei      <- le2[edu==.edu & sex == .sex]
+	lei       <- le2[edu==.edu & sex == .sex]
 	# diffs
-	ledi     <- rbind(diff(lei$'1'),diff(lei$'2'))	
-	leipn    <- barposneg(ledi)
-	dec2     <- dec2[,sum(value),by=list(sex,edu,transition,year1)]
-	dec2     <- dec2[edu == .edu & sex ==.sex]
-	decbars  <- barposneg(acast(dec2,transition~year1,value.var="V1"))
-	list(diffs=ledi,pnl=leipn,decbars=decbars)
+	ledi      <- rbind(diff(lei$'1'),diff(lei$'2'))	
+	leipn     <- barposneg(ledi)
+	# remove the full span decomp
+	ind       <- dec2$year1 == 1996 & dec2$year2 == 2014
+	dec2      <- dec2[!ind]
+	dec2      <- dec2[,sum(value),by=list(sex,edu,transition,year1,statedec)]
+	dec2t     <- dec2[edu == .edu & sex ==.sex & statedec == 5]
+	dec21     <- dec2[edu == .edu & sex ==.sex & statedec == 1]
+	dec22     <- dec2[edu == .edu & sex ==.sex & statedec == 2]
+	decbarst  <- barposneg(acast(dec2t,transition~year1,value.var="V1"))
+	decbars1  <- barposneg(acast(dec21,transition~year1,value.var="V1"))
+	decbars2  <- barposneg(acast(dec22,transition~year1,value.var="V1"))
+	list(diffs=ledi,pnl=leipn,decbarst=decbarst,decbars1=decbars1,decbars2=decbars2)
 }
 
 dec_barplot_full <- function(le2,dec2,sex,edu,
 		statecols=c("palegreen2", "yellow1"),
 		trcols = c("orange","red","forestgreen","purple"), ...){
 	req <- dec_step_prep(le2,dec2,.sex = sex,.edu = edu)
-	dec_barplot_steps(req$diffs, req$pnl, req$decbars,statecols=statecols,trcols=trcols,...)
+	dec_barplot_steps(req$diffs, req$pnl, req$decbarst,req$decbars1,req$decbars2, statecols=statecols,trcols=trcols,...)
 }
+
+path2    <- file.path("Data", "Results", mspec, "dec", paste0("dec2_all.rds"))
+dec2     <- readRDS(path2)
+dec2     <- data.table(dec2)
+
 
 # these have already been a bit touched up. Maybe some more edits to do.
 pdf("REVES/Pres/Figures/MalesDecAllEdu.pdf")
-dec_barplot_full(le2,dec2,sex="m",edu="all_edu",ylim=c(-1,2))
+dec_barplot_full(le2,dec2,sex="m",edu="all_edu",ylim=c(-1.5,2))
 title("males",cex=2)
-text(c(1.5,5.5),-1,c("1996-2006","2006-2014"),xpd=TRUE,cex=1.5)
+text(c(2.5,8.5),-1.5,c("1996-2006","2006-2014"),xpd=TRUE,cex=1.5)
 dev.off()
 pdf("REVES/Pres/Figures/FemalesDecAllEdu.pdf")
-dec_barplot_full(le2,dec2,sex="f",edu="all_edu",ylim=c(-1,2))
+dec_barplot_full(le2,dec2,sex="f",edu="all_edu",ylim=c(-1.5,2))
 title("females",cex=2)
-text(c(1.5,5.5),-1,c("1996-2006","2006-2014"),xpd=TRUE,cex=1.5)
+text(c(2.5,8.5),-1.5,c("1996-2006","2006-2014"),xpd=TRUE,cex=1.5)
 dev.off()
 
 pdf("REVES/Pres/Figures/MalesDec.pdf")
-dec_barplot_full(le2,dec2,sex="m",edu="primary",ylim=c(-1,2))
+dec_barplot_full(le2,dec2,sex="m",edu="primary",ylim=c(-1.5,2))
 title("males, low education",cex=2)
-text(c(1.5,5.5),-1,c("1996-2006","2006-2014"),xpd=TRUE,cex=1.5)
-dec_barplot_full(le2,dec2,sex="m",edu="secondary",ylim=c(-1,2))
+text(c(2.5,8.5),-1.5,c("1996-2006","2006-2014"),xpd=TRUE,cex=1.5)
+dec_barplot_full(le2,dec2,sex="m",edu="secondary",ylim=c(-1.5,2))
 title("males, middle education",cex=2)
-text(c(1.5,5.5),-1,c("1996-2006","2006-2014"),xpd=TRUE,cex=1.5)
-dec_barplot_full(le2,dec2,sex="m",edu="terciary",ylim=c(-1,2))
+text(c(2.5,8.5),-1.5,c("1996-2006","2006-2014"),xpd=TRUE,cex=1.5)
+dec_barplot_full(le2,dec2,sex="m",edu="terciary",ylim=c(-1.5,2))
 title("males, high education",cex=2)
-text(c(1.5,5.5),-1,c("1996-2006","2006-2014"),xpd=TRUE,cex=1.5)
+text(c(2.5,8.5),-1.5,c("1996-2006","2006-2014"),xpd=TRUE,cex=1.5)
 dev.off()
 
 pdf("REVES/Pres/Figures/FemalesDec.pdf")
-dec_barplot_full(le2,dec2,sex="f",edu="primary",ylim=c(-1,2))
+dec_barplot_full(le2,dec2,sex="f",edu="primary",ylim=c(-1.5,2))
 title("females, low education",cex=2)
-text(c(1.5,5.5),-1,c("1996-2006","2006-2014"),xpd=TRUE,cex=1.5)
-dec_barplot_full(le2,dec2,sex="f",edu="secondary",ylim=c(-1,2))
+text(c(2.5,8.5),-1.5,c("1996-2006","2006-2014"),xpd=TRUE,cex=1.5)
+dec_barplot_full(le2,dec2,sex="f",edu="secondary",ylim=c(-1.5,2))
 title("females, medium education",cex=2)
-text(c(1.5,5.5),-1,c("1996-2006","2006-2014"),xpd=TRUE,cex=1.5)
-dec_barplot_full(le2,dec2,sex="f",edu="terciary",ylim=c(-1,2))
+text(c(2.5,8.5),-1.5,c("1996-2006","2006-2014"),xpd=TRUE,cex=1.5)
+dec_barplot_full(le2,dec2,sex="f",edu="terciary",ylim=c(-1.5,2))
 title("females, high education",cex=2)
-text(c(1.5,5.5),-1,c("1996-2006","2006-2014"),xpd=TRUE,cex=1.5)
+text(c(2.5,8.5),-1.5,c("1996-2006","2006-2014"),xpd=TRUE,cex=1.5)
 dev.off()
 
+# ----------------------
 
 
-dec_barplot_steps(diffsf, pnf, debarsf,ylim=c(-1,2))
 
-lei            <- matrix(0, nrow = 2, ncol = 7)
-lei[,c(2,6)]   <- pnm$pos
-led            <- rep(0, 7)
-led[c(1,5)]    <- colSums(diffsm)
-decmp          <- decmn  <- matrix(0, nrow = 4, ncol = 7)
-decmp[,c(3,7)] <- decbars$pos[,,"m"]
-decmn[,c(3,7)] <- decbars$neg[,,"m"]
-
-barplot(led,space=0,width=1,ylim=c(-1,2),las=1)
-barplot(lei,space=0,width=1,add=TRUE,axes=FALSE,col=statecols)
-barplot(decmp,space=0,width=1,add=TRUE,axes=FALSE,col=trcols)
-barplot(decmn,space=0,width=1,add=TRUE,axes=FALSE,col=trcols)
-
-# combo bars
-
-
-dec_bars <- function(le,dec,years=c(1996,2006,2014),.sex = "f",.edu = "all_edu"){
-	cols <- c("orange","red","green","purple")
-	names(cols)<- c("m12","m14","m21","m24")
-	lekeep <- le2[sex==.sex & edu==.edu]
-    decplot <- acast(dec[sex==.sex & edu==.edu],transition~year1,value.var="V1")
-	# 3 time points, 2 spans.
-	leplot <- as.matrix(lekeep[,c("1","2")])
-	plot(NULL, type = "n", xlim = c(0, 6),ylim=c(0,35),axes=FALSE)
-	barplot(t(leplot), beside = FALSE, add = TRUE, space = 1, width = 1)
-	# figure out x spacing better.
-	#barplot(decplot, beside = FALSE, add = TRUE, space = 1, width = 1)
-	
-}
-
-dec2f <- dec2[sex=="f" & edu=="all_edu"]
-head(dec2f)
-sum(dec1$value)-sum(dec2$value)
-
-# 1-2, 2-1
-unique(dec.i$sex)
+#
+#dec_barplot_steps(diffsf, pnf, debarsf,ylim=c(-1,2))
+#
+#lei            <- matrix(0, nrow = 2, ncol = 7)
+#lei[,c(2,6)]   <- pnm$pos
+#led            <- rep(0, 7)
+#led[c(1,5)]    <- colSums(diffsm)
+#decmp          <- decmn  <- matrix(0, nrow = 4, ncol = 7)
+#decmp[,c(3,7)] <- decbars$pos[,,"m"]
+#decmn[,c(3,7)] <- decbars$neg[,,"m"]
+#
+#barplot(led,space=0,width=1,ylim=c(-1,2),las=1)
+#barplot(lei,space=0,width=1,add=TRUE,axes=FALSE,col=statecols)
+#barplot(decmp,space=0,width=1,add=TRUE,axes=FALSE,col=trcols)
+#barplot(decmn,space=0,width=1,add=TRUE,axes=FALSE,col=trcols)
+#
+## combo bars
+#
+#
+#dec_bars <- function(le,dec,years=c(1996,2006,2014),.sex = "f",.edu = "all_edu"){
+#	cols <- c("orange","red","green","purple")
+#	names(cols)<- c("m12","m14","m21","m24")
+#	lekeep <- le2[sex==.sex & edu==.edu]
+#    decplot <- acast(dec[sex==.sex & edu==.edu],transition~year1,value.var="V1")
+#	# 3 time points, 2 spans.
+#	leplot <- as.matrix(lekeep[,c("1","2")])
+#	plot(NULL, type = "n", xlim = c(0, 6),ylim=c(0,35),axes=FALSE)
+#	barplot(t(leplot), beside = FALSE, add = TRUE, space = 1, width = 1)
+#	# figure out x spacing better.
+#	#barplot(decplot, beside = FALSE, add = TRUE, space = 1, width = 1)
+#	
+#}
+#
+#dec2f <- dec2[sex=="f" & edu=="all_edu"]
+#head(dec2f)
+#sum(dec1$value)-sum(dec2$value)
+#
+## 1-2, 2-1
+#unique(dec.i$sex)
 plot_dec2 <- function(dec2,
 		.sex="f",
 		.edu="all_edu",ylim = range(pretty(dec2$value)),...){
@@ -247,6 +260,6 @@ plot_dec2 <- function(dec2,
 	legend("topright",lty=1,col=c("orange","red","green","purple"),legend=c("m12","m14","m21","m24"))
 }
 
-plot_dec2(dec2,
-		.sex="m" , 
-		.edu = "terciary")
+#plot_dec2(dec2,
+#		.sex="m" , 
+#		.edu = "terciary")

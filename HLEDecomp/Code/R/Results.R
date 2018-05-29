@@ -36,29 +36,46 @@ if (!dir.exists(path)){
 }
 
 
-
+TR <- get_TR(version = version)
+TR <- data.table(TR)
 # decompositions (slow)
 # 1996 vs 2006
-years             <- c(1996, 2006)
-TR_96_06          <- get_TR(version = version, subset = time %in% years)
-TR_96_06          <- data.table(TR_96_06)
-DEC_96_06         <- TR_96_06[ , do_decomp_dt(.SD), by = list(sex, edu)]
-
+years           <- c(1996, 2006)
+TR_i            <- TR[time %in% years]
+DEC_i           <- TR_i[ , do_decomp_dt(.SD), by = list(sex, edu)]
+# by states
+DEC_i_1         <- TR_i[ , do_decomp_dt(.SD,to=1), by = list(sex, edu)]
+DEC_i_2         <- TR_i[ , do_decomp_dt(.SD,to=2), by = list(sex, edu)]
+DEC_i_3         <- TR_i[ , do_decomp_dt(.SD,to=3), by = list(sex, edu)]
+DEC_96_06       <- rbind(DEC_i,DEC_i_1,DEC_i_2,DEC_i_3)
 saveRDS(DEC_96_06, file = file.path("Data", "Results", mspec, "dec", paste0("dec_", years[1],"_", years[2], ".rds")))
 
 # 1996 vs 2014
-years             <- c(1996, 2014)
-TR_96_14          <- get_TR(version = version, subset = time %in% years)
-TR_96_14          <- data.table(TR_96_14)
-DEC_96_14         <- TR_96_14[ , do_decomp_dt(.SD), by = list(sex, edu)]
+years           <- c(1996, 2014)
+TR_i            <- TR[time %in% years]
+DEC_i           <- TR_i[ , do_decomp_dt(.SD), by = list(sex, edu)]
+# by states
+DEC_i_1         <- TR_i[ , do_decomp_dt(.SD,to=1), by = list(sex, edu)]
+DEC_i_2         <- TR_i[ , do_decomp_dt(.SD,to=2), by = list(sex, edu)]
+DEC_i_3         <- TR_i[ , do_decomp_dt(.SD,to=3), by = list(sex, edu)]
+DEC_96_14       <- rbind(DEC_i,DEC_i_1,DEC_i_2,DEC_i_3)
 saveRDS(DEC_96_14, file = file.path("Data", "Results", mspec, "dec", paste0("dec_", years[1], "_", years[2], ".rds")))
 
 # 2006 vs 2014
-years             <- c(2006, 2014)
-TR_06_14          <- get_TR(version = version, subset = time %in% years)
-TR_06_14          <- data.table(TR_06_14)
-DEC_06_14         <- TR_06_14[ , do_decomp_dt(.SD), by = list(sex,edu)]
+years           <- c(2006, 2014)
+TR_i            <- TR[time %in% years]
+DEC_i           <- TR_i[ , do_decomp_dt(.SD), by = list(sex, edu)]
+# by states
+DEC_i_1         <- TR_i[ , do_decomp_dt(.SD,to=1), by = list(sex, edu)]
+DEC_i_2         <- TR_i[ , do_decomp_dt(.SD,to=2), by = list(sex, edu)]
+DEC_i_3         <- TR_i[ , do_decomp_dt(.SD,to=3), by = list(sex, edu)]
+DEC_06_14       <- rbind(DEC_i,DEC_i_1,DEC_i_2,DEC_i_3)
+
 saveRDS(DEC_06_14, file = file.path("Data", "Results", mspec, "dec", paste0("dec_", years[1], "_", years[2], ".rds")))
+
+# finally group all of them together. Rather large data object I guess.
+DEC.all <- rbind(DEC_96_06, DEC_96_14, DEC_06_14)
+saveRDS(DEC.all, file = file.path("Data", "Results", mspec, "dec", paste0("dec_all.rds")))
 
 # this is prevalence for all combos of year,sex,edu
 # super quick
@@ -85,17 +102,50 @@ saveRDS(PREV2, file = file.path("Data", "Results", mspec, "prev", "prev_2.rds"))
 years             <- c(1996, 2006)
 TR2.i             <- TR2[time%in%years]
 DEC2.i            <- TR2.i[ , do_decomp_dt(.SD,ntrans=2), by = list(sex,edu)]
-saveRDS(DEC2.i, file = file.path("Data", "Results", mspec, "dec", paste0("dec2_", years[1],"_", years[2], ".rds")))
+DEC2_1.i          <- TR2.i[ , do_decomp_dt(.SD,ntrans=2,to=1), by = list(sex,edu)]
+DEC2_2.i          <- TR2.i[ , do_decomp_dt(.SD,ntrans=2,to=2), by = list(sex,edu)]
+DEC2.1996_2006    <- rbind(DEC2.i, DEC2_1.i, DEC2_2.i)
+saveRDS(DEC2.1996_2006, file = file.path("Data", "Results", mspec, "dec", paste0("dec2_", years[1],"_", years[2], ".rds")))
 
 years             <- c(2006, 2014)
 TR2.i             <- TR2[time%in%years]
+DEC2_1.i          <- TR2.i[ , do_decomp_dt(.SD,ntrans=2,to=1), by = list(sex,edu)]
+DEC2_2.i          <- TR2.i[ , do_decomp_dt(.SD,ntrans=2,to=2), by = list(sex,edu)]
 DEC2.i            <- TR2.i[ , do_decomp_dt(.SD,ntrans=2), by = list(sex,edu)]
-saveRDS(DEC2.i, file = file.path("Data", "Results", mspec, "dec", paste0("dec2_", years[1],"_", years[2], ".rds")))
+DEC2.2006_2014    <- rbind(DEC2.i, DEC2_1.i, DEC2_2.i)
+saveRDS(DEC2.2006_2014, file = file.path("Data", "Results", mspec, "dec", paste0("dec2_", years[1],"_", years[2], ".rds")))
 
 years             <- c(1996, 2014)
 TR2.i             <- TR2[time%in%years]
+DEC2_1.i          <- TR2.i[ , do_decomp_dt(.SD,ntrans=2,to=1), by = list(sex,edu)]
+DEC2_2.i          <- TR2.i[ , do_decomp_dt(.SD,ntrans=2,to=2), by = list(sex,edu)]
 DEC2.i            <- TR2.i[ , do_decomp_dt(.SD,ntrans=2), by = list(sex,edu)]
-saveRDS(DEC2.i, file = file.path("Data", "Results", mspec, "dec", paste0("dec2_", years[1],"_", years[2], ".rds")))
+DEC2.1996_2014    <- rbind(DEC2.i, DEC2_1.i, DEC2_2.i)
+saveRDS(DEC2.1996_2014, file = file.path("Data", "Results", mspec, "dec", paste0("dec2_", years[1],"_", years[2], ".rds")))
+
+# bind all together for safe keeping
+DEC2.all <- rbind(DEC2.1996_2006, DEC2.2006_2014, DEC2.1996_2014)
+
+saveRDS(DEC2.all, file = file.path("Data", "Results", mspec, "dec", paste0("dec2_all.rds")))
+
+
+###########################################################
+# to health states?
+# now rbinded in the above.
+#years             <- c(1996, 2006)
+#TR2.i             <- TR2[time%in%years]
+#DEC2_1.i          <- TR2.i[ , do_decomp_dt(.SD,to=1,ntrans=2), by = list(sex, edu)]
+#saveRDS(DEC2_1.i, file = file.path("Data", "Results", mspec, "dec", paste0("dec2_1_", years[1],"_", years[2], ".rds")))
+#DEC2_2.i          <- TR2.i[ , do_decomp_dt(.SD,to=2,ntrans=2), by = list(sex, edu)]
+#saveRDS(DEC2_2.i, file = file.path("Data", "Results", mspec, "dec", paste0("dec2_2_", years[1],"_", years[2], ".rds")))
+#
+#years             <- c(2006, 2014)
+#TR2.i             <- TR2[time%in%years]
+#DEC2_1.i          <- TR2.i[ , do_decomp_dt(.SD,to=1,ntrans=2), by = list(sex, edu)]
+#saveRDS(DEC2_1.i, file = file.path("Data", "Results", mspec, "dec", paste0("dec2_1_", years[1],"_", years[2], ".rds")))
+#DEC2_2.i          <- TR2.i[ , do_decomp_dt(.SD,to=2,ntrans=2), by = list(sex, edu)]
+#saveRDS(DEC2_2.i, file = file.path("Data", "Results", mspec, "dec", paste0("dec2_2_", years[1],"_", years[2], ".rds")))
+
 
 #
 #for (sex in sexes){

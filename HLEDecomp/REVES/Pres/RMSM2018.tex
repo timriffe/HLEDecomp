@@ -66,20 +66,47 @@ change?\\
 	Tim Riffe, Neil Mehta, Daniel Schneider, Mikko Myrskyl\"a 
 \end{frame}
 %-------------------
-
-% motivation:
-% 1) late-life sequence analysis ending in death (pattern detection)
-% 2) matrix expression for average number of episodes (tenure statistics)
 \begin{frame}[plain]
 \Large
-\centering
-LE goes up, so does HLE. 
-% 2 motivating observations:\vspace{2em}
-% \begin{enumerate}[<+->]
-% \item sequence analysis of trajectories ending in death \only<3-4>{\textcolor{red}{(pattern detection)}} \only<4>{(Y. Hu)}
-% \item matrix expression for average episode count \only<3-4>{\textcolor{red}{(tenure statistics)}} \only<4>{(C. Dudel)}
-% \end{enumerate}
- % get screenshot from June, also paper from Dudel in email.
+\begin{block}{Objective}
+How much of the change in life expectancy at age 50 $e(50)$ is due to changes in mortality versus changes in disability transitions?
+\end{block}
+\end{frame}
+%-------------------
+\begin{frame}[plain]
+\Large
+\begin{block}{Data \& Methods}
+HRS RAND version P. 3-state Markov matrix models centered on years 1996, 2006, and 2014. Decomposition with Horiuchi et al (2007) method.
+\end{block}
+\pause
+More details:
+\begin{itemize}
+\item States for 0 ADLs, 1 ADL, and 2+ ADLs, 
+\item Collapsed to 0 and 1+ for this presentation.
+\end{itemize}
+\end{frame}
+
+\begin{frame}[plain]
+\Large
+\begin{center}
+State space
+\includegraphics[height=\textheight, keepaspectratio]{Figures/StateSpace.pdf}
+\end{center}
+\end{frame}
+
+
+
+
+%Clock measures
+\vspace{1em}
+\begin{overlayarea}{\textwidth}{.8\textheight}
+\only<1>{\includegraphics[height=\textheight, keepaspectratio]{Figures/e50_0.pdf}}
+\only<2>{\includegraphics[height=\textheight, keepaspectratio]{Figures/e50_1.pdf}}
+\only<3>{\includegraphics[height=\textheight, keepaspectratio]{Figures/e50_2.pdf}}
+\only<4>{\includegraphics[height=\textheight, keepaspectratio]{Figures/e50_3.pdf}}
+\only<5>{\includegraphics[height=\textheight, keepaspectratio]{Figures/e50_4.pdf}}
+\end{overlayarea}
+\end{center}
 \end{frame}
 %
 
