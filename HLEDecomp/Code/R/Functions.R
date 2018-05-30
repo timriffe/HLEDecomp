@@ -276,6 +276,9 @@ HLEDecomp <- function(datout1, datout2, N = 10, ntrans = 3, prop, to, deduct = T
 #dec<- do_decomp(years = c(2006,2014),version = "02",sex = "f", edu = "all_edu")
 # This function needs to be reworked to work w new HLEDECOMP output. Simplify ugly inner functions too.
 # just make it do a single comparison.
+
+# TODO: make this select an arbitrary two populations to compare. Could be over time or between pops (within time)
+# TODO: try initial differences vs trend decomp version. Both at same time maybe?
 do_decomp <- function(
 		years = c(1996,2014), 
 		ntrans = 3,        # number of states
