@@ -78,16 +78,12 @@ How much of the change in life expectancy at age 50 $e(50)$ is due to changes in
 \begin{block}{Data \& Methods}
 \begin{itemize}
 \item HRS RAND version P. 
+\item Transition probabilities: mlogit with age and time splines (3 knots).
+\item Controls for race/eth (4) and education (3). 
 \item 3-state Markov matrix models centered on years 1996, 2006, and 2014. 
 \item Trend decomposition using Horiuchi et. al. (2007) method.
 \end{itemize}
 \end{block}
-\pause
-More details:
-\begin{itemize}
-\item States for 0 ADLs, 1 ADL, and 2+ ADLs, 
-\item Collapsed to 0 and 1+ for this presentation.
-\end{itemize}
 \end{frame}
 
 \begin{frame}[plain]
@@ -97,8 +93,6 @@ State space
 \includegraphics[height=\textheight, keepaspectratio]{Figures/StateSpace.pdf}
 \end{center}
 \end{frame}
-
-
 
 \begin{frame}[plain]
 \vspace{-1em}
