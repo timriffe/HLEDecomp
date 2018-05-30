@@ -145,8 +145,11 @@ dev.off()
 # simple LE bar plot.
 lem <- le2[sex == "m" & edu == "all_edu"]
 lef <- le2[sex == "f" & edu == "all_edu"]
-barplot(t(as.matrix(lem[,c("1","2")])),col = c("palegreen2", "yellow1"))
-
+pdf("REVES/Pres/Figures/lemf.pdf")
+par(mfrow=c(1,2))
+barplot(t(as.matrix(lem[,c("1","2")])),col = c("palegreen2", "yellow1"),names.arg=c(1996,2006,2014),las=1,ylim=c(0,35))
+barplot(t(as.matrix(lef[,c("1","2")])),col = c("palegreen2", "yellow1"),names.arg=c(1996,2006,2014),las=1,ylim=c(0,35))
+dev.off()
 #
 #dec_barplot_steps(diffsf, pnf, debarsf,ylim=c(-1,2))
 #
