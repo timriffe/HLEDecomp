@@ -34,20 +34,20 @@ e50hmdf    <- c(31.7, 31.48, 31.59, 31.58, 31.64, 31.73, 31.76, 31.66, 31.73,
 
 version <- "06"
 mspec   <- paste0("mspec", version)
-path1 <- file.path("Data","Results",mspec,"le","le.rds")
-path2 <- file.path("Data","Results",mspec,"le","le_2.rds")
+path1   <- file.path("Data","Results",mspec,"le","le.rds")
+path2   <- file.path("Data","Results",mspec,"le","le_2.rds")
 #hm <- get_rates_all(version="06",path="/home/tim/Data/hledecomp/results/")
-le    <- readRDS(path1)
-le2   <- readRDS(path2)
+le      <- readRDS(path1)
+le2     <- readRDS(path2)
 
-le$e50 <- rowSums(le[,c("1","2","3")])
+le$e50  <- rowSums(le[,c("1","2","3")])
 le2$e50 <- rowSums(le2[,c("1","2")])
 
-le2 <- data.table(le2)
+le2     <- data.table(le2)
 
 
-em<-acast(le[le$sex == "m",],time~edu,value.var = "e50")
-ef<-acast(le[le$sex == "f",],time~edu,value.var = "e50")
+em <-acast(le[le$sex == "m",],time~edu,value.var = "e50")
+ef <-acast(le[le$sex == "f",],time~edu,value.var = "e50")
 
 
 # need to wait to get HMD update before putting 
