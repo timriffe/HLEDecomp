@@ -25,6 +25,7 @@
 \usepackage{setspace}
 \usepackage{booktabs}
 \usepackage{tabularx}
+\usepackage{subfig}
 \usepackage{xcolor,colortbl}
 \usepackage{chngpage}
 \usepackage{natbib}
@@ -154,6 +155,8 @@ change?}
 \maketitle
 
 \vspace{-2em}
+The below abstract was the original submitted to REVES. Our approach is the same, but we have more detailed results now, and I've realized some more ways in which things are additive.
+
 \begin{abstract}
 \absdiv{Background} 
 Healthy life expectancy at older ages in the United States has steadily
@@ -189,8 +192,58 @@ expectancy, both driven by mortality improvements. Years spent in disability
 have been pushed into higher ages, indicating a slight delay of onset.
 \end{abstract}
 
+\section{Model overview}
+Transition rate naming conventions follows that from DCS: state 1 = healthy = disability free (DF), state 2 = 1+ ADLs = disabled (D) \footnote{Actually these results derive from a state space of 0,1, and 2+ ADLs, and I've collapsed it to 0 and 1+ ADLs for clarity (suggestion of NM). I propose to continue doing so unless we wish to separate 1+ in discussion to comment on its composition.}. In the specification presented at REVES (and discussed here) we have age as a spline with 3 knots, and it seems to behave reasonably well.\footnote{Due to discussion with Hiram Beltran Sanchez and NM, we may decide to move back to 4 knots to get more flexbility in younger ages.} There are controls for 4 race/eth categories, and strata for sex and 3 education groups\footnote{3 edu groups inherited from Jo's good judgement}. The group ``all edu'' refers to a statistical average edu, and all results refer to an artificial statistical average race/eth. We use the same proportion healthy and disabled at age 50 for all estimated variants. This would affect between-group comparisons (which we don't yet do), and it likely also affects the time trend, but we sweep it under the rug for now. Holding the proportions constant at age 50 in a sense makes all differences due to transition rates above 50, but that may be an incomplete accounting. We could hypthetically have group and time varying state proportions at age 50, and include these in the decompositions. Now for some discussion of the decomposition results.
 
+\section{Rehash results}
+This is a tabular representation of the decompositon results that were represented as bar charts in the REVES talk. I think it took too much mental gymnastics at REVES to realize the various ways in which things are additive, but it is actually quite clear in the following tables, since we have marginal sums, and people are used to such tables. First, we have a pretty good match to the HMD LE trend for the US (not shown).\footnote{Potential departures could be due to several understandable factors, and can be explained if necessary, but it's not worth gettign sidetracked by that just now.}. 
 
+The main goods are the decompositions of the within-group changes between our present 3 time points (1996, 2006, 2014). Those time points are willy nilly, and we may move to annual estimates soon, so we can select years at-will. First, note that the columns DFLE and DLE sum to LE, both within changes due to transiton rates and within state expectancy changes. To interpret signs, it helps to moralize some: We \emph{want}: mortality down (DFLE +, DLE +), transitions to disability down (DFLE+, DLE-), and recovery up (DFLE+, DLE-).
+
+The total change in male LE from \textbf{1996 to 2006} was 1.41, of which 1.27 came from an overall increase of 1.27 in DFLE. Looking at the LE column, we see that transitions from healthy to dead (m14) account for most of the change. Looking at the DLE column, we see that most increases were also due to the decreased mortality of healthy people (m14), but this was offset almost entirely by decreaed entries to disability (m12), not bad! The mortality of the disabled also improved a bit, adding .09 to DLE, .07 to DFLE (by allowing people to cycle back by not dying), adding to .15 LE, also a good outcome.
+
+The total change in male LE from \textbf{2006 to 2014} was .65, of which .38 came from an increase in DFLE, and .27 from DLE, a less optimal breakdown. Looking at the LE column, we see that transitions from healthy to dead (m14) account for most of the change. The other story in this table is reduced recovery, which of course steals more healthy years than it adds disabled years. The other two factors increasing DLE are things that are actually quite good: they survive better, as do healthy people, allowing them to become disabled. Transitions into disability actually decreased. So, although DLE increased, most of the story behind it is straight good news: we just know that recovery is the only setback. Make sense?
+\begin{table}[!ht]
+      \caption{Males (all edu)}
+      \label{tab:males}
+      \centering
+\subfloat[][1996-2006]{
+      \begin{tabular}{rrr|r}
+      \input{Data/Tables/mspec06/m-1996-2006-all.tex}
+     \end{tabular}
+}
+     \qquad
+\subfloat[][2006-2014]{
+      \begin{tabular}{rrr|r}
+      \input{Data/Tables/mspec06/m-2006-2014-all.tex}
+     \end{tabular}
+}
+\end{table}
+
+For females from \textbf{1996 to 2006} there was a modest gain in LE of .76 years, due to a strong increase in DFLE, partially offset by a decrease in DLE. Sounds like a good tradeoff until we realize that the reduction in DLE was due to i) worse mortality and ii) worse recovery. At the same time transitions to disability decreased, adding .73 to DFLE and deducting .43 from DLE- that's straight good news, but transitinos out of disability were straight bad news. This is not the way to engineer compression folks. The main protagonist here is again improved mortality of the healthy.
+
+For females from \textbf{2006 to 2014} we have a strong increase in LE of 1.47 years, due entirely to mortality (1.36+.54), mostly the mortality of the healthy. Recovery got way worse (-.93,+.51)and onset was unchanged. This lead to a large increase in DLE and a merely modest increase in DFLE: so large was the recovery setback (-.93) that it almost entirely chancelled out the good news for the mortality of the healthy (+.98). If we could ignore ``health dynamics'', we would have had something like dynamic equilibrium in this period, but althogether this is straight expansion, boo.
+
+\begin{table}[!ht]
+      \caption{Females (all edu)}
+      \label{tab:females}
+      \centering
+\subfloat[][1996-2006]{
+      \begin{tabular}{rrr|r}
+      \input{Data/Tables/mspec06/f-1996-2006-all.tex}
+     \end{tabular}
+}
+     \qquad
+\subfloat[][2006-2014]{
+      \begin{tabular}{rrr|r}
+      \input{Data/Tables/mspec06/f-2006-2014-all.tex}
+     \end{tabular}
+}
+\end{table}
+
+There are obvious ways to frame these results in a compression, expansion, equilibrium language. That may be nice because it's familiar language. To be clear it would be possible to decompose with respect to a clear measure of compression (DLE / LE), but I do prefer to keep things in year units.
+
+It would also be possible to plug in some counterfactuals to guage better what levers are the closest at hand. In the way things are now, it would seem to pay off nicely to invest in recovery: improvements in recovery adds more to DFLE than it subtracts from DLE. This is probably truer the greater the mortality gradient between states. I've also asked DCS to add a state ``healthy but ever disabled'', as a check on the homogeneity of the healthy-- this is necessary to know how realistic the recovery payoff, as stated above, is. It would change the arrow configuration in the state space too (no returns to straight good health).
 % bibliography
 %\bibliographystyle{spbasic}
 %\bibliography{references}  
