@@ -46,8 +46,8 @@ le2$e50 <- rowSums(le2[,c("1","2")])
 le2     <- data.table(le2)
 
 
-em <-acast(le[le$sex == "m",],time~edu,value.var = "e50")
-ef <-acast(le[le$sex == "f",],time~edu,value.var = "e50")
+em      <- acast(le[le$sex == "m",],time~edu,value.var = "e50")
+ef      <- acast(le[le$sex == "f",],time~edu,value.var = "e50")
 
 
 # need to wait to get HMD update before putting 
@@ -74,11 +74,11 @@ matplot(c(1996, 2006, 2014), ef, add = TRUE, pch = 16, col = "red",
 text(2014, ef[3, ], colnames(ef), pos = 4, col = "red", xpd = TRUE)
 text(2014, em[3, ], colnames(em), pos = 4, col = "blue", xpd = TRUE)
 
-rect(1996,ef[1,1],2006,ef[2,1],col="#FF000050",border="red")
-rect(2006,ef[2,1],2014,ef[3,1],col="#FF000050",border="red")
+#rect(1996,ef[1,1],2006,ef[2,1],col="#FF000050",border="red")
+#rect(2006,ef[2,1],2014,ef[3,1],col="#FF000050",border="red")
 
-rect(1996,em[1,1],2006,em[2,1],col="#0000FF50",border="blue")
-rect(2006,em[2,1],2014,em[3,1],col="#0000FF50",border="blue")
+#rect(1996,em[1,1],2006,em[2,1],col="#0000FF50",border="blue")
+#rect(2006,em[2,1],2014,em[3,1],col="#0000FF50",border="blue")
 
 text(c(1996,2006)+1,em[2:3,1]-.1,round(diff(em[,1]),2),pos=3,col = "blue",font=2)
 text(c(1996,2006)+1,ef[2:3,1]-.1,round(diff(ef[,1]),2),pos=3,col = "red",font=2)
