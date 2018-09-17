@@ -15,7 +15,7 @@
 \usepackage{appendix}
 \usepackage{amsmath}
 \usepackage{amsthm}
-
+\usepackage{tikz}
 \usepackage{amssymb} % for approx greater than
 \usepackage{caption}
 \usepackage{placeins} % for \FloatBarrier
@@ -192,8 +192,46 @@ expectancy, both driven by mortality improvements. Years spent in disability
 have been pushed into higher ages, indicating a slight delay of onset.
 \end{abstract}
 
+\section{Introduction}
+Mean remaining lifespan at age 50 increased by 2.9 years for males and 2.0 years for females in the two decades from 1996 to 2016, amounting to 10\% and 6\% increases, respectively. Several factors underly this improvement, including improved living standards and nutrition over the lifecourse of the cohorts composing the 50+ population, as well as medical improvements allowing for quicker and more certain recovery from many health conditions. Cures, lifesaving, and life-extending treatments may delay the deaths of both healthy and chronically ill or disabled persons, and therefore may contribute to increasing both years lived in a state of morbidity and in good health. For the typical case of population-level death rates that underly estimates of period life expectancy, it is not clear whether a rate improvement comes about due to improvements in the health and wellbeing of a population, the effects of medicine, or the population composition with respect to various kinds of risk sets, such as the educational composition. 
+
+Our objective is to 
+
+\section{Methods and materials}
+We estimate disability free and disabled life expectancy using incidence-based discrete-time Markov models. The model separates the population into two groups: disability free and disabled, where disability is defined as having at least one of a set of 5 ADLs. We use RAND version P of the US Health and Retirement Study \citep{RAND, HRS} to estimate the probabity of transitioning into and out of disability, and the probability of dying while disabled or disability free with multinomial logit models. We stratify models by sex and three education categories (less than high school, high school or GED, , and control for race and ethnicity. Age-effects are captured flexibly with splines.
+
+
+\begin{figure}[t!]\centering
+\begin{tikzpicture}[->,shorten >=1pt,auto,node distance=5cm,
+  thick,main node/.style={draw}]
+
+  \node[main node] (1) {Disability free};
+  \node[main node] (2) [right of=1] {Disabled};
+  \node[main node] (3) [below left of=2,xshift=1cm] {Dead};
+
+  \path[every node/.style={font=\sffamily\small}]
+    (1) edge [bend right] node [left] {die healthy} (3)
+    (1) edge [bend right] node [below] {disablement} (2)
+    (1) edge [loop left] node {} (1)
+    (2) edge [bend right] node [above] {recovery} (1)
+    (2) edge [loop right] node {} (2)
+    (2) edge [bend left] node {die disabled} (3)
+    (3) edge [loop below] node {} (3);
+    
+\end{tikzpicture}\\
+
+\caption{State space for healthy and at least one ADL disability.}\label{fig:statespace}
+\end{figure}
+
+\section{Trends}
+
+\begin{figure}
+\centering
+\includegraphics[scale=.7]{Figures/e50_Ink.pdf}
+\end{figure}
+
 \section{Model overview}
-Transition rate naming conventions follows that from DCS: state 1 = healthy = disability free (DF), state 2 = 1+ ADLs = disabled (D) \footnote{Actually these results derive from a state space of 0,1, and 2+ ADLs, and I've collapsed it to 0 and 1+ ADLs for clarity (suggestion of NM). I propose to continue doing so unless we wish to separate 1+ in discussion to comment on its composition.}. In the specification presented at REVES (and discussed here) we have age as a spline with 3 knots, and it seems to behave reasonably well.\footnote{Due to discussion with Hiram Beltran Sanchez and NM, we may decide to move back to 4 knots to get more flexbility in younger ages.} There are controls for 4 race/eth categories, and strata for sex and 3 education groups\footnote{3 edu groups inherited from Jo's good judgement}. The group ``all edu'' refers to a statistical average edu, and all results refer to an artificial statistical average race/eth. We use the same proportion healthy and disabled at age 50 for all estimated variants. This would affect between-group comparisons (which we don't yet do), and it likely also affects the time trend, but we sweep it under the rug for now. Holding the proportions constant at age 50 in a sense makes all differences due to transition rates above 50, but that may be an incomplete accounting. We could hypthetically have group and time varying state proportions at age 50, and include these in the decompositions. Now for some discussion of the decomposition results.
+ In the specification presented at REVES (and discussed here) we have age as a spline with 3 knots, and it seems to behave reasonably well.\footnote{Due to discussion with Hiram Beltran Sanchez and NM, we may decide to move back to 4 knots to get more flexbility in younger ages.} There are controls for 4 race/eth categories, and strata for sex and 3 education groups\footnote{3 edu groups inherited from Jo's good judgement}. The group ``all edu'' refers to a statistical average edu, and all results refer to an artificial statistical average race/eth. We use the same proportion healthy and disabled at age 50 for all estimated variants. This would affect between-group comparisons (which we don't yet do), and it likely also affects the time trend, but we sweep it under the rug for now. Holding the proportions constant at age 50 in a sense makes all differences due to transition rates above 50, but that may be an incomplete accounting. We could hypthetically have group and time varying state proportions at age 50, and include these in the decompositions. Now for some discussion of the decomposition results.
 
 \section{Rehash results}
 This is a tabular representation of the decompositon results that were represented as bar charts in the REVES talk. I think it took too much mental gymnastics at REVES to realize the various ways in which things are additive, but it is actually quite clear in the following tables, since we have marginal sums, and people are used to such tables. First, we have a pretty good match to the HMD LE trend for the US (not shown).\footnote{Potential departures could be due to several understandable factors, and can be explained if necessary, but it's not worth gettign sidetracked by that just now.}. 

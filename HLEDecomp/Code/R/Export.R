@@ -15,4 +15,4 @@ dat <- get_data()
 str(dat)
 U <- data_2_U(dat)
 
-citation("DecompHoriuchi")
+citation("DemoDecomp")
