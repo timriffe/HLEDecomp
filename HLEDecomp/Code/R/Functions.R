@@ -41,8 +41,6 @@ get_rates_all <- function(path = "N:\\dcs\\proj\\hledecomp\\results",
 	Dat
 }
 
-
-
 #get_data <- function(path = "N:\\dcs\\proj\\hledecomp\\results", 
 #		version = "01",
 #		sex = "1.men",
