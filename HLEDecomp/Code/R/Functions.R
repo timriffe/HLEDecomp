@@ -114,6 +114,8 @@ v2m <- function(vec, ntrans = 3){
 	dim(vec) <- c(N / (ntrans^2), ntrans^2)
 	vec
 }
+
+
 #datself <- get_TR("02",subset = sex == "f" & edu == "all_edu" & time == 1996)
 # just transition rates, excluding to death, single sex, edu, year
 data_2_U <- function(datself, ntrans = 3){
@@ -132,26 +134,27 @@ data_2_U <- function(datself, ntrans = 3){
 	U
 }
 
-
 U2N <- function(U, interval = 2){
 	I   <- diag(nrow(U))
 	Nsx <- solve(I - U) * interval
 	Nsx 
 }
+
 #dat <- get_TR_all(version = "02",subset = sex == "f" & edu == "all_edu" & time == 2006)
 # TR: added deduct switch to test for differences re DCS email
 #dat <- A1
 
 # for a single year-sex-edu
-e50 <- function(DAT, to, age = 50, prop, ntrans = 3, deduct = TRUE){
+e50 <- function(DAT, to, age = 50, prop, ntrans = 3, deduct = TRUE, interval = 2){
 	if (missing(prop)){
 		pnames <- paste0("s", 1:ntrans, "_prop")
         prop   <- unlist(DAT[1, pnames])
 	}
+	prop <- prop / sum(prop)
 	n    <- nrow(DAT) + 1
 	selfcols <- getcols(ntrans, self = TRUE)
 	U    <- data_2_U(DAT[, selfcols], ntrans = ntrans)
-	N    <- U2N(U, interval = 2)
+	N    <- U2N(U, interval = interval)
 	
 	cind <- rep(seq(50, 112, by = 2), ntrans) == age
 	
@@ -162,7 +165,7 @@ e50 <- function(DAT, to, age = 50, prop, ntrans = 3, deduct = TRUE){
 	# 3 block rows.
 	e.50 <- do.call("rbind",
 			lapply(
-					split(as.data.frame(N[, cind]), rep(1:ntrans, each = 32)),
+					split(as.data.frame(N[, cind]), rep(1:ntrans, each = n )),
 					colSums)
 	)
 	# this is the Dudel deduction.
@@ -171,11 +174,14 @@ e50 <- function(DAT, to, age = 50, prop, ntrans = 3, deduct = TRUE){
     }
 	# each to state weighted because person years can originate
 	# in any from state.
-	e50all <- e.50 %*% prop
+	e50all <- colSums(e.50 * prop)
+
+    # this replaces, possibly erroneously, e.50 %*% prop
+	# it's likely that whatever is happening here is the achilles heal
 	
 	# this if we only want a destination state subset.
 	if (!missing(to)){
-		if (to <= 3){
+		if (to <= ntrans){
 			return(e50all[to])
 		}
 	}
@@ -186,7 +192,8 @@ e50 <- function(DAT, to, age = 50, prop, ntrans = 3, deduct = TRUE){
 #DAT <- get_TR(version = "02",subset = edu == "all_edu" & sex == "f" & time == 1996)
 # this one is just for generating e0 descriptive results
 # for a single year-sex-edu
-e50_dt <- function(DAT, age = 50, ntrans = 3, prop, deduct = TRUE){
+
+e50_dt <- function(DAT, age = 50, ntrans = 3, prop, deduct = TRUE, interval = 2){
 	DAT <- as.data.frame(DAT)
 	if (missing(prop)){
 		pnames <- paste0("s",1:ntrans,"_prop")
@@ -195,8 +202,8 @@ e50_dt <- function(DAT, age = 50, ntrans = 3, prop, deduct = TRUE){
 	# TR: new Sept 18
 	prop <- prop / sum(prop)
 	
-	U    <- data_2_U(DAT[, getcols(ntrans, self=TRUE)], ntrans = ntrans)
-	N    <- U2N(U, interval = 2)
+	U    <- data_2_U(DAT[, getcols(ntrans, self = TRUE)], ntrans = ntrans)
+	N    <- U2N(U, interval = interval)
 	
 	cind <- rep(seq(50, 112, by = 2), ntrans) == age
 	
@@ -216,8 +223,8 @@ e50_dt <- function(DAT, age = 50, ntrans = 3, prop, deduct = TRUE){
 	}
 	# each to state weighted because person years can originate
 	# in any from state.
-	e50all     <- e.50 %*% prop
-	
+	e50all     <- colSums(e.50 * prop)
+
     out        <- as.data.frame(t(e50all))
 	out
 }
@@ -425,7 +432,7 @@ get_prev_dt <- function(DAT, to, prop, deduct = TRUE, ntrans = 3){
 		prop   <- unlist(DAT[1, pnames])
 	}
 	# TR: new Sept 18
-	prop <- prop / sum(prop)
+	prop      <- prop / sum(prop)
 	
 	age       <- DAT$age
 	cols      <- getcols(ntrans, self = TRUE)
@@ -434,8 +441,10 @@ get_prev_dt <- function(DAT, to, prop, deduct = TRUE, ntrans = 3){
 	U         <- data_2_U(DAT, ntrans = ntrans)
 	N         <- U2N(U, interval = 2)
 	cind      <- rep(seq(50,112,by=2), ntrans) == 50
-	prev      <- N[,cind] %*% prop
 	
+	# replaces: N[,cind]) %*% prop
+	prev      <- N[, cind] * rep(prop, each=32)
+	stop("this should break")
 	dim(prev) <- c(32,ntrans)
 	prev      <- prev / 2
 	colnames(prev) <- paste0("pi",1:ntrans)
