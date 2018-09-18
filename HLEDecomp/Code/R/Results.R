@@ -383,13 +383,3 @@ saveRDS(DEC2.all, file = file.path("Data", "Results", mspec, "dec", paste0("dec2
 #		adl1 = c(a195,a104,a114),
 #		adl2p = c(a295,a204,a214),
 #		tot = c(tot95,tot04,tot14)),digits=3)
-
-sprop         <- foreign::read.dta(file.path("N:\\dcs\\proj\\hledecomp\\results","initprop","initprop2.dta"),
-		              stringsAsFactors=FALSE)
-
-sprop$sex       <- as.character(sprop$sex)
-sprop$propdef   <- as.character(sprop$propdef)
-sprop$educlevel <- as.character(sprop$educlevel)
-sprop$time
-
-rowSums(sprop[,c("s1_prop","s2_prop","s3_prop")])

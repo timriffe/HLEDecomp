@@ -91,7 +91,9 @@ assign_colors <- function(Tabi, ramp, breaks = seq(-2.4,2.4,by=.1),){
 make_xtable <- function(dec2,.sex="f",.edu="all_edu", .deci="1996-2006",version="06",ramp,breaks=seq(-1.5,1.5,by=.1)){
 	mspec   <- paste0("mspec", version)
 	Tabi <- get_raw_table(dec2,.sex=.sex,.edu=.edu, .deci=.deci,version=version)
+	rn <- rownames(Tabi)
 	Tabi <- assign_colors(Tabi,ramp=ramp,breaks=breaks)
+	rownames(Tabi) <- rn
 	name <- paste0(paste(.sex,.deci,ifelse(.edu=="all_edu","all",.edu),sep="-"),".tex")
 	path <- file.path("Data","Tables",mspec)
 	
@@ -103,7 +105,7 @@ make_xtable <- function(dec2,.sex="f",.edu="all_edu", .deci="1996-2006",version=
 			sanitize.text.function = identity)
 }
 
-
+print(xtable(Tabi),only.contents = TRUE,booktabs = TRUE,sanitize.text.function = identity)
 # make tables
 make_xtable(dec2,.sex="f",.edu="all_edu", .deci="1996-2006",version=version,ramp=ramp )
 make_xtable(dec2,.sex="f",.edu="all_edu", .deci="2006-2014",version=version,ramp=ramp )
