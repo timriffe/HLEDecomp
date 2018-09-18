@@ -30,7 +30,6 @@ dec_fun_redux <- function(datoutvec, to, age = 50, n=31, ntrans = 3, deduct = TR
 	}
 	# radix-weighted mean
 	wmean(dc,colSums(fracs))
-
 }
 
 HLEDecomp <- function(datout1, datout2, N = 10, ntrans = 3, prop, to, deduct = TRUE){
