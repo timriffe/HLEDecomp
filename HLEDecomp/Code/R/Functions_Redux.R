@@ -32,6 +32,10 @@ dec_fun_redux <- function(datoutvec, to, age = 50, n=31, ntrans = 3, deduct = TR
 	wmean(dc,colSums(fracs))
 }
 
+TR.i <- local(get(load("/home/tim/git/HLEDecomp/HLEDecomp/Data/Transitions/DCS/initdetail/TR_v06.Rdata")))
+head(TR.i)
+
+
 HLEDecomp <- function(datout1, datout2, N = 10, ntrans = 3, prop, to, deduct = TRUE){
 	
 	# TR: change this to reflect due data dimensions
@@ -41,7 +45,7 @@ HLEDecomp <- function(datout1, datout2, N = 10, ntrans = 3, prop, to, deduct = T
 		pnames <- paste0("s",1:ntrans,"_prop")
 		prop   <- unlist(datout1[1, pnames])
 	}
-	
+	prop   <- prop / sum(prop)
 	# just to be sure we're rodered correctly.
 	datout1            <- datout1[order(datout1$age), ]
 	datout2            <- datout2[order(datout2$age), ]

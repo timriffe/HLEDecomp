@@ -194,7 +194,9 @@ e50_dt <- function(DAT, age = 50, ntrans = 3, prop, deduct = TRUE){
 		pnames <- paste0("s",1:ntrans,"_prop")
 		prop   <- unlist(DAT[1, pnames])
 	}
-
+	# TR: new Sept 18
+	prop <- prop / sum(prop)
+	
 	U    <- data_2_U(DAT[, getcols(ntrans, self=TRUE)], ntrans = ntrans)
 	N    <- U2N(U, interval = 2)
 	
@@ -243,6 +245,8 @@ HLEDecomp <- function(datout1, datout2, N = 10, ntrans = 3, prop, to, deduct = T
 		pnames <- paste0("s",1:ntrans,"_prop")
 		prop   <- unlist(datout1[1, pnames])
 	}
+	# TR: new Sept 18
+	prop <- prop / sum(prop)
 	# just to be sure we're rodered correctly.
 	datout1            <- datout1[order(datout1$age), ]
 	datout2            <- datout2[order(datout2$age), ]
@@ -422,6 +426,9 @@ get_prev_dt <- function(DAT, to, prop, deduct = TRUE, ntrans = 3){
 		pnames <- paste0("s", 1:ntrans, "_prop")
 		prop   <- unlist(DAT[1, pnames])
 	}
+	# TR: new Sept 18
+	prop <- prop / sum(prop)
+	
 	age       <- DAT$age
 	cols      <- getcols(ntrans, self = TRUE)
 	
@@ -446,6 +453,9 @@ get_prev_dt <- function(DAT, to, prop, deduct = TRUE, ntrans = 3){
 
 collapseTR   <- function(TR, PREV, version = "02"){
 	# stationary collapse of states 2 and 3 into state 2
+	# TR: new Sept 18
+	pcols       <- c("s1_prop","s2_prop","s3_prop")
+	TR[, pcols] <- TR[, pcols] / rowSums(TR[, pcols])
 	
 	if (missing(TR)){
 		TR     <- get_TR(version = version)
