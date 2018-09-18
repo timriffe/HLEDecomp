@@ -83,7 +83,7 @@ colnames(sprop)
 notp <-  c("sex","time", "age")
 colskeep      <- c(notp, pcols)
 sprop         <- sprop[,colskeep]
-
+sprop$sex <- as.character(sprop$sex)
 # get selected years for now
 sprop <- sprop[sprop$time %in% c(1996,2006,2014), ]
 # now rescale to proportions rather than 10k radix
@@ -112,7 +112,7 @@ for (i in 1:length(versions)){
 	TR.i <- get_rates_all(
 			path = read.path, 
 			version = versions[i])
-	
+	TR.i     <- TR.i[TR.i$educlevel != "0.All edu",]
 	TR.i     <- merge(TR.i,sprop,all.x=TRUE,fill=NA)
 	
 	TR.i$edu <- edus[TR.i$educlevel]
