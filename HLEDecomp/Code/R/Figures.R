@@ -111,3 +111,68 @@ text(2014, em[3, -3], colnames(em)[-3], pos = 4, col = hrs_male_col, xpd = TRUE)
 #text(c(1996,2006)+1,em[2:3,1]-.1,round(diff(em[,1]),2),pos=3,col = "blue",font=2)
 #text(c(1996,2006)+1,ef[2:3,1]-.1,round(diff(ef[,1]),2),pos=3,col = "red",font=2)
 dev.off()
+
+le2 <- le2[le2$sex != "b",]
+dflem      <- acast(le2[le2$sex == "m",],time~edu,value.var = "1")
+dflef      <- acast(le2[le2$sex == "f",],time~edu,value.var = "1")
+
+dlem       <- acast(le2[le2$sex == "m",],time~edu,value.var = "2")
+dlef       <- acast(le2[le2$sex == "f",],time~edu,value.var = "2")
+
+dflem <- cbind(dflem,state=1) 
+dflef <- cbind(dflef,state=1) 
+dlem  <- cbind(dlem,state=2) 
+dlef  <- cbind(dlef,state=2) 
+ 
+
+dlef[,1:4] / ef
+#dflem / em
+#dflef / ef
+chunk <- le2[le2$sex == "f" & le2$edu == "all_edu", ]
+barsubset <- function(chunk,ymax = 40){
+	dat           <- t(as.matrix(chunk[,c("1","2")]))
+	colnames(dat) <-  c(1996,2006,2014)
+	barplot(dat, col = c(gray(c(.8,.4))), ylim=c(0,ymax),border=NA,axes=FALSE)
+	abline(h=seq(5,35,by=5),col="white")
+	axis(2,las=1)
+}
+
+pdf("Figures/bar_fem_all.pdf", height=5,width=2.2)
+par(mai=c(.5,.5,.3,0))
+barsubset(subset(le2,sex=="f" & edu == "all_edu"))
+dev.off()
+
+pdf("Figures/bar_fem_pri.pdf", height=5,width=2.2)
+par(mai=c(.5,.5,.3,0))
+barsubset(subset(le2,sex=="f" & edu == "primary"))
+dev.off()
+
+pdf("Figures/bar_fem_uni.pdf", height=5,width=2.2)
+par(mai=c(.5,.5,.3,0))
+barsubset(subset(le2,sex=="f" & edu == "terciary"))
+dev.off()
+
+pdf("Figures/bar_male_all.pdf", height=5,width=2.2)
+par(mai=c(.5,.5,.3,0))
+barsubset(subset(le2,sex=="m" & edu == "all_edu"))
+dev.off()
+
+pdf("Figures/bar_male_pri.pdf", height=5,width=2.2)
+par(mai=c(.5,.5,.3,0))
+barsubset(subset(le2,sex=="m" & edu == "primary"))
+dev.off()
+
+pdf("Figures/bar_male_uni.pdf", height=5,width=2.2)
+par(mai=c(.5,.5,.3,0))
+barsubset(subset(le2,sex=="m" & edu == "terciary"))
+dev.off()
+
+dflem      <- acast(le2[le2$sex == "m",],time~edu,value.var = "1")
+dflef      <- acast(le2[le2$sex == "f",],time~edu,value.var = "1")
+
+dlem       <- acast(le2[le2$sex == "m",],time~edu,value.var = "2")
+dlef       <- acast(le2[le2$sex == "f",],time~edu,value.var = "2")
+
+.91 / .21
+.47/.11
+
