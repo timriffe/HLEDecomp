@@ -383,3 +383,24 @@ saveRDS(DEC2.all, file = file.path("Data", "Results", mspec, "dec", paste0("dec2
 #		adl1 = c(a195,a104,a114),
 #		adl2p = c(a295,a204,a214),
 #		tot = c(tot95,tot04,tot14)),digits=3)
+
+# test interp
+
+#?DemoTools::interp()
+#
+#p1 <- runif(10)
+#p2 <- runif(10)
+#p1 <- p1/sum(p1)
+#p2 <- p2/sum(p2)
+#
+#d1              <- "1980-01-01"
+#d2              <- "1990-01-01"
+#
+#datesOut <- c("1980-01-01","1981-01-01","1982-01-01","1983-01-01","1984-01-01",
+#				"1985-01-01","1986-01-01","1987-01-01","1988-01-01","1989-01-01",
+#				"1990-01-01")
+#(p_lin <- interp(cbind(p1,p2),c(d1,d2),datesOut,method = "linear"))
+#(p_pow <- interp(cbind(p1,p2),c(d1,d2),datesOut,method = "power"))
+
+#colSums(p_pow) # can't do power interpolation or exponential interpolation in horiuchi()
+#colSums(p_lin)
