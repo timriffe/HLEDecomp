@@ -94,7 +94,7 @@ get_TR <- function(version = "02",home = getwd(),...){
 out2self <- function(datout, ntrans = 3){
 	trans.self      <- getcols(ntrans = ntrans, self = TRUE)
 	trans.out       <- getcols(ntrans = ntrans, self = FALSE)
-	out.order       <- as.data.frame(matrix(trans.out, ntrans, byrow = TRUE))
+	out.order       <- as.data.frame(matrix(trans.out, ntrans, byrow = TRUE),stringsAsFactors=FALSE)
 	
 	# TR: 25-05-2018 strong assumption of rate ordering!!
 	# this line could be more robust. pragmatic fix now
@@ -121,18 +121,20 @@ v2m <- function(vec, ntrans = 3){
 data_2_U <- function(datself, ntrans = 3){
 	# get the block order
 	trans.self <- getcols(ntrans = ntrans, self = TRUE)
-	this.order <- as.data.frame(matrix(trans.self, ntrans, byrow = TRUE))
-	
+	this.order <- as.data.frame(matrix(trans.self, ntrans, byrow = TRUE),stringsAsFactors=FALSE)
+
 	# take advantage of data.frame columns as list elements
-	UL         <- lapply(as.data.frame(datself[,trans.self]), pi2u)
-	
-	U          <- do.call("rbind", 
+	UL         <- lapply(as.data.frame(datself[,trans.self],stringsAsFactors=FALSE), pi2u)
+
+	U          <- do.call("cbind", 
 			              lapply(this.order, function(x, UL){
-				             do.call("cbind", UL[x])
+				             do.call("rbind", UL[x])
 			              }, UL = UL)
                           )
+						  
 	U
 }
+
 
 U2N <- function(U, interval = 2){
 	I   <- diag(nrow(U))
@@ -165,7 +167,7 @@ e50 <- function(DAT, to, age = 50, prop, ntrans = 3, deduct = TRUE, interval = 2
 	# 3 block rows.
 	e.50 <- do.call("rbind",
 			lapply(
-					split(as.data.frame(N[, cind]), rep(1:ntrans, each = n )),
+					split(as.data.frame(N[, cind],stringsAsFactors=FALSE), rep(1:ntrans, each = n )),
 					colSums)
 	)
 	# this is the Dudel deduction.
@@ -194,7 +196,7 @@ e50 <- function(DAT, to, age = 50, prop, ntrans = 3, deduct = TRUE, interval = 2
 # for a single year-sex-edu
 
 e50_dt <- function(DAT, age = 50, ntrans = 3, prop, deduct = TRUE, interval = 2){
-	DAT <- as.data.frame(DAT)
+	DAT <- as.data.frame(DAT,stringsAsFactors=FALSE)
 	if (missing(prop)){
 		pnames <- paste0("s",1:ntrans,"_prop")
 		prop   <- unlist(DAT[1, pnames])
@@ -203,6 +205,7 @@ e50_dt <- function(DAT, age = 50, ntrans = 3, prop, deduct = TRUE, interval = 2)
 	prop <- prop / sum(prop)
 	
 	U    <- data_2_U(DAT[, getcols(ntrans, self = TRUE)], ntrans = ntrans)
+	
 	N    <- U2N(U, interval = interval)
 	
 	cind <- rep(seq(50, 112, by = 2), ntrans) == age
@@ -214,7 +217,7 @@ e50_dt <- function(DAT, age = 50, ntrans = 3, prop, deduct = TRUE, interval = 2)
 	# 3 block rows.
 	e.50 <- do.call("rbind",
 			lapply(
-					split(as.data.frame(N[, cind]), rep(1:ntrans, each = 32)),
+					split(as.data.frame(N[, cind],stringsAsFactors=FALSE), rep(1:ntrans, each = 32)),
 					colSums)
 	)
 	# this is the Dudel deduction.
@@ -224,8 +227,9 @@ e50_dt <- function(DAT, age = 50, ntrans = 3, prop, deduct = TRUE, interval = 2)
 	# each to state weighted because person years can originate
 	# in any from state.
 	e50all     <- colSums(e.50 * prop)
-
-    out        <- as.data.frame(t(e50all))
+	# TR identical:
+	# e50all <- t(prop) %*% e.50 
+    out        <- as.data.frame(t(e50all),stringsAsFactors=FALSE)
 	out
 }
 
@@ -339,13 +343,13 @@ do_decomp_dt <- function( DAT,
 		to, # i.e. do we decompose wrt HLE, ADL1, ADL2p, or LE. leave missing for LE
 		N = 20, 
 		deduct = TRUE){
-	DAT   <- as.data.frame(DAT)
+	DAT   <- as.data.frame(DAT,stringsAsFactors=FALSE)
 	years <- sort(unique(DAT$time))
 	years <- years[1:2]
 	
 	# if it's missing then it means LE, so make LE beyond the state count.
 	if (missing(to)){
-		to <- 5
+		to <- ntrans + 5
 	}
 	edu  <- unique(DAT$edu)
 	sex  <- unique(DAT$sex)
@@ -424,9 +428,9 @@ do_decomp_dt <- function( DAT,
 #}
 
 # this runs on a chunk (sex,year,edu)
-#DAT <- get_TR(version = "02",subset = edu == "all_edu" & sex == "f" & time == 1996)
+#DAT <- get_TR(version = "06",subset = edu == "primary" & sex == "m" & time == 1996)
 get_prev_dt <- function(DAT, to, prop, deduct = TRUE, ntrans = 3){
-	DAT <- as.data.frame(DAT)
+	DAT <- as.data.frame(DAT,stringsAsFactors=FALSE)
 	if (missing(prop)){
 		pnames <- paste0("s", 1:ntrans, "_prop")
 		prop   <- unlist(DAT[1, pnames])
@@ -444,14 +448,16 @@ get_prev_dt <- function(DAT, to, prop, deduct = TRUE, ntrans = 3){
 	
 	# replaces: N[,cind]) %*% prop
 	prev      <- N[, cind] * rep(prop, each=32)
-	stop("this should break")
-	dim(prev) <- c(32,ntrans)
+	
+	prev      <- prev[1:32, ] + prev[33:64,] + prev[65:96, ]
+	
+	#dim(prev) <- c(32,ntrans)
 	prev      <- prev / 2
 	colnames(prev) <- paste0("pi",1:ntrans)
 	# verify with DCS re age groups. Why exclude age 50?
 	prev      <- prev[-nrow(prev), ]
 	
-	DF        <- as.data.frame(prev)
+	DF        <- as.data.frame(prev,stringsAsFactors=FALSE)
     DF$age    <- age
 	
 	DF
