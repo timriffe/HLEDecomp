@@ -467,8 +467,8 @@ get_prev_dt <- function(DAT, to, prop, deduct = TRUE, ntrans = 3){
 collapseTR   <- function(TR, PREV, version = "02"){
 	# stationary collapse of states 2 and 3 into state 2
 	# TR: new Sept 18
-	pcols       <- c("s1_prop","s2_prop","s3_prop")
-	TR[, pcols] <- TR[, pcols] / rowSums(TR[, pcols])
+	#pcols       <- c("s1_prop","s2_prop","s3_prop")
+	#TR[, pcols] <- TR[, pcols] / rowSums(TR[, pcols])
 	
 	if (missing(TR)){
 		TR     <- get_TR(version = version)
