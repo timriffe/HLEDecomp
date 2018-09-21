@@ -70,7 +70,7 @@ display.brewer.all()
 ramp <- colorRampPalette(rev(brewer.pal(11,"RdBu")),space = "Lab")
 ramp <- colorRampPalette(brewer.pal(11,"PRGn"),space = "Lab")
 
-assign_colors <- function(Tabi, ramp, breaks = seq(-2.4,2.4,by=.1),){
+assign_colors <- function(Tabi, ramp, breaks = seq(-2.4,2.4,by=.1)){
 	cols <- ramp(length(breaks)-1)
 	COLS <- apply(Tabi,2,function(x){
 				gsub(pattern="#",replacement="",as.character(cut(x,breaks=breaks,labels=cols)))

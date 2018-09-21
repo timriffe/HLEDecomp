@@ -678,6 +678,27 @@ barmargins <- function(dec.i,ylim){
 	barplot(t(trn[,,3]),add=TRUE,space=0)
 }
 
+# for heat tables
+assign_colors <- function(Tabi, ramp, breaks = seq(-2.4,2.4,by=.1)){
+	cols <- ramp(length(breaks)-1)
+	COLS <- apply(Tabi,2,function(x){
+				gsub(pattern="#",replacement="",as.character(cut(x,breaks=breaks,labels=cols)))
+			})
+	
+	TextCol <- ifelse(abs(Tabi) > .8,"FFFFFF","000000")
+	out <- COLS
+	for (i in 1:ncol(out)){
+		out[,i] <- paste0("\\cellcolor[HTML]{",
+				COLS[,i],
+				"}{\\color[HTML]{",
+				TextCol[,i],
+				"}", 
+				sprintf("%.2f", round(Tabi[,i],2)),"}")
+	}
+	out
+}
+#sprintf("%.2f", round(Tab.i[,1],2))
+#sprintf("%03",as.character(round(Tab.i[,1],2)))
 # deprecated as of 10-May 2018. Functions were revamped to account for different
 # input data format, and allow for more general deduction procedure.
 
