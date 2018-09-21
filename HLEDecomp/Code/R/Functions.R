@@ -6,31 +6,12 @@ if (me == "tim"){
 	setwd("/home/tim/git/HLEDecomp/HLEDecomp")
 }
 
+source("Code/R/utils.R")
 
-getsub <- function(Mat){
-	Mat[row(Mat) == (col(Mat) + 1)]
-}
 
-pi2u <- function(pivec){
-	cbind(rbind(0,diag(pivec)),0)
-}
 
-fac2ch <- function(f){
-	as.character(f)
-}
 
-# determine relevant column names, per DS's standard naming scheme
-getcols <- function(ntrans = 3,self=TRUE,dead="4"){
-	if (self){
-		return(paste0("m",c(t(outer(1:ntrans,1:ntrans,paste0)))))
-	} else {
-		cols <- outer(1:ntrans,c(1:ntrans,dead),paste0)
-		cols <- sort(cols[lower.tri(cols) | upper.tri(cols)])
-		cols <- paste0("m",cols)
-		return(cols)
-	}
-}
-
+# deprecated?
 get_rates_all <- function(path = "N:\\dcs\\proj\\hledecomp\\results", 
 		version = "01"){
 	final_path    <- file.path(path, "margins",paste0("mspec", version), paste0("transp_m", version, ".dta"))
@@ -41,41 +22,11 @@ get_rates_all <- function(path = "N:\\dcs\\proj\\hledecomp\\results",
 	Dat
 }
 
-#get_data <- function(path = "N:\\dcs\\proj\\hledecomp\\results", 
-#		version = "01",
-#		sex = "1.men",
-#		year = 2004,
-#		educlevel = "0.All edu",
-#        self = TRUE){
-#	# this works on Tim's MPIDR PC, Windows machine...
-#	Dat           <- get_rates_all(path = path, version = version, self = self)
-#
-#	sprop         <- foreign::read.dta(file.path(path,"initprop","initprop2.dta"))
-#	
-#	facs          <- sapply(sprop,class) == "factor"
-#	sprop[, facs] <- lapply(sprop[,facs], fac2ch)
-#	
-#	# subset() or with() don't like it when your args have same names as cols, so
-#	# here's a verbose subset
-#	ind            <- Dat$sex == sex & Dat$educlevel == educlevel & Dat$time == year 
-#    Dat            <- Dat[ind, ]
-#	Dat            <- Dat[order(Dat$age), ]
-#
-#	ind            <- sprop$sex == sex & sprop$educlevel == educlevel & sprop$propweighted == 1 & grepl(pattern = "age 50-54", sprop[,1])
-#	sprop          <- sprop[ind, c("s1_prop","s2_prop","s3_prop")]
-#	
-#	Dat            <- Dat[order(Dat$age), ]
-#	age            <- Dat$age
-#	cols           <- getcols(ntrans = 3, self = self)
-#	Dat            <- Dat[, cols]
-#	rownames(Dat)  <- age
-#	
-#	sprop          <- unlist(sprop)
-#	sprop          <- sprop / sum(sprop)
-#	attr(Dat, "initprop") <- sprop
-#	attr(Dat, "time")     <- year
-#	Dat
-#}
+
+
+# this is used, no arg yet to determine which version
+# of initprop to use... This assumes an R version has already been
+# created at the MPIDR machine
 
 get_TR <- function(version = "02",home = getwd(),...){
 	path <- file.path(home,"Data","Transitions","DCS",paste0("TR_v",version,".Rdata"))
@@ -109,12 +60,19 @@ out2self <- function(datout, ntrans = 3){
 	out
 }
 
+# vector to matrix with rate schedules rbound together
+# useful since decomp needs vectors
 v2m <- function(vec, ntrans = 3){
 	N <- length(vec)
 	dim(vec) <- c(N / (ntrans^2), ntrans^2)
 	vec
 }
 
+
+
+pi2u <- function(pivec){
+	cbind(rbind(0,diag(pivec)),0)
+}
 
 #datself <- get_TR("02",subset = sex == "f" & edu == "all_edu" & time == 1996)
 # just transition rates, excluding to death, single sex, edu, year
@@ -147,13 +105,19 @@ U2N <- function(U, interval = 2){
 #dat <- A1
 
 # for a single year-sex-edu
-e50 <- function(DAT, to, age = 50, prop, ntrans = 3, deduct = TRUE, interval = 2){
+e50 <- function(DAT, to, age = 50, prop, ntrans, deduct = TRUE, interval = 2){
+	DAT <- as.data.frame(DAT, stringsAsFactors = FALSE)
+	n   <- nrow(DAT)
+	if (missing(ntrans)){
+		ntrans <- guess_ntrans(DAT)
+	}
+	
 	if (missing(prop)){
 		pnames <- paste0("s", 1:ntrans, "_prop")
         prop   <- unlist(DAT[1, pnames])
 	}
 	prop <- prop / sum(prop)
-	n    <- nrow(DAT) + 1
+	
 	selfcols <- getcols(ntrans, self = TRUE)
 	U    <- data_2_U(DAT[, selfcols], ntrans = ntrans)
 	N    <- U2N(U, interval = interval)
@@ -167,7 +131,8 @@ e50 <- function(DAT, to, age = 50, prop, ntrans = 3, deduct = TRUE, interval = 2
 	# 3 block rows.
 	e.50 <- do.call("rbind",
 			lapply(
-					split(as.data.frame(N[, cind],stringsAsFactors=FALSE), rep(1:ntrans, each = n )),
+					split(as.data.frame(N[, cind],stringsAsFactors=FALSE), 
+							rep(1:ntrans, each = (n + 1))),
 					colSums)
 	)
 	# this is the Dudel deduction.
@@ -195,10 +160,16 @@ e50 <- function(DAT, to, age = 50, prop, ntrans = 3, deduct = TRUE, interval = 2
 # this one is just for generating e0 descriptive results
 # for a single year-sex-edu
 
-e50_dt <- function(DAT, age = 50, ntrans = 3, prop, deduct = TRUE, interval = 2){
-	DAT <- as.data.frame(DAT,stringsAsFactors=FALSE)
+e50_dt <- function(DAT, age = 50, ntrans, prop, deduct = TRUE, interval = 2){
+	DAT <- as.data.frame(DAT, stringsAsFactors = FALSE)
+	n   <- nrow(DAT)
+	
+	if (missing(ntrans)){
+		ntrans <- guess_ntrans(DAT)
+	}
+	
 	if (missing(prop)){
-		pnames <- paste0("s",1:ntrans,"_prop")
+		pnames <- paste0("s", 1:ntrans, "_prop")
 		prop   <- unlist(DAT[1, pnames])
 	}
 	# TR: new Sept 18
@@ -217,7 +188,9 @@ e50_dt <- function(DAT, age = 50, ntrans = 3, prop, deduct = TRUE, interval = 2)
 	# 3 block rows.
 	e.50 <- do.call("rbind",
 			lapply(
-					split(as.data.frame(N[, cind],stringsAsFactors=FALSE), rep(1:ntrans, each = 32)),
+					split(
+							as.data.frame(N[, cind], stringsAsFactors = FALSE), 
+					        rep(1:ntrans, each = n + 1 )),
 					colSums)
 	)
 	# this is the Dudel deduction.
@@ -294,7 +267,7 @@ HLEDecomp <- function(datout1, datout2, N = 10, ntrans = 3, prop, to, deduct = T
 # TODO: try initial differences vs trend decomp version. Both at same time maybe?
 do_decomp <- function(
 		years = c(1996,2014), 
-		ntrans = 3,        # number of states
+		ntrans,        # number of states
 		version = "02",    # character 2 digits
 		sex = "f",       
 		edu = "all_edu", 
@@ -311,7 +284,9 @@ do_decomp <- function(
 	.sex <- sex
 	TR          <- get_TR(version = version, 
 			              subset = sex == .sex & edu == .edu & time %in% years)
-					  
+	if (missing(ntrans)){
+			ntrans <- guess_ntrans(TR)
+	}
 	DatL        <- split(TR, TR$time)
 	names(DatL) <- years
 	
@@ -339,11 +314,16 @@ do_decomp <- function(
 }
 
 do_decomp_dt <- function( DAT,
-		ntrans = 3,        # number of states
+		ntrans,        # number of states
 		to, # i.e. do we decompose wrt HLE, ADL1, ADL2p, or LE. leave missing for LE
 		N = 20, 
 		deduct = TRUE){
 	DAT   <- as.data.frame(DAT,stringsAsFactors=FALSE)
+	
+	if (missing(ntrans)){
+		ntrans <- guess_ntrans(DAT)
+	}
+	
 	years <- sort(unique(DAT$time))
 	years <- years[1:2]
 	
@@ -427,10 +407,23 @@ do_decomp_dt <- function( DAT,
 #	
 #}
 
-# this runs on a chunk (sex,year,edu)
+
+# Calculate a prevalence object in a data.table structure, data presumed
+# to refer to a single subset. Radix proportions either given or siphened
+# from columns s1_prop, s2_prop (s3_prop). transition probabilities labeled
+# m11, m12, m13, etc
+# deduct toggles the dudel deduction. ntrans is the number of transient states,
+# important. Detected, but not fallible.
+
 #DAT <- get_TR(version = "06",subset = edu == "primary" & sex == "m" & time == 1996)
-get_prev_dt <- function(DAT, to, prop, deduct = TRUE, ntrans = 3){
+get_prev_dt <- function(DAT, to, prop, deduct = TRUE, ntrans){
+	
 	DAT <- as.data.frame(DAT,stringsAsFactors=FALSE)
+	
+	if (missing(ntrans)){
+		ntrans <- guess_ntrans(DAT)
+	}
+	
 	if (missing(prop)){
 		pnames <- paste0("s", 1:ntrans, "_prop")
 		prop   <- unlist(DAT[1, pnames])
@@ -463,6 +456,13 @@ get_prev_dt <- function(DAT, to, prop, deduct = TRUE, ntrans = 3){
 	DF
 }
 
+# collapse transition rates, this is indeed presently used,
+# and it should be verified at some point. PREV can be calculated
+# on the fly. It is presumed that TR contains 3 living states:
+# 1,2,3, and that the 4th state is dead. transition proabbility
+# columns must be labelled with the convention m11, m12, m13, etc.
+# radix proportions stored in columns s1_prop, s2_prop, s3_prop.
+# siphened from the first row of each subset (presumed age-sorted).
 
 collapseTR   <- function(TR, PREV, version = "02"){
 	# stationary collapse of states 2 and 3 into state 2
@@ -584,119 +584,7 @@ collapseTR   <- function(TR, PREV, version = "02"){
 #}
 
 
-# functions for figures. geometric color blending
 
-blend <- function(col1, col2){
-	rgb1   <- col2rgb(col1)
-	rgb2   <- col2rgb(col2)
-	rgbnew <- sqrt((rgb1^2+rgb2^2)/2)
-	spatstat::rgb2hex(c(rgbnew))
-}
-
-get_colors <- function(){
-	cols1    <- RColorBrewer::brewer.pal(9,"YlOrBr")[5:7]
-	cols2    <- RColorBrewer::brewer.pal(11,"RdYlBu")[c(9,3,1)]
-	cols3    <- RColorBrewer::brewer.pal(11,"RdYlGn")[c(10,9,1)]
-	cols1[3] <- blend(cols1[3],"#6E3A07")
-	cols2[3] <- blend(cols2[3],"#6E3A07")
-	cols3[3] <- blend(cols3[3],"#6E3A07")
-	cols     <- c(cols1,cols2,cols3)
-	cols
-}
-
-plot_prev <- function(prev, type = "bar", scale = FALSE, time = 1995, to = 1,col,...){
-	a <- seq(50,110,by=2)
-	if (type == "bar"){
-		prevm <- as.matrix(prev[prev$time == time, 1:3])[-1, ]
-		rownames(prevm) <- NULL
-		if (scale){
-			prevm <- prevm / rowSums(prevm)
-		}
-		a10 <-seq(50,110,by=10) - 50
-		p10 <- seq(.2,1,by=.2)
-		barplot(t(prevm),axes=FALSE,space = 0,width=2,border=NA,xlab = "Age",ylab = ifelse(scale,"Proportion","Prevalence"),col=col,...)
-		segments(a10,0,a10,1,col="#FFFFFF50",lwd=.5)
-		segments(0,p10,nrow(prevm)*2,p10,col="#FFFFFF50",lwd=.5)
-		text(a10,0,a10+50,pos=1,xpd=TRUE)
-		text(0,seq(0,1,by=.2),seq(0,1,by=.2),pos=2,xpd=TRUE)
-	}
-	if (type == 'l'){
-		prevt <- matrix(prev[, to], ncol = 3)[-1, ]
-		ma    <- colSums(prevt * (a+1)) / colSums(prevt)
-		matplot(a, prevt, type = 'l',col=col,xlab = "Age",ylab = "prevalence",...)
-		segments(ma,0,ma,1,lwd=1,col=col)
-	}
-	
-}
-
-barmargins <- function(dec.i,ylim){
-	
-	sets          <- paste(dec.i$year1,"vs",dec.i$year2)
-	code          <- unique(sets)
-	recvec        <- 1:length(code)
-	names(recvec) <- code
-	dec.i$decnr   <- recvec[sets]
-	
-	sex           <- unique(dec.i$sex)
-	sex           <- ifelse(sex == "1.men" ,"m", ifelse(sex == "2.wmn", "f", "b"))
-	
-	edus          <- c("all_edu", "primary" , "secondary", "terciary"  )
-	edus1         <- c("0.All edu", "1.Less HS" , "4.HS/GED/Sm coll ex AA", "5.AA/BS/+"  )
-	names(edus)   <- edus1
-	edu           <- edus[unique(educlevel)]
-			
-			
-	trmargins     <- acast(dec.i, transition ~ state ~ decnr, sum, value.var = "value")
-	
-	
-	trp <- trn <-trmargins
-	trp[trp < 0] <- NA
-	trn[trn > 0] <- NA
-	
-	lab.extra <- rownames(trmargins)
-	names(lab.extra) <- c("onset 1","onset 2", "mort 1", "rec 1", "onset 2", "mort 2", "rec 2", "rec part", "mort 3")
-	
-	if (missing(ylim)){
-		ylim <- range(pretty(c(apply(trn,3,rowSums,na.rm=TRUE), apply(trp,3,rowSums,na.rm=TRUE))))	
-	}
-	
-	barplot(t(trp[,,1]), ylim = ylim, legend.text=c("HLE","ADL1","ADL2p"), main = paste(code[1],sex,edu),
-			ylab = "contribution to difference in e50", space = 0)
-	text(1:length(lab.extra) - .5,ylim[1] - .25,names(lab.extra),srt=90,xpd=TRUE,cex = .8,pos=2)
-	barplot(t(trn[,,1]),add=TRUE,space=0)
-	
-# 1995 vs 2014
-	barplot(t(trp[,,2]), ylim = ylim, legend.text=c("HLE","ADL1","ADL2p"), main = paste(code[2],sex,edu),
-			ylab = "contribution to difference in e50",space=0)
-	text(1:length(lab.extra) - .5,ylim[1] - .25,names(lab.extra),srt=90,xpd=TRUE,cex = .8,pos=2)
-	barplot(t(trn[,,2]),add=TRUE,space=0)
-	
-# 2004 vs 2014
-	barplot(t(trp[,,3]), ylim = range(trmargins), legend.text=c("HLE","ADL1","ADL2p"), main = paste(code[3],sex,edu),
-			ylab = "contribution to difference in e50",space=0)
-	text(1:length(lab.extra) - .5,ylim[1] - .25,names(lab.extra),srt=90,xpd=TRUE,cex = .8,pos=2)
-	barplot(t(trn[,,3]),add=TRUE,space=0)
-}
-
-# for heat tables
-assign_colors <- function(Tabi, ramp, breaks = seq(-2.4,2.4,by=.1)){
-	cols <- ramp(length(breaks)-1)
-	COLS <- apply(Tabi,2,function(x){
-				gsub(pattern="#",replacement="",as.character(cut(x,breaks=breaks,labels=cols)))
-			})
-	
-	TextCol <- ifelse(abs(Tabi) > .8,"FFFFFF","000000")
-	out <- COLS
-	for (i in 1:ncol(out)){
-		out[,i] <- paste0("\\cellcolor[HTML]{",
-				COLS[,i],
-				"}{\\color[HTML]{",
-				TextCol[,i],
-				"}", 
-				sprintf("%.2f", round(Tabi[,i],2)),"}")
-	}
-	out
-}
 #sprintf("%.2f", round(Tab.i[,1],2))
 #sprintf("%03",as.character(round(Tab.i[,1],2)))
 # deprecated as of 10-May 2018. Functions were revamped to account for different
@@ -752,4 +640,40 @@ assign_colors <- function(Tabi, ramp, breaks = seq(-2.4,2.4,by=.1)){
 #		dc <- e50dcs(datself, to = to, age = age, prop = prop, deduct = deduct)
 #	}
 #	dc 
+#}
+
+#get_data <- function(path = "N:\\dcs\\proj\\hledecomp\\results", 
+#		version = "01",
+#		sex = "1.men",
+#		year = 2004,
+#		educlevel = "0.All edu",
+#        self = TRUE){
+#	# this works on Tim's MPIDR PC, Windows machine...
+#	Dat           <- get_rates_all(path = path, version = version, self = self)
+#
+#	sprop         <- foreign::read.dta(file.path(path,"initprop","initprop2.dta"))
+#	
+#	facs          <- sapply(sprop,class) == "factor"
+#	sprop[, facs] <- lapply(sprop[,facs], fac2ch)
+#	
+#	# subset() or with() don't like it when your args have same names as cols, so
+#	# here's a verbose subset
+#	ind            <- Dat$sex == sex & Dat$educlevel == educlevel & Dat$time == year 
+#    Dat            <- Dat[ind, ]
+#	Dat            <- Dat[order(Dat$age), ]
+#
+#	ind            <- sprop$sex == sex & sprop$educlevel == educlevel & sprop$propweighted == 1 & grepl(pattern = "age 50-54", sprop[,1])
+#	sprop          <- sprop[ind, c("s1_prop","s2_prop","s3_prop")]
+#	
+#	Dat            <- Dat[order(Dat$age), ]
+#	age            <- Dat$age
+#	cols           <- getcols(ntrans = 3, self = self)
+#	Dat            <- Dat[, cols]
+#	rownames(Dat)  <- age
+#	
+#	sprop          <- unlist(sprop)
+#	sprop          <- sprop / sum(sprop)
+#	attr(Dat, "initprop") <- sprop
+#	attr(Dat, "time")     <- year
+#	Dat
 #}

@@ -98,22 +98,11 @@
 \newcommand{\rd}[1]{\textcolor{red}{#1}}
 %\defcitealias{HMD}{HMD 2016}
 
-% junk for longtable caption
-%\AtBeginEnvironment{longtable}{\linespread{1}\selectfont}
-%\setlength{\LTcapwidth}{\linewidth}
-
-% sort van Raalte properly
-% #1: sorting key, #2: prefix for citation, #3: prefix for bibliography
-%\DeclareRobustCommand{\VAN}[3]{#2} % set up for citation
-%\newcommand{\tc}{\quad\quad\text{,}}
-%\newcommand{\tp}{\quad\quad\text{.}}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{document}
 
 
 \title{Trends in United States life expectancy and disability above age 50: Delayed onset, improved recovery, mortality change, or compositional change?}
 
-%\author{Tim Riffe \and Neil Mehta \and Daniel Schneider \and Mikko Myrskyl\"a}
 \author[1]{Tim Riffe\thanks{riffe@demogr.mpg.de}}
 \author[2]{Neil Mehta}
 \author[1]{Daniel Schneider}
@@ -376,40 +365,9 @@ This study is not perfect, but we think it sends a clear message that is empiric
 \section{Conclusions}
 The United states has been a laggard in life expectancy at age 50, but there are some drivers that are ripe for intervention. Secular mortality change, net of health dynamics and population composition, has been a primary driver of mean time spent free of and in disability. Mortality improvements do not lead to disability expansion. Potential improvement in disability recovery rates is a strong and under-recognized lever to both increase overall life expectancy and shift years lived in disability to good health. Recovery will remain a lever as long as the transition rate into disability is high, in part because mortality rates of the disabled have been and will probably continue falling. Investment in recovery is not to the exclusion of actions that would delay or avoid onset, which are far more effective. Life expectancy improvement at age 50 from educational expansion has been modest in the period studied, but holds much potential to fuel further increases in life expectancy for both males and females. While education will be a positive force, the trend of increased rates of disability among those entering old age is worrisome, and we suspect that it is being driven by obesity. The obesity epidemic of today will have echoes in old-age disability patterns for decades to come if the population in young and middle ages does not stem the onset of obesity and take steps to reduce its severity. Obesity, in part via disability, will contribute to a continuance of US laggard status in old-age life expectancy.  
 
-%\rd{Mikko: A key point in the discussion can be that that this paper considers the DFLE/DLE dynamics from a novel perspective, although the perspective is perhaps obvious for demographers:  decomposition of the change to contributions to onset, recovery, and death. Has someone done this? If not let’s be very bold about that. If someone has done this, surely they have not done this using recent high-quality U.S. data. So either we are the first to do this, or we are the first to do this in our current context in which understanding DFLE/DLE dynamics is particularly important.}
-
-
-%\url{https://link.springer.com/content/pdf/10.1353\%2Fdem.0.0070.pdf} – a key paper, as is also the Montez/Hayward 2014 paper. Incidence based markov models, ADL disability, 1984-2000. The paper has conclusions that sound as if they did what we do: “Changes in disability-free life expectancy resulted from decreases in disability incidence and increases in the incidence of recovery from disability across the two survey cohorts. Age-speci c mortality among the ADL disabled declined signicantly in the later cohort after age 80. Mortality for the IADL disabled and the nondisabled did not change signicantly” However, they don’t decompose. These conclusions are based on eyeballing of incidence/recovery/death trajectories at two time points. This perhaps gives some leverage to our motivation: Crimmins et al. did a “decomposition” with incidence based models but arrived at a conclusion that is opposite to ours, perhaps because of the difference in the “decomposition” methods.
- 
-%Plenty of Sullivan papers that are related, here just a few
- 
-%\url{https://ajph.aphapublications.org/doi/abs/10.2105/AJPH.2016.303089} -- Sullivan, 1982-2004, finds that in particular for women improvements in LE are largely DLE (no DFLE), and calls for policies that would *postpone* disability. This is perhaps in contrast to what we find, that improvements in DFLE stem largely from keeping the DF alive, and that investing in recovery may deliver largest gains in DFLE
- 
-%\url{https://link.springer.com/article/10.1007/s11113-014-9337-6}-- Sullivan, NHIS data, 1991-2001, interesting finding that “The 1990s was a period where the increased years of life between ages 60 and 90 were concentrated in disabled years for most population groups.”
- 
-%\url{http://www.nber.org/papers/w22306}  -- Chernew, Cutler et al use data over 1992-2008, ADL for disability and Sullivan type approach although they talk about incidence (they don’t cite Sullivan, and write as if they invented the method), and find that CVD and vision problems explain about 2/3 of the improvement in DFLE. I am not sure how any of this translates into our analysis, since their focus is on specific conditions that results in people having ADL. But can say decompositions in the Sullivan framework have been attempted.
-%There are obvious ways to frame these results in a compression, expansion, equilibrium language. That may be nice because it's familiar language. To be clear it would be possible to decompose with respect to a clear measure of compression (DLE / LE), but I do prefer to keep things in year units.
-
-%It would also be possible to plug in some counterfactuals to guage better what levers are the closest at hand. In the way things are now, it would seem to pay off nicely to invest in recovery: improvements in recovery adds more to DFLE than it subtracts from DLE. This is probably truer the greater the mortality gradient between states. I've also asked DCS to add a state ``healthy but ever disabled'', as a check on the homogeneity of the healthy-- this is necessary to know how realistic the recovery payoff, as stated above, is. It would change the arrow configuration in the state space too (no returns to straight good health).
-
-%Potential improvements may be in store on a 20-year horizon due to compositional differences already determined today in better-educated younger ages, but also due to preventative, technological, and policy changes that affect transitions into and recovery from disability, and that would require investment. While there are forthcoming boosts to LE due to the better educational attainment of younger generations, much of the improvement in life expectancy observed over the past 20 years is net of group differences in disability and educational attainment, meaning it is driven by something else that we are not accounting for.
 %\section{Conclusions}
 %\label{sec:conclusions}
 % bibliography
 \bibliographystyle{spbasic}
 \bibliography{references}  
 \end{document}
-
-
-
-%This is a tabular representation of the decompositon results that were represented as bar charts in the REVES talk. I think it took too much mental gymnastics at REVES to realize the various ways in which things are additive, but it is actually quite clear in the following tables, since we have marginal sums, and people are used to such tables. First, we have a pretty good match to the HMD LE trend for the US (not shown).\footnote{Potential departures could be due to several understandable factors, and can be explained if necessary, but it's not worth gettign sidetracked by that just now.}. 
-
-%The main goods are the decompositions of the within-group changes between our present 3 time points (1996, 2006, 2014). Those time points are willy nilly, and we may move to annual estimates soon, so we can select years at-will. First, note that the columns DFLE and DLE sum to LE, both within changes due to transiton rates and within state expectancy changes. To interpret signs, it helps to moralize some: We \emph{want}: mortality down (DFLE +, DLE +), transitions to disability down (DFLE+, DLE-), and recovery up (DFLE+, DLE-).
-
-%The total change in male LE from \textbf{1996 to 2006} was 1.41, of which 1.27 came from an overall increase of 1.27 in DFLE. Looking at the LE column, we see that transitions from healthy to dead (m14) account for most of the change. Looking at the DLE column, we see that most increases were also due to the decreased mortality of healthy people (m14), but this was offset almost entirely by decreaed entries to disability (m12), not bad! The mortality of the disabled also improved a bit, adding .09 to DLE, .07 to DFLE (by allowing people to cycle back by not dying), adding to .15 LE, also a good outcome.
-
-%The total change in male LE from \textbf{2006 to 2014} was .65, of which .38 came from an increase in DFLE, and .27 from DLE, a less optimal breakdown. Looking at the LE column, we see that transitions from healthy to dead (m14) account for most of the change. The other story in this table is reduced recovery, which of course steals more healthy years than it adds disabled years. The other two factors increasing DLE are things that are actually quite good: they survive better, as do healthy people, allowing them to become disabled. Transitions into disability actually decreased. So, although DLE increased, most of the story behind it is straight good news: we just know that recovery is the only setback. Make sense?
-
-%For females from \textbf{1996 to 2006} there was a modest gain in LE of .76 years, due to a strong increase in DFLE, partially offset by a decrease in DLE. Sounds like a good tradeoff until we realize that the reduction in DLE was due to i) worse mortality and ii) worse recovery. At the same time transitions to disability decreased, adding .73 to DFLE and deducting .43 from DLE- that's straight good news, but transitinos out of disability were straight bad news. This is not the way to engineer compression folks. The main protagonist here is again improved mortality of the healthy.
-
-%For females from \textbf{2006 to 2014} we have a strong increase in LE of 1.47 years, due entirely to mortality (1.36+.54), mostly the mortality of the healthy. Recovery got way worse (-.93,+.51)and onset was unchanged. This lead to a large increase in DLE and a merely modest increase in DFLE: so large was the recovery setback (-.93) that it almost entirely chancelled out the good news for the mortality of the healthy (+.98). If we could ignore ``health dynamics'', we would have had something like dynamic equilibrium in this period, but althogether this is straight expansion, boo.

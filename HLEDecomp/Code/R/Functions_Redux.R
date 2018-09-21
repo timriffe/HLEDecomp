@@ -1,17 +1,20 @@
-setwd("/home/tim/git/HLEDecomp/HLEDecomp")
-source("Code/R/Functions.R")
+
 library(data.table)
 library(DemoDecomp)
 library(RColorBrewer)
 library(xtable)
-getwd()
-# Author: tim
-###############################################################################
-# for a single year-sex-edu
-wmean <- function(x,w){
-	sum(x*w) / sum(w)
+me <- system("whoami",intern=TRUE)
+if (me == "mpidr_d\\riffe"){
+	setwd("U:/git/HLEDecomp/HLEDecomp")
+}
+if (me == "tim"){
+	setwd("/home/tim/git/HLEDecomp/HLEDecomp")
 }
 
+source("Code/R/Functions.R")
+
+# Author: tim
+###############################################################################
 
 # this changes the way fractions are decomposed.
 # stack trans,frac,trans,frac,trans,frac (where frac is 4 pieces)
