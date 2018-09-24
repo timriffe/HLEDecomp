@@ -67,8 +67,6 @@ head(sprop)
 #facs          <- sapply(sprop,class) == "factor"
 #sprop[, facs] <- lapply(sprop[,facs], fac2ch)
 
-# change this to get modeled fractions.
-sprop         <- sprop[sprop$propweighted == 1 & grepl(pattern = "age 50-54", sprop[,1]), ]
 
 # we'll append to age 50 and pad with NAs in other ages.
 # inefficient, but keeps things together.
@@ -80,10 +78,10 @@ pcols         <- c("e1_s1_prop_glmwgt", "e1_s2_prop_glmwgt", "e1_s3_prop_glmwgt"
 		"e5_s1_prop_glmwgt", "e5_s2_prop_glmwgt", "e5_s3_prop_glmwgt")
 colnames(sprop)
 
-notp <-  c("sex","time", "age")
+notp          <- c("sex","time", "age")
 colskeep      <- c(notp, pcols)
 sprop         <- sprop[,colskeep]
-sprop$sex <- as.character(sprop$sex)
+sprop$sex     <- as.character(sprop$sex)
 # get selected years for now
 sprop <- sprop[sprop$time %in% c(1996,2006,2014), ]
 # now rescale to proportions rather than 10k radix
@@ -95,7 +93,6 @@ sproppri <- spropsec <- spropuni <- sprop
 sproppri <- sproppri[,c(notp,pcols[1:3])]
 spropsec <- spropsec[,c(notp,pcols[4:6])]
 spropuni <- spropuni[,c(notp,pcols[7:9])]
-
 
 pnew     <- c("s1_prop", "s2_prop", "s3_prop")
 colnames(sproppri) <- c(notp, pnew)
@@ -114,7 +111,7 @@ for (i in 1:length(versions)){
 			version = versions[i])
 	TR.i     <- TR.i[TR.i$educlevel != "0.All edu",]
 	TR.i     <- merge(TR.i,sprop,all.x=TRUE,fill=NA)
-	
+
 	TR.i$edu <- edus[TR.i$educlevel]
 	TR.i$Sex <- TR.i$sex
 	TR.i$sex <- sexes[TR.i$sex]
