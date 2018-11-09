@@ -5,6 +5,7 @@
 
 \usepackage[ngerman,english]{babel}
 \usepackage{tikz}
+ \usetikzlibrary{arrows,topaths}
 \usepackage[normalem]{ulem}
 \geometry{paperwidth=10in, paperheight=7.5in}
 \usepackage{animate}
@@ -64,9 +65,9 @@ How much of the change in life expectancy at age 50 $e(50)$ is due to changes in
 \begin{frame}[plain]
 \Large
 \begin{block}{Data \& Methods}
-\begin{itemize}
+\begin{itemize}[<+->]
 \item HRS RAND version P. 
-\item Transition probabilities: mlogit with age and time splines (3 knots).
+\item Transition probabilities: mlogit with age splines (3 knots).
 \item Controls for race/eth (4) and education (3). 
 \item 3-state Markov matrix models centered on years 1996, 2006, and 2014. 
 \item Trend decomposition using Horiuchi et. al. (2007) method.
@@ -77,8 +78,10 @@ How much of the change in life expectancy at age 50 $e(50)$ is due to changes in
 \begin{frame}[plain]
 \Large
 \begin{center}
-\begin{tikzpicture}[->,shorten >=3pt,auto,node distance=5cm,
-  thick,main node/.style={draw}]
+%\begin{tikzpicture}[->,auto,node distance=5cm,
+%  thick,main node/.style={draw}]
+  \begin{tikzpicture}[>=stealth',semithick,
+  auto, node distance = 3cm,main node/.style={draw}]
 
   \node[main node] at (0,0) (1) {Disability free};
   \node[main node] at (5,-7) (3)  {Dead};
@@ -132,7 +135,7 @@ How much of the change in life expectancy at age 50 $e(50)$ is due to changes in
 \Large
 A word on decomposition
 \vspace{2em}
-\begin{itemize}
+\begin{itemize}[<+->]
 \item If discrete, decompose wrt ``out'' probabilities.
 \item all parameters in a single vector, $\textbf{p}$
 \item wrap all programming steps to produce output $e(50)$ in a single function, $f(\textbf{p})$
@@ -191,7 +194,7 @@ Females 2006-2014
 \Large
 \begin{center}
 Some thoughts
-\begin{itemize}
+\begin{itemize}[<+->]
 \item Why decompose?
 \item Additivity
 \item Multidimensional output: tables, bars, other, or none?
