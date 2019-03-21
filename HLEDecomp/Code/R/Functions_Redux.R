@@ -157,7 +157,11 @@ make_xtable_redux <- function(Tab.i,.sex="f", .deci="1996-2006",version="06",ram
 			sanitize.text.function = identity)
 }
 # table 1a (males 1996-2006)
-
+TR    <- local(get(load("/home/tim/git/HLEDecomp/HLEDecomp/Data/Transitions/DCS/initdetail/TR_v06.Rdata")))
+TR    <- data.table(TR)
+PREV  <- TR[ , get_prev_dt(.SD), by = list(sex, edu, time)]
+TR2   <- collapseTR(TR = TR, PREV = PREV)
+# started 16:32 (less than 5)
 Tab1a <- cbind(
 		decomp_redux_leaveout_wrapper(TR2,time1=1996,time2=2006,sex="m",ntrans=2,to=1),
 		decomp_redux_leaveout_wrapper(TR2,time1=1996,time2=2006,sex="m",ntrans=2,to=2),
@@ -173,11 +177,23 @@ Tab2a <- cbind(
 		decomp_redux_leaveout_wrapper(TR2,time1=1996,time2=2006,sex="f",ntrans=2,to=2),
 		decomp_redux_leaveout_wrapper(TR2,time1=1996,time2=2006,sex="f",ntrans=2,to=5))
 
-
 Tab2b <- cbind(
 		decomp_redux_leaveout_wrapper(TR2,time1=2006,time2=2014,sex="f",ntrans=2,to=1),
 		decomp_redux_leaveout_wrapper(TR2,time1=2006,time2=2014,sex="f",ntrans=2,to=2),
 		decomp_redux_leaveout_wrapper(TR2,time1=2006,time2=2014,sex="f",ntrans=2,to=5))
+
+DecompResults <- list(Tab1a = Tab1a, Tab1b = Tab1b,Tab2a = Tab2a,Tab2b = Tab2b)
+
+DecompResults <- lapply(DecompResults, function(x){
+			x <- rbind(x,colSums(x))
+			rownames(x) <- c("Onset","DF Mortality","Recovery",
+					"Dis. Mortality","Age50 Disab.","Age 50 Educ.","Total")
+			colnames(x) <- c("DFLE","DLE","LE")
+			as.data.frame(x)
+		})
+
+
+saveRDS(DecompResults,file="Data/Results/mspec06/dec/TableDataStruct.rds")
 
 # Test of DCS's suscipcion that decomp results
 # sensitive to age definitions. Still need work on
@@ -186,7 +202,16 @@ Tab2b <- cbind(
 #		decomp_redux_leaveout_wrapper(TR2,time1=2006,time2=2014,sex="f",ntrans=2,to=1,age=52),
 #		decomp_redux_leaveout_wrapper(TR2,time1=2006,time2=2014,sex="f",ntrans=2,to=2,age=52),
 #		decomp_redux_leaveout_wrapper(TR2,time1=2006,time2=2014,sex="f",ntrans=2,to=5,age=52))
+Tabi <- DecompResults[[1]]
+ramp   <- colorRampPalette(brewer.pal(11,"PRGn"),space = "Lab")
+breaks <- seq(-1.5,1.5,by=.1)
+cols <- ramp(length(breaks)-1)
+COLS <- apply(Tabi,2,function(x){
+			as.character(cut(x,breaks=breaks,labels=cols))
+		})
+TextCol <- ifelse(abs(Tabi) > .8,"#FFFFFF","#000000")
 
+Tabi   <- assign_colors(DecompResults[[1]],ramp=ramp,breaks=breaks)
 
 ramp <- colorRampPalette(brewer.pal(11,"PRGn"),space = "Lab")
 make_xtable_redux(Tab2a,.sex="f", .deci="1996-2006",version="06",ramp=ramp )

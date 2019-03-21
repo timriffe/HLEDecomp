@@ -416,14 +416,14 @@ do_decomp_dt <- function( DAT,
 # important. Detected, but not fallible.
 
 #DAT <- get_TR(version = "06",subset = edu == "primary" & sex == "m" & time == 1996)
-get_prev_dt <- function(DAT, to, prop, deduct = TRUE, ntrans){
+get_prev_dt <- function(DAT, prop, deduct = TRUE, ntrans){
 	
 	DAT <- as.data.frame(DAT,stringsAsFactors=FALSE)
 	
 	if (missing(ntrans)){
 		ntrans <- guess_ntrans(DAT)
 	}
-	
+
 	if (missing(prop)){
 		pnames <- paste0("s", 1:ntrans, "_prop")
 		prop   <- unlist(DAT[1, pnames])

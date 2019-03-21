@@ -1,0 +1,171 @@
+---
+output:
+ bookdown::word_document2:
+  fig_caption: yes
+bibliography: references.bib
+csl: springer-basic-author-date.csl
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+# Trends in United States life expectancy and disability above age 50: Delayed onset, improved recovery, mortality change, or compositional change?
+
+# Authors
+### Tim Riffe
+ Research Scientist, Laboratory of Population Health, Max-Planck-Institute for Demographic Research, Rostock, Germany 
+ 
+ Email: riffe@demogr.mpg.de
+
+### Neil Mehta
+ Assistant Professor of Health Management and Policy, School of Public Health, University of Michigan, Ann Arbor, USA 
+ 
+ Email: nkmehta@umich.edu
+
+### Daniel Schneider
+ Research Scientist, Laboratory of Demographic Data, Max-Planck-Institute for Demographic Research, Rostock, Germany 
+ 
+ Email: Schneider@demogr.mpg.de
+
+### Mikko Myrskylä
+Executive Director, Max Planck Institute for Demographic Research, Rostock, Germany 
+
+Professorial Research Fellow, London School of Economics, UK
+
+Professor of Social Statistics, University of Helsinki, Finland
+
+ Email: myrskyla@demogr.mpg.de
+
+# Abstract
+### Background
+Life expectancy and disability free life expectancy at older ages in the United States has steadily increased in recent decades. We do not know whether changes in disease onset, recovery, or mortality or compositional change drives this trend.
+
+### Objective
+We aim to determine how much of the change in life expectancy between 1995 and 2015 is due to changes in onset, recovery, mortality, as well as changes SES composition coupled with SES gradients in disability and mortality.
+
+### Data and Methods
+We use the US Health and Retirement Study to estimate transition probabilities between disability states, as well as state-specific death probabilities, for the years 1996, 2006, and 2014. We calculate remaining disability free, disabled, and total life expectancy at age 50 using multistate Markov matrix models. We decompose the change in expectancies into components for onset, recovery, mortality, and compositional effects using pseudo-continuous decomposition.
+
+### Results
+We describe preliminary results for males and females. Perhaps counter to intuition, most change in disability free life expectancy is due to mortality and not to onset of or recovery from disability. Most of the two-year increase in disability free life expectancy for males since 1996 is due to decreased mortality of both disabled and disability free states, whereas delayed onset and slowed recovery from disability offset each other. Females have undergone a disability expansion, driven largely by deterioration in recovery rates since 2006.
+
+### Conclusions
+Secular mortality change has been the main driver of mean time spent free of and in disability. Potential improvement in disability recovery rates is a strong lever to both increase overall life expectancy and shift years lived in disability to good health. Life expectancy improvement at age 50 from educational expansion has been modest in the period studied, but holds much potential to fuel further increases in life expectancy for both males and females.
+
+
+# Introduction
+
+The USA has fallen behind in the rankings of life expectancy compared with other high income countries. Although this well-known finding is primarily due to mortality differences in young and middle ages, the USA has also lost ground in rankings of life expectancy in older ages [@HMD]. Fig. \@ref(fig:e0trends) displays trends in remaining life expectancy at age 50 among all high-income HMD countries with data in both 1996 and 2014, and it shows the USA to be under-performing--- This picture motivates our work. The USA had already dropped to a modest ranking by 1996 (17th of 23 for females and 11th of 23 for males), but by the year 2014 the rank position had deteriorated to last and penultimate for females and males, respectively. Life expectancy in older ages has in plain terms stagnated since 2010. 
+
+```{r e0trends,echo=FALSE,message=FALSE,warning=FALSE, fig.cap="Trends in male and female remaining life expectancy at age 50 from 1990 to 2016 in 23 high-income HMD countries: Australia, Austria, Belgium, Switzerland, Germany, Denmark, Spain, Finland, France, Ireland, Israel, Italy, Japan, Luxembourg, the Netherlands, Norway, Portugal, Sweden, Taiwan, Great Britain, and the United States. We exclude countries of the contemporary Eastern European mortality pattern, as well as HMD countries without data for the years 1996 and 2014."}
+system(paste("cd",getwd(), "&& inkscape -l Figures/USAvsOthers_Ink.svg Figures/USAvsOthers_Ink.pdf",sep=" "))
+knitr::include_graphics("Figures/USAvsOthers_Ink.svg")
+```
+
+Mean remaining lifespan at age 50 in the USA increased by 2.9 years for males and 2.0 years for females in the two decades from 1996 to 2016, amounting to 10\% and 6\% increases, respectively. In the net, mortality has improved over this period. Despite under-performance in international perspective, there is still some success to account for. Several factors underlie this modest improvement, including improved living standards and nutrition over the lifecourse of the cohorts composing the 50+ population, as well as medical improvements allowing for quicker and more certain recovery from many health conditions. Cures, lifesaving, and life-extending treatments may delay the deaths of both healthy and chronically ill or disabled persons, and therefore may contribute to increasing both years lived in a state of morbidity and in good health. For the typical case of population-level death rates that underlie estimates of period life expectancy, it is not clear whether a rate improvement comes about due to improvements in the health and well-being of a population, the effects of medicine, or the population composition with respect to various kinds of risk sets, such as the educational composition. 
+
+Our objective is to quantify how much of the increase in life expectancy (LE), disabled life expectancy (DLE), and disability-free life expectancy (DFLE) at age 50 is due to 1) changes in the mortality rates of the disabled and disability-free, 2) changes in SES-differential mortality, as captured by education-specific mortality, 3) changes in the fraction in each educational group and the education-specific prevalence of disability of those entering the 50+ population, and 4) changes in the onset of disability (disablement) and recovery from disability in old ages. These effects can be condensed as mortality change, versus disability change, versus compositional change. We consider this question to be of great importance because results will reveal the most important levers in life expectancy change, and these components in turn may indicate the potential for future improvements, but also the culprits of contemporary stagnation. 
+
+The present work is the only instance that we are aware of to directly decompose changes in LE, DFLE, and DLE into effects attributable to the transitions defined in a Markov process model of disability as well as the changing composition (in terms of disability and education) of newcomers to the 50+ population. Other studies have done similar decomposition exercises based on Sullivan-style healthy life expectancy [e.g. @andreev2003health; @nusselder2005contribution; @van2011contribution; @heijink2011decomposing; @van2013gender; @freedman2016disability; @chernew2016understanding] , but in these studies no account is made of differential mortality by health status or the potentially countervailing effects of onset versus recovery from disability. The literature includes good examples of incidence-based models of healthy life expectancy similar to our own [e.g. @crimmins2009change; @reuser2011higher; @montez2014cumulative], but these have not been decomposed in the traditional demographic sense. More often, differences in transition probabilities are directly reported, or else the leverage on expectancy of individual transition probabilities is gauged on the basis of leave-one-out counter-factual exercises, simulation, or approximated analytically with sensitivity analyses [@reuser2010effect].
+
+In the Methods section we briefly describe the data and methods used to answer our main questions. We describe trends in LE, DLE, and DFLE at age 50, and we decompose changes over time in each of these expectancies into effects from changes in the onset of disablement, recovery, mortality with and without disability, and changes in the educational composition and education-specific disability prevalence at age 50. We discuss what can be learned from this analysis, how it relates to the literature, and the limitations of our data and research design. We conclude with recommendations for further scientific inquiry and for population-level health intervention.
+
+# Methods and materials
+We estimate disability free and disabled life expectancy using incidence-based discrete-time Markov models. The model separates the population into two groups: disability free and disabled, where disability is defined as having at least one of a set of 5 activities of daily living (ADLs) ^[The five ADLs include bathing, eating, dressing, walking across a room, and getting into or out of bed.]. Fig. \@ref(statespace) shows the formal state space used in our model of disability. We use RAND version P of the US Health and Retirement Study [@RAND; @HRS] to estimate the probability of transitioning into and out of disability, and the probability of dying with and without disability with multinomial logit models. We stratify models by sex and three educational attainment categories^[Education categories include 1) less than high school, 2) high school, including GED and some college, but no degree, and 3) university degree, including 2-year associates degrees.], and control for four race and ethnicity categories. Age-effects for two-year age groups from age 50 to 110 (31 age groups) are captured flexibly with splines.^[We use 2-year age groups because HRS waves are spaced two years apart.] With this we obtain point estimates for transition probabilities in the years 1996, 2006, and 2014. 
+
+```{r statespace, echo = FALSE,warning=FALSE,message=FALSE, out.width="100%", fig.align = "center"}
+tools::texi2dvi('Figures/statespace.tex',pdf=TRUE,clean=TRUE)
+a<-file.rename(from="statespace.pdf",to="Figures/statespace.pdf")
+system(paste("cd",getwd(), "&& inkscape -l Figures/statespace.svg Figures/statespace.pdf",sep=" "))
+knitr::include_graphics("Figures/statespace.svg")
+```
+
+Given age schedules of transition probabilities depicted in Fig. \@ref(statespace) for each educational group and year, as well as the prevalence of disability at age 50 for each educational group and the fraction of the population in each group, the calculation of life expectancy follows a well-known set of matrix calculation steps, which we omit for the sake of brevity. These steps can be captured in a single function, $e^i(\textbf{p},\pi)$, where $e^i()$ defines the average time spent in the $i^{th}$ state (LE, DFLE, or DLE) given a vector of age- and education-specific transition probabilities $\textbf{p}$, and a vector $\pi$ of the fraction of persons aged 50 in each educational group and disability state.^[For a given year and sex, $\textbf{p}$ is of length 744: 31 age groups $\times$ 3 education groups $\times$ 2 states $\times$ 4 transition types. $\pi$ is of length 6: the fraction of the population at age 50 in 2 states $\times$ 3 education groups.] This functional form facilitates classic demographic decomposition of the change in LE, DFLE, or DLE between two time points (1996 to 2006 and 2006 to 2014) that is due to each element of $\textbf{p}$ and $\pi$. 
+
+We decompose changes over time using the method proposed by @horiuchi2008, which is general enough and sufficiently stable for our needs and is available in the *DemoDecomp* R package [@DemoDecomp]^[Other options to decompose would be to use the algorithm of step-wise replacement proposed by @andreev2002algorithm, or by carrying out a lifetable response experiment as proposed by @caswell1989analysis. The first is equally general and straightforward to set up, but it is sensitive to the order in which elements are replaced, and it does not maintain the identity $p(stay) + p(entry) + p(exit) = 1$ over the algorithm steps. The second is (we conjecture) asymptotically equivalent to the Horiuchi method, but it requires extensive matrix derivations.]. Decomposition produces an estimate of the contribution of each age-specific difference in transition probability and age-50 population fractions (by education and disability state), for a total of $744 + 6 = 750$ elements. These contributions are given in year-units, and we aggregate them in various ways to determine the degree to which changes in each transition type (each edge in the Fig. \@ref(fig:statespace) graph), as well as changes in the prevalence and educational composition of the age-50 population.
+
+## Transition probabilities and life expectancy
+The transition probabilities for females in the year 2006 are given as an example to show the basic characteristics of each age pattern. These are different for each time point, education group, and between the sexes, but the basic schematic shape of each curve is essentially the same for all subgroups: i) mortality increases monotonically for both the disabled and the non-disabled, but is higher for the disabled ii) the probability of staying healthy decreases monotonically after age 50, iii) the probability of staying disabled either remains flat until near the modal age at death, after which it falls, or else it monotonically falls over all ages, iv) the probability of recovering from disability monotonically falls, and v) the probability of entering into a state of disability first increases strongly, then decreases after age 100 as the force of mortality becomes the dominant transition. 
+
+```{r trans, echo = FALSE,warning=FALSE,message=FALSE, fig.cap="Transition probabilities for US females in 2006, as estimated from HRS data, all education groups combined. These age schedules correspond to the arrows in Fig. 1"}
+system(paste("cd",getwd(), "&& inkscape -l Figures/TransitionsInk.svg Figures/TransitionsInk.pdf",sep=" "))
+knitr::include_graphics("Figures/TransitionsInk.svg")
+```
+The total life expectancies we calculate using HRS data for all education groups combined (and controlling for race and ethnic composition) are very close to the HMD levels and trends, which were based on more aggregate data (See Fig.\@ref(fig:e50)). This gives some assurance that the data and model are working as expected, but one ought not expect the two trends to coincide as a matter of definition: the HRS estimates refer to a statistical centroid of race/ethnicity and education groups, with prevalence having arrived at its steady state given the HRS transition probabilities: the real world underlying HMD estimates is a messy composition and it is not in a steady state, and so we expect some departures, even under perfect data conditions. Also of interest to our study is the size of the educational gradient: we observe an approximately 6-year gap between the highest and lowest educated, which has been increasing for both males and females. This gap size is roughly consistent with @montez2014cumulative, whose model differs from our own in several ways.
+
+```{r e50, echo = FALSE,warning=FALSE,message=FALSE,fig.cap="Life expectancy at age 50 for males (blue) and females (purple) using HRS transition probabilities. Bold dashed lines indicate the HRS estimate for all educational groups combined. It is quite close to the HMD estimate (gray background lines). High education (low education) groups in light dashed lines have approximately three years higher (lower) values than the average for both males and females."}
+system(paste("cd",getwd(), "&& inkscape -l Figures/e50_Ink.svg Figures/e50_Ink.pdf",sep=" "))
+knitr::include_graphics("Figures/e50_Ink.svg")
+```
+
+## Life expectancy with and without disability
+
+Life expectancy breaks down into two additive expectancies, DFLE and DLE, which we show in Fig. \@ref(fig:bars) for males (a-c) and females (d-f) for all education groups combined (a,d), primary education (b,e) and university education (c,f). Male DFLE increased from 1996 to 2006 to 2014. For females DFLE increased by more than a year in the first period, but stagnated in the second period, even falling by 10 months in the low educated group. DLE held constant for males on the whole, increasing three months for the low-educated. DLE first decreased from 1996 to 2006 then increased by 2014 for an overall increase of 7-8 months in disability over all education groups and females on the whole.  
+
+The fraction of life expectancy at age 50 in the state of disability was decreased by less than a percentage point for males in each education group from 1996 to 2014, and increased by 1-2 percentage points for females. Sex differences are also as expected from the literature: DFLE is 10-20\%, and DLE is 20-40\% higher for females than for males within each year and education group. Notably, most of the increase in LE for females from 2006 to 2014 was due to a 0.98 year increase in DLE (all education groups blended). 
+
+```{r bars, echo = FALSE,warning=FALSE,message=FALSE,fig.cap="DFLE (light gray) and DLE (dark gray) by sex (rows) and education grouping (columns).",fig.width=7,fig.height=7}
+source("Code/R/Functions.R")
+source("Code/R/Preamble.R")
+version   <- "06"
+mspec     <- paste0("mspec", version)
+path2     <- file.path("Data","Results",mspec,"le","le_2.rds")
+le2       <- readRDS(path2)
+barsubset <- function(chunk,ymax = 40){
+	dat           <- t(as.matrix(chunk[,c("1","2")]))
+	colnames(dat) <-  c(1996,2006,2014)
+	barplot(dat, col = c(gray(c(.8,.4))), ylim=c(0,ymax),border=NA,axes=FALSE)
+	abline(h=seq(5,35,by=5),col="white")
+	axis(2,las=1)
+}
+par(mfrow=c(2,3))
+barsubset(subset(le2,sex=="m" & edu == "all_edu"))
+text(.5,38,"A",font=2,cex=2)
+text(2,44,"All edu",font=2,cex=2,xpd=TRUE)
+text(-1,20,"Male",srt=90,font=2,cex=2,xpd=TRUE)
+barsubset(subset(le2,sex=="m" & edu == "primary"))
+text(.5,38,"B",font=2,cex=2)
+text(2,44,"Primary",font=2,cex=2,xpd=TRUE)
+barsubset(subset(le2,sex=="m" & edu == "terciary"))
+text(.5,38,"C",font=2,cex=2)
+text(2,44,"University",font=2,cex=2,xpd=TRUE)
+barsubset(subset(le2,sex=="f" & edu == "all_edu"))
+text(.5,38,"D",font=2,cex=2)
+text(-1,20,"Female",srt=90,font=2,cex=2,xpd=TRUE)
+barsubset(subset(le2,sex=="f" & edu == "primary"))
+text(.5,38,"E",font=2,cex=2)
+barsubset(subset(le2,sex=="f" & edu == "terciary"))
+text(.5,38,"F",font=2,cex=2)
+
+```
+
+## Decomposition results
+
+We decompose changes in the values of LE, DFLE, and DLE as represented in Fig.~\ref{fig:barsmalesa}, Fig.~\ref{fig:barsfemalesa}, or the bold dashed line in Fig.~\ref{fig:e50}. To be clear, this quantity is based on blending together education-specific expectancies according to the fraction in each education group at age 50, which also changes over time. The components of change in the value of LE, DFLE, and DLE from 1996 to 2006 and from 2006 to 2014 are summarized in Tab.~\ref{tab:males} and Tab.~\ref{tab:females}, with table shading to indicate the magnitude and direction of effects (green for improvement, purple for deterioration, darker for larger magnitudes). Each cell value has been summed over age. Each table is interpreted as follows: the lower right corner gives the total change in LE for the period, which is the sum of the change in DLE and DFLE (Total margin). The contribution of each transition to each expectancy change is given in the rows labeled Onset (disablement), DF Mortality (disability free), Recovery, and Dis.(abled) Mortality. The effect of changes in disability prevalence at age 50 is given in the \nth{5} row (Age 50 Disab.) and the effect of changes in the education composition is given in the \nth{6} row (Age 50 Educ.). The final row, Total, gives the total change in the given expectancy. The LE gives the marginal row sum, which is identical to decomposing LE directly in the same way (everything is additive).
+
+From Tab. 1a we see that most of the 1.46 year increase in LE was due to improved among those with no disability, adding one year to DFLE and one and a half months to DLE, respectively. In general, mortality improvements in any state contribute to increases in the expectancy of all states. Onset among males improved in both periods, and this adds nearly twice as many years to DFLE as it deducts from DLE. Recovery from disability worsened trivially in the first period, and importantly in the second period, adding one and a half months to DLE and deducting three months from DFLE. We might call the net effect of onset and recovery something like `health dynamics', in which case health dynamics added one and a half months to LE in the first period and deducted one month from LE in the second period. Most change was positive and due to mortality. Had recovery remained unchanged from 2006 to 2014, we might have seen an additional one month increase in LE.
+
+On average, males entering age 50 over the period had a slightly higher prevalence of disability conditional on education group, which deducted less than a month from LE, but this was more than offset by compositional change in the educational attainment of 50-year-olds over the period, which itself added a month to LE in both the first and the second periods. Hypotetically and all else equal, a cohort of 50-year-old males with one half of its members having attained a high school equivalent and the other half with a university degree would have added a further 10 months to LE.
+
+```{r tab, echo = FALSE, warning=FALSE, message=FALSE}
+library(flextable)
+library(RColorBrewer)
+Tabl <- readRDS("Data/Results/mspec06/dec/TableDataStruct.rds")
+Tabi <- Tabl[[1]]
+ramp   <- colorRampPalette(brewer.pal(11,"PRGn"),space = "Lab")
+breaks <- seq(-1.5,1.5,by=.1)
+cols <- ramp(length(breaks)-1)
+COLS <- apply(Tabi,2,function(x){
+			as.character(cut(x,breaks=breaks,labels=cols))
+		})
+TextCol <- ifelse(abs(Tabi) > .8,"#FFFFFF","#000000")
+Tabi <- flextable(as.data.frame(Tabl[[1]]))
+Tabi <- bg(Tabi,bg = COLS, part = "body")
+Tabi <- color(Tabi, color = TextCol, part = "body")
+Tabi <- border(Tabi, i=c(1,4,6))
+Tabi <- autofit(Tabi)
+Tabi
+
+```
+
+# References

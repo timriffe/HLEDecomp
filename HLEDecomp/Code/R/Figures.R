@@ -152,6 +152,28 @@ par(mai=c(.5,.5,.3,0))
 barsubset(subset(le2,sex=="f" & edu == "terciary"))
 dev.off()
 
+
+par(mfrow=c(2,3))
+barsubset(subset(le2,sex=="m" & edu == "all_edu"))
+text(.5,38,"A",font=2,cex=2)
+text(2,44,"All edu",font=2,cex=2,xpd=TRUE)
+text(-1,20,"Male",srt=90,font=2,cex=2,xpd=TRUE)
+barsubset(subset(le2,sex=="m" & edu == "primary"))
+text(.5,38,"B",font=2,cex=2)
+text(2,44,"Primary",font=2,cex=2,xpd=TRUE)
+barsubset(subset(le2,sex=="m" & edu == "terciary"))
+text(.5,38,"C",font=2,cex=2)
+text(2,44,"University",font=2,cex=2,xpd=TRUE)
+barsubset(subset(le2,sex=="f" & edu == "all_edu"))
+text(.5,38,"D",font=2,cex=2)
+text(-1,20,"Female",srt=90,font=2,cex=2,xpd=TRUE)
+barsubset(subset(le2,sex=="f" & edu == "primary"))
+text(.5,38,"E",font=2,cex=2)
+barsubset(subset(le2,sex=="f" & edu == "terciary"))
+text(.5,38,"F",font=2,cex=2)
+
+
+
 pdf("Figures/bar_male_all.pdf", height=5,width=2.2)
 par(mai=c(.5,.5,.3,0))
 barsubset(subset(le2,sex=="m" & edu == "all_edu"))
