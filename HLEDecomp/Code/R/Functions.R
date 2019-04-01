@@ -68,7 +68,13 @@ v2m <- function(vec, ntrans = 3){
 	vec
 }
 
-
+v2mall <- function(vecall,ntrans=2){
+	# assume columns in order provided by
+	# getcolsall(ntrans)
+	N <- length(vecall)
+	dim(vecall) <- c(N / (ntrans^2+ntrans), ntrans^2+ntrans)
+	vecall
+}
 
 pi2u <- function(pivec){
 	cbind(rbind(0,diag(pivec)),0)
@@ -105,7 +111,7 @@ U2N <- function(U, interval = 2){
 #dat <- A1
 
 # for a single year-sex-edu
-e50 <- function(DAT, to, age = 50, prop, ntrans, deduct = TRUE, interval = 2){
+e50 <- function(DAT, to, age = 50, prop, ntrans, deduct = TRUE, interval = 2, dead = "4"){
 	DAT <- as.data.frame(DAT, stringsAsFactors = FALSE)
 	n   <- nrow(DAT)
 	if (missing(ntrans)){
@@ -118,7 +124,7 @@ e50 <- function(DAT, to, age = 50, prop, ntrans, deduct = TRUE, interval = 2){
 	}
 	prop <- prop / sum(prop)
 	
-	selfcols <- getcols(ntrans, self = TRUE)
+	selfcols <- getcols(ntrans, self = TRUE, dead = dead)
 	U    <- data_2_U(DAT[, selfcols], ntrans = ntrans)
 	N    <- U2N(U, interval = interval)
 	
@@ -160,7 +166,7 @@ e50 <- function(DAT, to, age = 50, prop, ntrans, deduct = TRUE, interval = 2){
 # this one is just for generating e0 descriptive results
 # for a single year-sex-edu
 
-e50_dt <- function(DAT, age = 50, ntrans, prop, deduct = TRUE, interval = 2){
+e50_dt <- function(DAT, age = 50, ntrans, prop, deduct = TRUE, interval = 2, dead = "4"){
 	DAT <- as.data.frame(DAT, stringsAsFactors = FALSE)
 	n   <- nrow(DAT)
 	
@@ -174,8 +180,8 @@ e50_dt <- function(DAT, age = 50, ntrans, prop, deduct = TRUE, interval = 2){
 	}
 	# TR: new Sept 18
 	prop <- prop / sum(prop)
-	
-	U    <- data_2_U(DAT[, getcols(ntrans, self = TRUE)], ntrans = ntrans)
+	selfcols <- getcols(ntrans, self = TRUE, dead = dead)
+	U    <- data_2_U(DAT[, selfcols], ntrans = ntrans)
 	
 	N    <- U2N(U, interval = interval)
 	

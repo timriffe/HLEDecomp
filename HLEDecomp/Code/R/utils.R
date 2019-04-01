@@ -29,7 +29,11 @@ getcols <- function(ntrans = 3, self = TRUE, dead = "4"){
 	}
 }
 
-guess_ntrans <- function(X){
+getcolsall <- function(ntrans,dead=ntrans+1){
+	sort(paste0("m",outer(1:ntrans,c(1:ntrans,dead),paste0)))
+}
+
+guess_ntrans <- function(DAT){
 	sum(grepl(colnames(DAT),pattern="m1")) - 1
 	# sum(nchar(colnames(DAT)) == 3 &
 	#	substring(colnames(DAT), 1, 1) == "m" &

@@ -15,11 +15,148 @@ source("Code/R/Functions.R")
 
 # Author: tim
 ###############################################################################
+TR    <- local(get(load("Data/Transitions/DCS/initdetail/TR_v06.Rdata")))
+TR    <- data.table(TR)
+# TR: had to fix colnames problem
+PREV  <- TR[ , get_prev_dt(.SD), by = list(sex, edu, time)]
+
+# TR2 just means that there are now TWO living states,
+# healthy and disabled.
+TR2   <- collapseTR(TR = TR, PREV = PREV)
+
+setnames(TR2,c("m14","m24"),c("m13","m23"))
+
+# 4 is dead, but would be nice if was ntrans+1
+
+f_dec_rescale_all <- function(vecall,to=1,age=52,ntrans=2,deduct=TRUE){
+	
+	# first, siphen off the starting proportions.
+	n                <- length(vecall)
+	ii               <- (n-ntrans+1):n
+	propi            <- vecall[ii]
+	vecall           <- vecall[-ii]
+	
+	# form into expected table layout
+	datall           <- v2mall(vecall)
+	colnames(datall) <- getcolsall(ntrans)
+	
+	# ensure constrained
+	for (i in 1:ntrans){
+		iii <- ((i-1)*(ntrans+1) +1):(i*(ntrans+1))
+		ddd <- datall[,iii]
+		ddd <- ddd / rowSums(ddd)
+		datall[,iii] <- ddd
+	}
+	
+	# gotta scale this in case it's being perturbed
+	propi <- propi / sum(propi)
+	
+	# can just send in all columns because e50 selects the self-arrows anyway, no worries.
+	e50(datall, prop = propi, to = to, age = age, ntrans = ntrans, deduct = deduct, dead = ntrans + 1)
+}
+
+TR2
+datall           <- v2mall(vecall.1)
+colnames(datall) <- getcolsall(ntrans)
+
+
+getvecall <- function(.SD){
+	.SD       <- as.data.frame(.SD)
+	propnames <- paste0("s",1:ntrans,"_prop")
+	
+	# need to rescale prop too
+	prop      <- unlist(.SD[1,propnames])
+	prop      <- prop / sum(prop)
+	
+	colsall   <- getcolsall(ntrans)
+	datall    <- as.matrix(.SD[,colsall])
+	vecall    <- c(datall, prop)
+	vecall
+}
+TR2
+# no composition here except starting composition. Education, etc can be worked in
+# in a later iteration.
+
+f_dec_rescale_all_dt <- function(.SD,to=1,age=50,ntrans=2,deduct=TRUE){
+	vecall <- getvecall(.SD)
+	
+	# calcualte result
+	f_dec_rescale_all(vecall,
+			          to = to,
+					  age = age, 
+					  ntrans = ntrans, 
+					  deduct = TRUE)
+}
+
+f_dec_rescale_all_dt(.SD,to=1,age=50,ntrans=2,deduct=TRUE)+
+f_dec_rescale_all_dt(.SD,to=2,age=50,ntrans=2,deduct=TRUE)
+
+# for total LE just give to > ntrans
+f_dec_rescale_all_dt(.SD,to=5,age=50,ntrans=2,deduct=TRUE)
+
+.SD <- subset(TR2,sex=="f"&time==1996&edu=="primary")
+
+# another function that does the subsetting/decomp as well:
+# at least one subset item must be different, otherwise pointless
+f_dec_rescale_all_decomp <- function(
+		DT,
+		to = 5,
+		ntrans = 2,
+		deduct = TRUE,
+		N = 20,
+		sex1 = "f",
+		edu1 = "primary",
+		time1 = 1996,
+		sex2 = sex1,
+		edu2 = edu1,
+		time2 = 2006){
+	
+	# get two subsets
+	vecall.1 <- getvecall(subset(DT, sex == sex1 & time == time1 & edu == edu1))
+	vecall.2 <- getvecall(subset(DT, sex == sex2 & time == time2 & edu == edu2))
+	
+	# decompose the difference
+	dec <- DemoDecomp::horiuchi(
+			func = f_dec_rescale_all,
+			pars1 = vecall.1,
+			pars2 = vecall.2,
+			N = N,
+			to = to,
+			ntrans = ntrans)
+
+	n                <- length(dec)
+	ii               <- (n - ntrans + 1):n
+	prop_component   <- dec[ii]
+	dec              <- dec[-ii]
+	DEC              <- v2mall(dec)
+	rownames(DEC)    <- seq(50,110,by=2)
+	colnames(dec)    <- 
+
+
+}
+readRDS("Data/Results/mspec06/dec/dec_1996_2006.rds")
+
+readRDS("Data/Results/mspec06/dec/TableDataStruct.rds")
+
+
+
+
+# -------------------------------------------------------------------------- #
+# Below decomposition method is designed such that only self-arrows          #   
+# are rescaled, treated as a residual. So, only mortality and state          #
+# transitions are subject to direct perturbation. This was designed          #
+# so due to priors, but a reasonable viewpoint would be to decompose         #
+# wrt *all* arrows. And there are two ways one might do this: 1) perturb     #
+# and element and then rescale all arrows originating in the state to sum    #
+# to 1, or 2) perturb and element and then rescale the other two             #
+# proportionally. Toy example testing suggests that (1) constrains           #
+# differences being decomposed, but (2) appears not to.                      #
+# -------------------------------------------------------------------------- #
 
 # this changes the way fractions are decomposed.
 # stack trans,frac,trans,frac,trans,frac (where frac is 4 pieces)
 eduvec_leaveout <- function(TR,.sex="m",.time=1996,ntrans=3){
-	outcols <- getcols(ntrans,self=FALSE)
+	outcols  <- getcols(ntrans,self=FALSE)
 	TR       <- as.data.frame(TR, stringsAsFactors = FALSE)
 	pri      <- subset(TR,sex == .sex & time == .time & edu == "primary")
 	sec      <- subset(TR,sex == .sex & time == .time & edu == "secondary")
@@ -124,6 +261,7 @@ decomp_redux_leaveout_wrapper <- function(
 		age=50){
 	outvec1 <- eduvec_leaveout(TR=TR,.sex=sex,.time=time1,ntrans=ntrans)
 	outvec2 <- eduvec_leaveout(TR=TR,.sex=sex,.time=time2,ntrans=ntrans)
+	
 	deci <- horiuchi(dec_fun_redux_leaveout, 
 			outvec1,
 			outvec2,
@@ -138,6 +276,7 @@ decomp_redux_leaveout_wrapper <- function(
 	names(out) <- c(getcols(ntrans=ntrans,self=FALSE),"Health 50","Education 50")
 	out
 }
+
 make_xtable_redux <- function(Tab.i,.sex="f", .deci="1996-2006",version="06",ramp,breaks=seq(-1.5,1.5,by=.1)){
 	mspec   <- paste0("mspec", version)
 	Tab.i <- rbind(Tab.i,colSums(Tab.i))
