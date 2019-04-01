@@ -127,14 +127,23 @@ f_dec_rescale_all_decomp <- function(
 	n                <- length(dec)
 	ii               <- (n - ntrans + 1):n
 	prop_component   <- dec[ii]
+	names(prop_component) <- paste0("s",1:ntrans,"_prop")
 	dec              <- dec[-ii]
 	DEC              <- v2mall(dec)
-	rownames(DEC)    <- seq(50,110,by=2)
-	colnames(dec)    <- 
-
-
+	colnames(DEC)    <- getcolsall(ntrans)
+	# quick and dirty, blend out age
+	c(colSums(DEC),prop_component)
 }
-readRDS("Data/Results/mspec06/dec/dec_1996_2006.rds")
+
+# next include edu
+dec_compare <- f_dec_rescale_all_decomp()
+
+
+# based on perturbing out trans and rescaling vitality to constrain
+dec_old <- readRDS("Data/Results/mspec06/dec/dec_1996_2006.rds")
+
+
+
 
 readRDS("Data/Results/mspec06/dec/TableDataStruct.rds")
 
