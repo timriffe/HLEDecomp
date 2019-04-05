@@ -139,6 +139,12 @@ f_dec_rescale_all_decomp <- function(
 dec_compare <- f_dec_rescale_all_decomp()
 
 
+
+
+
+
+
+
 # based on perturbing out trans and rescaling vitality to constrain
 dec_old <- readRDS("Data/Results/mspec06/dec/dec_1996_2006.rds")
 
