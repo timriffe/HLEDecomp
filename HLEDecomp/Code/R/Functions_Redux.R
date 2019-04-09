@@ -55,12 +55,12 @@ f_dec_rescale_all <- function(vecall,to=1,age=52,ntrans=2,deduct=TRUE){
 	e50(datall, prop = propi, to = to, age = age, ntrans = ntrans, deduct = deduct, dead = ntrans + 1)
 }
 
-TR2
-datall           <- v2mall(vecall.1)
-colnames(datall) <- getcolsall(ntrans)
+#TR2
+#datall           <- v2mall(vecall.1)
+#colnames(datall) <- getcolsall(ntrans)
 
 
-getvecall <- function(.SD){
+getvecall <- function(.SD,ntrans=2){
 	.SD       <- as.data.frame(.SD)
 	propnames <- paste0("s",1:ntrans,"_prop")
 	
@@ -73,7 +73,7 @@ getvecall <- function(.SD){
 	vecall    <- c(datall, prop)
 	vecall
 }
-TR2
+
 # no composition here except starting composition. Education, etc can be worked in
 # in a later iteration.
 
@@ -136,8 +136,12 @@ f_dec_rescale_all_decomp <- function(
 }
 
 # next include edu
-dec_compare <- f_dec_rescale_all_decomp()
+dec_compare <- f_dec_rescale_all_decomp(TR2)
 
+# decompose including structure.
+# interesting 3 edu, 2 states, so six s_prop?
+sum(as.matrix(TR2[sex=="f"&time==1996 & age==50,c("s1_prop","s2_prop")]))
+# yup.
 
 
 
@@ -146,9 +150,11 @@ dec_compare <- f_dec_rescale_all_decomp()
 
 
 # based on perturbing out trans and rescaling vitality to constrain
-dec_old <- readRDS("Data/Results/mspec06/dec/dec_1996_2006.rds")
-
-
+#dec_old <- readRDS("Data/Results/mspec06/dec/dec2_1996_2006.rds")
+#
+#sub <- subset(dec_old, sex=="f" & year1==1996 &year2==2006&edu=="primary")
+#sum(tapply(sub$value,sub$transition,sum))
+#sum(dec_compare)
 
 
 readRDS("Data/Results/mspec06/dec/TableDataStruct.rds")
