@@ -34,45 +34,45 @@ setnames(TR2,c("m14","m24"),c("m13","m23"))
 # now the decompositions: 
 # strat by 2 sexes, 2 periods, 3 states (H,U,LE)
 
-Tab1a2a <- cbind(f_dec_rescale_all_edu_decomp_dt(TR2,	to = 1,
+Tab1a <- cbind(f_dec_rescale_all_edu_decomp_dt(TR2,	to = 1,
 				ntrans = 2,	deduct = TRUE, N = 20, sex1 = "m",
-				time1 = 1996, sex2=sex1, time2 = 2006),
+				time1 = 1996, time2 = 2006),
 		f_dec_rescale_all_edu_decomp_dt(TR2, to = 2,
 				ntrans = 2, deduct = TRUE, N = 20, sex1 = "m",
-				time1 = 1996, sex2 = sex1, time2 = 2006),
+				time1 = 1996, time2 = 2006),
 		f_dec_rescale_all_edu_decomp_dt(TR2, to = 5,
 				ntrans = 2,	deduct = TRUE, N = 20,	sex1 = "m",
-				time1 = 1996, sex2 = sex1, time2 = 2006))
+				time1 = 1996, time2 = 2006))
 
-Tab1a2b <- cbind(f_dec_rescale_all_edu_decomp_dt(TR2,	to = 1,
+Tab1b <- cbind(f_dec_rescale_all_edu_decomp_dt(TR2,	to = 1,
 				ntrans = 2,	deduct = TRUE, N = 20, sex1 = "m",
-				time1 = 2006, sex2=sex1, time2 = 2014),
+				time1 = 2006, time2 = 2014),
 		f_dec_rescale_all_edu_decomp_dt(TR2, to = 2,
 				ntrans = 2, deduct = TRUE, N = 20, sex1 = "m",
-				time1 = 2006, sex2 = sex1, time2 = 2014),
+				time1 = 2006, time2 = 2014),
 		f_dec_rescale_all_edu_decomp_dt(TR2, to = 5,
 				ntrans = 2,	deduct = TRUE, N = 20,	sex1 = "m",
-				time1 = 2006, sex2 = sex1, time2 = 2014))
+				time1 = 2006, time2 = 2014))
 
 Tab2a <- cbind(f_dec_rescale_all_edu_decomp_dt(TR2,	to = 1,
 				ntrans = 2,	deduct = TRUE, N = 20, sex1 = "f",
-				time1 = 1996, sex2=sex1, time2 = 2006),
+				time1 = 1996, time2 = 2006),
 		f_dec_rescale_all_edu_decomp_dt(TR2, to = 2,
 				ntrans = 2, deduct = TRUE, N = 20, sex1 = "f",
-				time1 = 1996, sex2 = sex1, time2 = 2006),
+				time1 = 1996, time2 = 2006),
 		f_dec_rescale_all_edu_decomp_dt(TR2, to = 5,
 				ntrans = 2,	deduct = TRUE, N = 20,	sex1 = "f",
-				time1 = 1996, sex2 = sex1, time2 = 2006))
+				time1 = 1996, time2 = 2006))
 
 Tab2b <- cbind(f_dec_rescale_all_edu_decomp_dt(TR2,	to = 1,
 				ntrans = 2,	deduct = TRUE, N = 20, sex1 = "f",
-				time1 = 2006, sex2=sex1, time2 = 2014),
+				time1 = 2006, time2 = 2014),
 		f_dec_rescale_all_edu_decomp_dt(TR2, to = 2,
 				ntrans = 2, deduct = TRUE, N = 20, sex1 = "f",
-				time1 = 2006, sex2 = sex1, time2 = 2006),
+				time1 = 2006, time2 = 2006),
 		f_dec_rescale_all_edu_decomp_dt(TR2, to = 5,
 				ntrans = 2,	deduct = TRUE, N = 20,	sex1 = "f",
-				time1 = 2006, sex2 = sex1, time2 = 2006))
+				time1 = 2006, time2 = 2006))
 
 # collect together for easy manipulation in presentation
 DecompResults <- list(Tab1a = Tab1a, Tab1b = Tab1b, Tab2a = Tab2a, Tab2b = Tab2b)
