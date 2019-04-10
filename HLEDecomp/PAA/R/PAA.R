@@ -69,10 +69,10 @@ Tab2b <- cbind(f_dec_rescale_all_edu_decomp_dt(TR2,	to = 1,
 				time1 = 2006, time2 = 2014),
 		f_dec_rescale_all_edu_decomp_dt(TR2, to = 2,
 				ntrans = 2, deduct = TRUE, N = 20, sex1 = "f",
-				time1 = 2006, time2 = 2006),
+				time1 = 2006, time2 = 2014),
 		f_dec_rescale_all_edu_decomp_dt(TR2, to = 5,
 				ntrans = 2,	deduct = TRUE, N = 20,	sex1 = "f",
-				time1 = 2006, time2 = 2006))
+				time1 = 2006, time2 = 2014))
 
 # collect together for easy manipulation in presentation
 DecompResults <- list(Tab1a = Tab1a, Tab1b = Tab1b, Tab2a = Tab2a, Tab2b = Tab2b)
@@ -88,3 +88,32 @@ DecompResults <- lapply(DecompResults, function(x){
 		})
 
 saveRDS(DecompResults,file="Data/Results/mspec06/dec/TableDataStructRescaleAllPAA.rds")
+
+
+
+# compare self-as-residual results with all-arrows-count results:
+all <- readRDS("Data/Results/mspec06/dec/TableDataStructRescaleAllPAA.rds")
+res <- readRDS("Data/Results/mspec06/dec/TableDataStruct.rds") 
+
+
+all[[1]]
+res[[1]]
+f_dec_rescale_all_edu_dt(TR2[time==2006 & sex == "m"],to=5)-
+f_dec_rescale_all_edu_dt(TR2[time==1996 & sex == "m"],to=5)
+
+all[[2]]
+res[[2]]
+f_dec_rescale_all_edu_dt(TR2[time==2014 & sex == "m"],to=5)-
+		f_dec_rescale_all_edu_dt(TR2[time==2006 & sex == "m"],to=5)
+
+
+all[[3]]
+res[[3]]
+f_dec_rescale_all_edu_dt(TR2[time==2006 & sex == "f"],to=5)-
+		f_dec_rescale_all_edu_dt(TR2[time==1996 & sex == "f"],to=5)
+
+all[[4]]
+res[[4]]
+f_dec_rescale_all_edu_dt(TR2[time==2014 & sex == "f"],to=5)-
+		f_dec_rescale_all_edu_dt(TR2[time==2006 & sex == "f"],to=5)
+
