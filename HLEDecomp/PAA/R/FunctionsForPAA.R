@@ -1,3 +1,6 @@
+# NOPE NOPE NOPE, Studd just doesn't sum properly, so the decomposition
+# resulting from this function is somehow invalid.
+# Will stick with 'self-as-residual' decomposition results for now.
 
 # Author: tim
 ###############################################################################
@@ -55,8 +58,6 @@ getvecall <- function(.SD,ntrans=2){
 # in a later iteration.
 
 
-# TODO start here. Probably emulate this, assuming the vector gets made.
-# so length(pri_all)*3 + 3 (for edu fracs). Hmmm.
 f_dec_rescale_all_edu_dt <- function(.SD,to=1,age=50,ntrans=2,deduct=TRUE){
 	
 	pri_all <- getvecall(.SD[edu=="primary"])
