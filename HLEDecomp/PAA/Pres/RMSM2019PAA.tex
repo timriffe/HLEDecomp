@@ -88,33 +88,51 @@ How much of the change in life expectancy at age 50 $e(50)$ is due to changes in
 \end{frame}
 
 \begin{frame}[plain]
-\Large
+\Large 
 \begin{center}
-\begin{tikzpicture}[->,shorten >=1pt,auto,node distance=5cm,
-  thick,main node/.style={draw}]
+State space \vspace{1em}
 
-  \node[main node] (1) {Disability free};
-  \node[main node] (2) [right of=1] {Disabled};
-  \node[main node] (3) [below left of=2,xshift=1cm] {Dead};
-
-  \path[every node/.style={font=\sffamily\small}]
-    (1) edge [bend right] node [left] {die healthy} (3)
-    (1) edge [bend right] node [below] {disablement} (2)
-    (1) edge [loop left] node {} (1)
-    (2) edge [bend right] node [above] {recovery} (1)
-    (2) edge [loop right] node {} (2)
-    (2) edge [bend left] node {die disabled} (3)
-    (3) edge [loop below] node {} (3);
-    
-\end{tikzpicture}
+\includegraphics[scale=2]{StateSpace.pdf}
 \end{center}
 \end{frame}
+
+
+% show the transitions
+\begin{frame}[plain]
+\Large 
+\begin{center}
+Example transition probabilities \vspace{1em}
+
+\includegraphics{TransitionsInk.pdf}
+\end{center}
+\end{frame}
+
+\begin{frame}[plain]
+\Large 
+\begin{center}
+Modelled expectancies at age 50 \vspace{1em}
+
+\includegraphics{BarsInk.pdf}
+\end{center}
+\end{frame}
+
+\begin{frame}[plain]
+\Large 
+\begin{center}
+Changes in expectancies \vspace{1em}
+
+\includegraphics{BarsDiffsInk.pdf}
+\end{center}
+\end{frame}
+% show trend here. Also radix breakdown? Maybe after last slide.
+
 
 % tab 1a
 \begin{frame}[plain]
 \Large
-Males 1996 to 2006
   \begin{center}
+  Males 1996 to 2006 \vspace{1em}
+  
     \begin{tabular}{rrr|r}
       \input{m-1996-2006-struct.tex}
      \end{tabular}
@@ -124,9 +142,9 @@ Males 1996 to 2006
 % tab 1b
 \begin{frame}[plain]
 \Large
-Males 2006 to 2014
-
   \begin{center}
+  Males 2006 to 2014 \vspace{1em}
+  
     \begin{tabular}{rrr|r}
       \input{m-2006-2014-struct.tex}
      \end{tabular}
@@ -134,15 +152,25 @@ Males 2006 to 2014
 \end{frame}
 
 \begin{frame}[plain]
+\Large
+  \begin{center}
+  Females 1996 to 2006  \vspace{1em}
+  
     \begin{tabular}{rrr|r}
       \input{f-1996-2006-struct.tex}
      \end{tabular}
+  \end{center}
 \end{frame}
 
 \begin{frame}[plain]
+\Large
+  \begin{center}
+  Females 2006 to 2014  \vspace{1em}
+  
     \begin{tabular}{rrr|r}
       \input{f-2006-2014-struct.tex}
      \end{tabular}
+  \end{center}
 \end{frame}
 
 %\begin{overlayarea}{\textwidth}{.8\textheight}
