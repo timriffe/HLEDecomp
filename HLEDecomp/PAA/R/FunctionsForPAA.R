@@ -1,6 +1,10 @@
-# NOPE NOPE NOPE, Studd just doesn't sum properly, so the decomposition
+# NOPE NOPE NOPE, Stuff just doesn't sum properly, so the decomposition
 # resulting from this function is somehow invalid.
 # Will stick with 'self-as-residual' decomposition results for now.
+
+# this code does the following decomp tweak:
+# tweak and element, the rescale the full composition (inclusive) to sum to 1.
+# this does not preserve differences, however, need to retry.
 
 # Author: tim
 ###############################################################################
