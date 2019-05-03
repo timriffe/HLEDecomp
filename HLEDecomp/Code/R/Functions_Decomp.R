@@ -1,3 +1,4 @@
+
 # NOPE NOPE NOPE, Stuff just doesn't sum properly, so the decomposition
 # resulting from this function is somehow invalid.
 # Will stick with 'self-as-residual' decomposition results for now.

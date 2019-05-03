@@ -277,7 +277,6 @@ decomp_redux_leaveout_wrapper <- function(
 		ntrans=2,
 		to=5,
 		deduct = TRUE,
-		n=31,
 		N=20,
 		age=50){
 	outvec1 <- eduvec_leaveout(TR=TR,.sex=sex,.time=time1,ntrans=ntrans)
