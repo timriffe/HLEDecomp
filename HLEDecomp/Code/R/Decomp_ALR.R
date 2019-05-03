@@ -67,3 +67,21 @@ Tab2b <- cbind(
 		wrapper_ALR(TR2,to=2, sex = "f", time1 = 2006, time2 = 2014, age = 50, N = 20),
 		wrapper_ALR(TR2,to=5, sex = "f", time1 = 2006, time2 = 2014, age = 50, N = 20)
 )
+
+# get totals
+Tab1a <- rbind(Tab1a, colSums(Tab1a))
+Tab1b <- rbind(Tab1b, colSums(Tab1b))
+Tab2a <- rbind(Tab2a, colSums(Tab2a))
+Tab2b <- rbind(Tab2b, colSums(Tab2b))
+
+rnames <- c("Onset", "DF Mortality", "Recovery", "Dis. Mortality","Age 50 Disab.", "Age 50 Educ.", "Total")
+cnames <- c("DFLE","DLE","LE")
+
+dimnames(Tab1a) <- list(rnames,cnames)
+dimnames(Tab1b) <- list(rnames,cnames)
+dimnames(Tab2a) <- list(rnames,cnames)
+dimnames(Tab2b) <- list(rnames,cnames)
+
+Resutls <- list(Tab1a=Tab1a,Tab1b=Tab1b,Tab2a=Tab2a,Tab2b=Tab2b)
+saveRDS(Resutls, file= "Data/Results/mspec06/dec/TableStruct_ALR.rds")
+
