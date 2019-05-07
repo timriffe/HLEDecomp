@@ -422,7 +422,7 @@ do_decomp_dt <- function( DAT,
 # important. Detected, but not fallible.
 
 #DAT <- get_TR(version = "06",subset = edu == "primary" & sex == "m" & time == 1996)
-get_prev_dt <- function(DAT, prop, deduct = TRUE, ntrans){
+get_prev_dt <- function(DAT, prop, deduct = TRUE, ntrans, interval = 2){
 	
 	DAT <- as.data.frame(DAT,stringsAsFactors=FALSE)
 	
@@ -442,16 +442,18 @@ get_prev_dt <- function(DAT, prop, deduct = TRUE, ntrans){
 	
 	DAT       <- DAT[, cols]
 	U         <- data_2_U(DAT, ntrans = ntrans)
-	N         <- U2N(U, interval = 2)
-	cind      <- rep(seq(50,112,by=2), ntrans) == 50
+	N         <- U2N(U, interval = interval)
+	
+	ages      <- rep(seq(50,112, by = interval), ntrans)
+	cind      <- ages == 50
 	
 	# replaces: N[,cind]) %*% prop
 	prev      <- N[, cind] * rep(prop, each=32)
 	
-	prev      <- prev[1:32, ] + prev[33:64,] + prev[65:96, ]
+	prev      <- as.matrix(aggregate(x=prev,by=list(ages), sum)[,-1])
 	
 	#dim(prev) <- c(32,ntrans)
-	prev      <- prev / 2
+	prev      <- prev / interval
 	colnames(prev) <- paste0("pi",1:ntrans)
 	# verify with DCS re age groups. Why exclude age 50?
 	prev      <- prev[-nrow(prev), ]

@@ -30,11 +30,7 @@ TR2   <- collapseTR(TR = TR, PREV = PREV)
 setnames(TR2,c("m14","m24"),c("m13","m23"))
 
 # a quick wrapper
-TR,
-time1=2006,time2=2014,
-sex="f",ntrans=2,
-age=50, to=5, 
-deduct = TRUE,N=20
+
 wrapper_ALR <- function(TR, to = 5, sex = "m", time1 = 1996, time2 = 2006, age = 50, N = 20){
 	dec.i <- decomp_edu_alr(TR, time1 = time1, time2 = time2, sex = sex,
 			age = 50, to = to, deduct = TRUE, N = N, ntrans = 2)
