@@ -124,11 +124,14 @@ e50 <- function(DAT, to, age = 50, prop, ntrans, deduct = TRUE, interval = 2, de
 	}
 	prop <- prop / sum(prop)
 	
+	# new- subset to age >= 50
+	DAT  <- DAT[Dat$age >= age, ]
+	
 	selfcols <- getcols(ntrans, self = TRUE, dead = dead)
 	U    <- data_2_U(DAT[, selfcols], ntrans = ntrans)
 	N    <- U2N(U, interval = interval)
 	
-	cind <- rep(seq(50, 112, by = 2), ntrans) == age
+	cind <- rep(seq(age, 112, by = 2), ntrans) == age
 	
 	# subtract half interval from self-state
     # we do so in the block subdiagonal. Now
