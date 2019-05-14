@@ -124,14 +124,11 @@ e50 <- function(DAT, to, age = 50, prop, ntrans, deduct = TRUE, interval = 2, de
 	}
 	prop <- prop / sum(prop)
 	
-	# new- subset to age >= 50
-	DAT  <- DAT[Dat$age >= age, ]
-	
 	selfcols <- getcols(ntrans, self = TRUE, dead = dead)
 	U    <- data_2_U(DAT[, selfcols], ntrans = ntrans)
 	N    <- U2N(U, interval = interval)
 	
-	cind <- rep(seq(age, 112, by = 2), ntrans) == age
+	cind <- rep(seq(50, 112, by = 2), ntrans) == age
 	
 	# subtract half interval from self-state
     # we do so in the block subdiagonal. Now
@@ -150,6 +147,7 @@ e50 <- function(DAT, to, age = 50, prop, ntrans, deduct = TRUE, interval = 2, de
     }
 	# each to state weighted because person years can originate
 	# in any from state.
+	# Note age 50 props used even if age selection isn't 50
 	e50all <- colSums(e.50 * prop)
 
     # this replaces, possibly erroneously, e.50 %*% prop
@@ -425,7 +423,7 @@ do_decomp_dt <- function( DAT,
 # important. Detected, but not fallible.
 
 #DAT <- get_TR(version = "06",subset = edu == "primary" & sex == "m" & time == 1996)
-get_prev_dt <- function(DAT, prop, deduct = TRUE, ntrans, interval = 2){
+get_prev_dt <- function(DAT, prop, deduct = TRUE, ntrans, interval = 2, age = 50){
 	
 	DAT <- as.data.frame(DAT,stringsAsFactors=FALSE)
 	
@@ -440,7 +438,7 @@ get_prev_dt <- function(DAT, prop, deduct = TRUE, ntrans, interval = 2){
 	# TR: new Sept 18
 	prop      <- prop / sum(prop)
 	
-	age       <- DAT$age
+	Age       <- DAT$age
 	cols      <- getcols(ntrans, self = TRUE)
 	
 	DAT       <- DAT[, cols]
@@ -462,7 +460,9 @@ get_prev_dt <- function(DAT, prop, deduct = TRUE, ntrans, interval = 2){
 	prev      <- prev[-nrow(prev), ]
 	
 	DF        <- as.data.frame(prev,stringsAsFactors=FALSE)
-    DF$age    <- age
+    DF$age    <- Age
+	
+	DF[DF$Age >= age,]
 	
 	DF
 }
