@@ -32,6 +32,8 @@ get_vec_alr <- function(.SD,ntrans=2){
 	
 	colsall   <- getcolsall(ntrans)
 	datall    <- as.matrix(.SD[,colsall])
+	
+	# This is hard coded to two states, with self arrows in denom!
 	ALR       <- cbind(alr(datall[,c("m12","m13","m11")]),
 			           alr(datall[,c("m21","m23","m22")]))
 	

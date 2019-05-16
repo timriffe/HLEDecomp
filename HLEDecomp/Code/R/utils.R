@@ -29,8 +29,13 @@ getcols <- function(ntrans = 3, self = TRUE, dead = "4"){
 	}
 }
 
-getcolsall <- function(ntrans,dead=ntrans+1){
-	sort(paste0("m",outer(1:ntrans,c(1:ntrans,dead),paste0)))
+getcolsall <- function(ntrans,dead=ntrans+1, vec = TRUE){
+	colsall <- sort(paste0("m",outer(1:ntrans,c(1:ntrans,dead),paste0)))
+	if (vec){
+		return(colsall)
+	} else {
+		return(	matrix(colsall, ncol = (ntrans+1),byrow=TRUE))
+	}
 }
 
 guess_ntrans <- function(DAT){
