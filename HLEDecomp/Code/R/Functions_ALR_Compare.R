@@ -200,3 +200,8 @@ summary_decomp_edu_alr_d <- function(dec.i,ntrans=2){
 }
 
 # now do all decomps, 
+wrapper_ALR_d <- function(TR, to = 5, sex = "m", time1 = 1996, time2 = 2006, age = 50, N = 20){
+	dec.i <- decomp_edu_alr_d(TR, time1 = time1, time2 = time2, sex = sex,
+			age = 50, to = to, deduct = TRUE, N = N, ntrans = 2)
+	summary_decomp_edu_alr_d(dec.i, ntrans = 2)
+}

@@ -88,7 +88,7 @@ get_vec_edu_alr <- function(.SD, ntrans=2){
 	sec_alr      <- get_vec_alr(subset(.SD,edu == "secondary"),ntrans=ntrans)
 	ter_alr      <- get_vec_alr(subset(.SD,edu == "terciary"),ntrans=ntrans)
 
-	eduprop      <- rowSums(.SD[age == 50, c("s1_prop", "s2_prop")])
+	eduprop      <- rowSums(subset(.SD, age == 50,  paste0("s", 1:ntrans, "_prop")))
 	eduprop      <- eduprop / sum(eduprop)
 	edu_alr      <- alr(eduprop)
 	edu_alr      <- unclass(edu_alr)
@@ -201,3 +201,8 @@ summary_decomp_edu_alr <- function(dec.i,ntrans=2){
 }
 
 # now do all decomps, 
+wrapper_ALR <- function(TR, to = 5, sex = "m", time1 = 1996, time2 = 2006, age = 50, N = 20){
+	dec.i <- decomp_edu_alr(TR, time1 = time1, time2 = time2, sex = sex,
+			age = 50, to = to, deduct = TRUE, N = N, ntrans = 2)
+	summary_decomp_edu_alr(dec.i, ntrans = 2)
+}

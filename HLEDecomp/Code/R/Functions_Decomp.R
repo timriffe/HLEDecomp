@@ -116,7 +116,7 @@ f_dec_rescale_all_edu_dt <- function(.SD,to=1,age=50,ntrans=2,deduct=TRUE){
 			ntrans = ntrans, 
 			deduct = TRUE)
 	
-	eduprop <- rowSums(.SD[age==50,c("s1_prop","s2_prop")])
+	eduprop <- rowSums(.SD[age==50, paste0("s", 1:ntrans, "_prop")])
 	sum(eduprop * c(pri_obj, sec_obj, ter_obj))
 }
 

@@ -3,9 +3,6 @@
 ###############################################################################
 
 library(data.table)
-library(DemoDecomp)
-library(RColorBrewer)
-library(xtable)
 library(compositions)
 me <- system("whoami",intern=TRUE)
 if (me == "mpidr_d\\riffe"){
@@ -83,12 +80,12 @@ e50_vec_ilr <- function(vec_ilr, to=1, age = 50, ntrans = 2, deduct = TRUE, inte
 # i.e. the disability radix separate for each edu group,            #
 # so that we can split structure into edu vs disability parts.      #
 #####################################################################
-get_vec_edu_ilr <- function(.SD, ntrans=2){
-	pri_ilr      <- get_vec_ilr(subset(.SD,edu == "primary"),ntrans=ntrans)
-	sec_ilr      <- get_vec_ilr(subset(.SD,edu == "secondary"),ntrans=ntrans)
-	ter_ilr      <- get_vec_ilr(subset(.SD,edu == "terciary"),ntrans=ntrans)
+get_vec_edu_ilr <- function(.SD, ntrans = 2){
+	pri_ilr      <- get_vec_ilr(subset(.SD, edu == "primary"), ntrans = ntrans)
+	sec_ilr      <- get_vec_ilr(subset(.SD, edu == "secondary"), ntrans = ntrans)
+	ter_ilr      <- get_vec_ilr(subset(.SD, edu == "terciary"), ntrans = ntrans)
 	
-	eduprop      <- rowSums(.SD[age == 50, c("s1_prop", "s2_prop")])
+	eduprop      <- rowSums(subset(.SD, age == 50,  paste0("s", 1:ntrans, "_prop")))
 	eduprop      <- eduprop / sum(eduprop)
 	edu_ilr      <- ilr(eduprop)
 	edu_ilr      <- unclass(edu_ilr)
@@ -198,4 +195,10 @@ summary_decomp_edu_ilr <- function(dec.i,ntrans=2){
 		arrows          <- arrows + colSums(vec_i)
 	}
 	c(arrows, disab = dis_comp, edu = edu_comp)
+}
+
+wrapper_ILR <- function(TR, to = 5, sex = "m", time1 = 1996, time2 = 2006, age = 50, N = 20){
+	dec.i <- decomp_edu_ilr(TR, time1 = time1, time2 = time2, sex = sex,
+			age = 50, to = to, deduct = TRUE, N = N, ntrans = 2)
+	summary_decomp_edu_ilr(dec.i, ntrans = 2)
 }

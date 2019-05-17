@@ -40,7 +40,7 @@ PREV  <- TR[ , get_prev_dt(.SD), by = list(sex, edu, time)]
 # healthy and disabled.
 TR2   <- collapseTR(TR = TR, PREV = PREV)
 setnames(TR2,c("m14","m24"),c("m13","m23"))
-str(TR2)
+
 
 ####################################################################
 # CLR functions for a single subset (one edu,sex,year)             #
@@ -69,9 +69,9 @@ get_vec_clr <- function(.SD,ntrans=2){
 
 # for a single population, convert an alr vec
 # into datall, which can be used by e50() etc
-vec_clr <- get_vec_clr(.SD)
 
-vec_alr_2_datall <- function(vec_clr,ntrans=2){
+
+vec_clr_2_datall <- function(vec_clr, ntrans = 2){
 	
 	# get s1_prop, s2_prop
 	n         <- length(vec_clr)
@@ -96,11 +96,16 @@ vec_alr_2_datall <- function(vec_clr,ntrans=2){
 	list(datall=datall,prop=unclass(prop))
 }
 
-### Done to here --- rest needs conversion still ###
-
-# calculate e50 from alr vec, single pop.
-e50_vec_alr <- function(vec_alr, to=1, age = 50, ntrans = 2, deduct = TRUE, interval = 2, dead = ntrans+1){
-	datall <- vec_alr_2_datall(vec_alr = vec_alr, ntrans=ntrans)
+# calculate e50 from clr vec, single pop.
+e50_vec_clr <- function(
+		vec_clr, 
+		to = 1, 
+		age = 50, 
+		ntrans = 2, 
+		deduct = TRUE, 
+		interval = 2, 
+		dead = ntrans + 1){
+	datall <- vec_clr_2_datall(vec_clr = vec_clr, ntrans = ntrans)
 	#DAT, to, age = 50, prop, ntrans, deduct = TRUE, interval = 2, dead = "4"
 	e50(DAT=datall$datall, 
 			to=to, 
@@ -109,41 +114,42 @@ e50_vec_alr <- function(vec_alr, to=1, age = 50, ntrans = 2, deduct = TRUE, inte
 	
 }
 
+#e50_vec_clr( get_vec_clr(.SD),to=5)
+#e50_vec_alr(get_vec_alr(.SD),to=5)
 #####################################################################
 # now a function to get vecall for each edu, ordered like this:     #
 #                                                                   #
-# vec_alr_prim, vec_alr_sec, vec_alr_terc, alr_edu                  #
+# vec_clr_prim, vec_clr_sec, vec_clr_terc, clr_edu                  #
 # i.e. the disability radix separate for each edu group,            #
 # so that we can split structure into edu vs disability parts.      #
 #####################################################################
-get_vec_edu_alr <- function(.SD, ntrans=2){
-	pri_alr      <- get_vec_alr(subset(.SD,edu == "primary"),ntrans=ntrans)
-	sec_alr      <- get_vec_alr(subset(.SD,edu == "secondary"),ntrans=ntrans)
-	ter_alr      <- get_vec_alr(subset(.SD,edu == "terciary"),ntrans=ntrans)
+get_vec_edu_clr <- function(.SD, ntrans = 2){
+	pri_clr      <- get_vec_clr(subset(.SD, edu == "primary"), ntrans = ntrans)
+	sec_clr      <- get_vec_clr(subset(.SD, edu == "secondary"), ntrans = ntrans)
+	ter_clr      <- get_vec_clr(subset(.SD, edu == "terciary"), ntrans = ntrans)
 	
-	eduprop      <- rowSums(.SD[age == 50, c("s1_prop", "s2_prop")])
+	eduprop      <- rowSums(subset(.SD, age == 50,  paste0("s", 1:ntrans, "_prop")))
 	eduprop      <- eduprop / sum(eduprop)
-	edu_alr      <- alr(eduprop)
-	edu_alr      <- unclass(edu_alr)
+	edu_clr      <- unclass(clr(eduprop))
 	
-	c(pri_alr, sec_alr, ter_alr, edu_alr)
+	c(pri_clr, sec_clr, ter_clr, edu_clr)
 	
 }
 
 
-vec_edu_alr_2_datall <- function(vec_edu_alr, ntrans=2){
-	n                <- length(vec_edu_alr)
-	edu_alr          <- vec_edu_alr[(n-1):n]
-	eduprop          <- unclass(alrInv(edu_alr))
+vec_edu_clr_2_datall <- function(vec_edu_clr, ntrans = 2){
+	n                <- length(vec_edu_clr)
+	edu_clr          <- vec_edu_clr[(n - 2):n]
+	eduprop          <- unclass(clrInv(edu_clr))
 	
-	vec_edu_alr      <- vec_edu_alr[1:(n-2)]
+	vec_edu_clr      <- vec_edu_clr[1:(n - 3)]
 	# turn to col format
-	dim(vec_edu_alr) <- c(length(vec_edu_alr)/3,3)
+	dim(vec_edu_clr) <- c(length(vec_edu_clr) / 3, 3)
 	# each col is an edu, in order prim, sec, ter
 	
-	pri_datall <- vec_alr_2_datall(vec_edu_alr[,1])
-	sec_datall <- vec_alr_2_datall(vec_edu_alr[,2])
-	ter_datall <- vec_alr_2_datall(vec_edu_alr[,3])
+	pri_datall <- vec_clr_2_datall(vec_edu_clr[,1])
+	sec_datall <- vec_clr_2_datall(vec_edu_clr[,2])
+	ter_datall <- vec_clr_2_datall(vec_edu_clr[,3])
 	
 	list(pri_datall = pri_datall,
 			sec_datall = sec_datall,
@@ -152,8 +158,16 @@ vec_edu_alr_2_datall <- function(vec_edu_alr, ntrans=2){
 }
 
 # calculate an e50 from vec_edu_alr 
-e50_vec_edu_alr <- function(vec_edu_alr, to=1, age = 50, ntrans = 2, deduct = TRUE, interval = 2, dead = ntrans+1){
-	datall     <- vec_edu_alr_2_datall(vec_edu_alr = vec_edu_alr, ntrans = ntrans)
+e50_vec_edu_clr <- function(
+		vec_edu_clr, 
+		to = 1, 
+		age = 50, 
+		ntrans = 2, 
+		deduct = TRUE, 
+		interval = 2, 
+		dead = ntrans + 1){
+	
+	datall     <- vec_edu_clr_2_datall(vec_edu_clr = vec_edu_clr, ntrans = ntrans)
 	
 	pri_datall <- datall$pri_datall
 	sec_datall <- datall$sec_datall
@@ -163,21 +177,30 @@ e50_vec_edu_alr <- function(vec_edu_alr, to=1, age = 50, ntrans = 2, deduct = TR
 	
 	
 	#DAT, to, age = 50, prop, ntrans, deduct = TRUE, interval = 2, dead = "4"
-	e_edu <- c(e50(DAT=pri_datall$datall, 
-					to=to, 
-					age=age, 
-					prop=pri_datall$prop, 
-					ntrans=ntrans, deduct=deduct, interval=interval, dead=ntrans+1),
-			e50(DAT=sec_datall$datall, 
-					to=to, 
-					age=age, 
-					prop=sec_datall$prop, 
-					ntrans=ntrans, deduct=deduct, interval=interval, dead=ntrans+1),
-			e50(DAT=ter_datall$datall, 
-					to=to, 
-					age=age, 
-					prop=ter_datall$prop, 
-					ntrans=ntrans, deduct=deduct, interval=interval, dead=ntrans+1)
+	e_edu <- c(e50(DAT = pri_datall$datall, 
+					to = to, 
+					age = age, 
+					prop = pri_datall$prop, 
+					ntrans = ntrans, 
+					deduct = deduct, 
+					interval = interval, 
+					dead = ntrans + 1),
+			e50(DAT = sec_datall$datall, 
+					to = to, 
+					age = age, 
+					prop = sec_datall$prop, 
+					ntrans = ntrans, 
+					deduct = deduct, 
+					interval = interval, 
+					dead = ntrans + 1),
+			e50(DAT = ter_datall$datall, 
+					to = to, 
+					age = age, 
+					prop = ter_datall$prop, 
+					ntrans = ntrans, 
+					deduct = deduct, 
+					interval = interval, 
+					dead = ntrans + 1)
 	)
 	
 	# weight sum
@@ -187,52 +210,74 @@ e50_vec_edu_alr <- function(vec_edu_alr, to=1, age = 50, ntrans = 2, deduct = TR
 ##########################################################################
 # a function that takes the whole TR2 object and decomposes with specified comparison
 
-decomp_edu_alr <- function(TR,
-		time1=2006,time2=2014,
-		sex="f",ntrans=2,
-		age=50, to=5, 
-		deduct = TRUE,N=20){
-	Sex <- sex
-	T1   <- subset(TR,time == time1 & sex == Sex)
-	T2   <- subset(TR,time == time2 & sex == Sex)
+decomp_edu_clr <- function(
+		TR,
+		time1 = 2006, 
+		time2 = 2014,
+		sex = "f", 
+		ntrans = 2,
+		age = 50, 
+		to = 5, 
+		deduct = TRUE, 
+		N = 20){
+	Sex   <- sex
+	T1    <- subset(TR, time == time1 & sex == Sex)
+	T2    <- subset(TR, time == time2 & sex == Sex)
 	
-	pars1 <- get_vec_edu_alr(T1, ntrans=ntrans)
-	pars2 <- get_vec_edu_alr(T2, ntrans=ntrans)
+	pars1 <- get_vec_edu_clr(T1, ntrans = ntrans)
+	pars2 <- get_vec_edu_clr(T2, ntrans = ntrans)
 	
-	dec.i <- DemoDecomp::horiuchi(func=e50_vec_edu_alr,
-			pars1=pars1,
-			pars2=pars2,
-			N=N,
-			age=age,to=to,deduct=deduct)
+	dec.i <- DemoDecomp::horiuchi(
+			func = e50_vec_edu_clr,
+			pars1 = pars1,
+			pars2 = pars2,
+			N = N,
+			age = age,
+			to = to,
+			deduct = deduct)
 	dec.i
 }
 
 
-summary_decomp_edu_alr <- function(dec.i,ntrans=2){
+summary_decomp_edu_clr <- function(dec.i, ntrans = 2){
 	n                <- length(dec.i)
-	edu_comp         <- sum(dec.i[(n-1):n])
 	
-	dec.i            <- dec.i[1:(n-2)]
-	# redim
-	dim(dec.i)       <- c(length(dec.i)/3,3)
+	# hard coded to 3 edu groups:
+	edu_comp         <- sum(dec.i[(n - 2):n])
+	# remove elements	
+	dec.i            <- dec.i[1:(n - 3)]
+	# redim for vec results per edu ( disability component at bottom)
+	dim(dec.i)       <- c(length(dec.i) / 3, 3)
 	
-	dis_comp         <- sum(dec.i[nrow(dec.i)])
+	# sum disability component, cut down again
+	nr               <- nrow(dec.i)
+	dis_comp         <- sum(dec.i[(nr - ntrans + 1):nr, ])
+	dec.i            <- dec.i[1:(nr - ntrans), ]
 	
-	dec.i            <- dec.i[-nrow(dec.i),]
+	# redim to 3d array, age x trans x edu
+
 	
 	n                <- nrow(dec.i)
-	
-	arrows           <- rep(0,4)
-	names(arrows)    <- c("m12","m13","m21","m23")
+	nt               <- (ntrans+1)*ntrans
+	colsi            <- getcolsall(ntrans, vec = TRUE)
+	arrows           <- rep(0, nt)
+	names(arrows)    <- colsi
+    
+	# edu loop
 	for (i in 1:3){
-		vec_i           <- dec.i[,i]
-		dim(vec_i)      <- c(n/(ntrans^2),ntrans^2)
-		colnames(vec_i) <- c("m12","m13","m21","m23")
+		vec_i           <- dec.i[, i]
+		dim(vec_i)      <- c(n / nt, nt)
+		colnames(vec_i) <- colsi
 		arrows          <- arrows + colSums(vec_i)
 	}
 	c(arrows, disab = dis_comp, edu = edu_comp)
 }
 
 # now do all decomps, 
+wrapper_CLR <- function(TR, to = 5, sex = "m", time1 = 1996, time2 = 2006, age = 50, N = 20){
+	dec.i <- decomp_edu_clr(TR, time1 = time1, time2 = time2, sex = sex,
+			age = 50, to = to, deduct = TRUE, N = N, ntrans = 2)
+	summary_decomp_edu_clr(dec.i, ntrans = 2)
+}
 
 
