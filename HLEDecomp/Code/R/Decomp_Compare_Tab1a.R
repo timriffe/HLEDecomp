@@ -36,9 +36,9 @@ Tab1a_alr <- cbind(
 		wrapper_ALR(TR2,to=2, sex = "m", time1 = 1996, time2 = 2006, age = 50, N = 20),
 		wrapper_ALR(TR2,to=5, sex = "m", time1 = 1996, time2 = 2006, age = 50, N = 20)
 )
-Tab1a <- rbind(Tab1a, colSums(Tab1a))
-dimnames(Tab1a) <- list(rnames,cnames)
-saveRDS(Tab1a_alr_mortdenom, file= "Data/Results/mspec06/dec/Tab1a_alr_selfdenom.rds")
+Tab1a_alr <- rbind(Tab1a_alr, colSums(Tab1a_alr))
+dimnames(Tab1a_alr) <- list(rnames,cnames)
+saveRDS(Tab1a_alr, file= "Data/Results/mspec06/dec/Tab1a_alr_selfdenom.rds")
 #------------------------------------------
 
 # ALR mort denom
@@ -65,6 +65,7 @@ Tab1a_ilr <- cbind(
 )
 Tab1a_ilr           <- rbind(Tab1a_ilr,colSums(Tab1a_ilr))
 colnames(Tab1a_ilr) <- cnames
+rownames(Tab1a_ilr) <- c("m12","m13","m21","m23","Age 50 Disab.", "Age 50 Educ.", "Total")
 saveRDS(Tab1a_ilr, file= "Data/Results/mspec06/dec/Tab1a_ilr.rds")
 #------------------------------------------
 
@@ -81,3 +82,41 @@ rownames(Tab1a_clr) <- c("Stay DF", "Onset", "DF Mortality", "Recovery", "Stay D
 saveRDS(Tab1a_clr, file= "Data/Results/mspec06/dec/Tab1a_clr.rds")
 #------------------------------------------
 
+# rescale all, no transform
+source("PAA/R/FunctionsForPAA.R")
+Tab1a_rescall <- cbind(f_dec_rescale_all_edu_decomp_dt(TR2,	to = 1,
+				ntrans = 2,	deduct = TRUE, N = 20, sex1 = "m",
+				time1 = 1996, time2 = 2006),
+		f_dec_rescale_all_edu_decomp_dt(TR2, to = 2,
+				ntrans = 2, deduct = TRUE, N = 20, sex1 = "m",
+				time1 = 1996, time2 = 2006),
+		f_dec_rescale_all_edu_decomp_dt(TR2, to = 5,
+				ntrans = 2,	deduct = TRUE, N = 20,	sex1 = "m",
+				time1 = 1996, time2 = 2006))
+
+Tab1a_rescall <- rbind(Tab1a_rescall, colSums(Tab1a_rescall))
+colnames(Tab1a_rescall) <- cnames
+rownames(Tab1a_rescall) <- c("Stay DF", "Onset", "DF Mortality", "Recovery", "Stay Dis.", "Dis. Mortality","Age 50 Disab.", "Age 50 Educ.", "Total")
+saveRDS(Tab1a_rescall, file= "Data/Results/mspec06/dec/Tab1a_rescall.rds")
+
+
+# self arrows as residual
+Tab1a_selfresid     <- readRDS("Data/Results/mspec06/dec/TableDataStruct.rds")$Tab1a
+
+Tab1a_rescall       <- readRDS("Data/Results/mspec06/dec/Tab1a_rescall.rds")
+Tab1a_alr_selfdenom <- readRDS("Data/Results/mspec06/dec/Tab1a_alr_selfdenom.rds")
+Tab1a_alr_mortdenom <- readRDS("Data/Results/mspec06/dec/Tab1a_alr_mortdenom.rds")
+
+Tab1a_ilr           <- readRDS("Data/Results/mspec06/dec/Tab1a_ilr.rds")
+Tab1a_clr           <- readRDS("Data/Results/mspec06/dec/Tab1a_clr.rds")
+
+
+Decomp_versions     <- list(
+		Tab1a_selfresid = Tab1a_selfresid,
+		Tab1a_rescall = Tab1a_rescall,
+		Tab1a_alr_selfdenom = Tab1a_alr_selfdenom,
+		Tab1a_alr_mortdenom = Tab1a_alr_mortdenom,
+		Tab1a_ilr = Tab1a_ilr,
+		Tab1a_clr = Tab1a_clr)
+
+Tab1a_selfresid

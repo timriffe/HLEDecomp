@@ -35,7 +35,13 @@ f_dec_rescale_all <- function(vecall,to=1,age=52,ntrans=2,deduct=TRUE){
 	propi <- propi / sum(propi)
 	
 	# can just send in all columns because e50 selects the self-arrows anyway, no worries.
-	e50(datall, prop = propi, to = to, age = age, ntrans = ntrans, deduct = deduct, dead = ntrans + 1)
+	e50(datall, 
+			prop = propi, 
+			to = to, 
+			age = age, 
+			ntrans = ntrans, 
+			deduct = deduct, 
+			dead = ntrans + 1)
 }
 
 #TR2
@@ -43,7 +49,7 @@ f_dec_rescale_all <- function(vecall,to=1,age=52,ntrans=2,deduct=TRUE){
 #colnames(datall) <- getcolsall(ntrans)
 
 
-# retreive vec for subset
+# retrieve vec for subset
 getvecall <- function(.SD,ntrans=2){
 	.SD       <- as.data.frame(.SD)
 	propnames <- paste0("s",1:ntrans,"_prop")
@@ -86,6 +92,7 @@ f_dec_rescale_all_edu_dt <- function(.SD,to=1,age=50,ntrans=2,deduct=TRUE){
 			deduct = TRUE)
 	
 	eduprop <- rowSums(.SD[age==50,c("s1_prop","s2_prop")])
+	eduprop <- eduprop / sum(eduprop)
 	sum(eduprop * c(pri_obj, sec_obj, ter_obj))
 }
 
@@ -161,7 +168,7 @@ f_dec_rescale_all_edu_decomp_dt <- function(
 	
 	n                <- length(dec)
 	
-	edu_comp         <- dec[(n-2):n]
+	edu_comp         <- dec[(n - 2):n]
 	dec              <- dec[-c((n-2):n)]
 	
 	# now re-dim! (3 is nr of edu groups
@@ -169,9 +176,9 @@ f_dec_rescale_all_edu_decomp_dt <- function(
 	dim(dec)         <- c(n / 3, 3)
 	
 	# last two rows are disability component
-	n                <- n / 3
+	n                <- nrow(dec)
 	# a 2x3 matrix, just sum it
-	dis_comp         <- dec[n - 1:n, ]
+	dis_comp         <- dec[(n - 1):n, ]
 	dec              <- dec[1:(n - 2), ]
 	
 	# ok
