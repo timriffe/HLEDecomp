@@ -90,6 +90,22 @@ Assume that I have a function $f()$ that takes a single vector of parameters $\m
 Stacking the parameters into a single vector $\mathbf{\theta}$ sets up the decomposition easier. Horiuchi decomposition works like so: The vector $\mathbf{\theta}^{1996}$ gradually warps into $\mathbf{\theta}^{2006}$ along $N$ equispaced steps. At each of the $N$ steps, which can be thought of as the parameter background, each element of $\mathbf{\theta}$ is *independently* perturbed up and down by half a step, and the difference between these two values is taken as the contribution of the parameter given the background conditions. Each parameter ends up with $N$ such estimates, and their sum is taken to be the parameter contribution. Lo and behold the sum of these contributions of all the parameters is equal to $f(\mathbf{\theta}^{2006}) - f(\mathbf{\theta}^{1996})$
 
 **Devil in the details**:
+There are different ways to set up $f()$. The transition matrix created inside $f()$ only needs survivial and transfer probabilities. Mortality isn't in it. So $\mathbf{\theta}$ could contain just the black and red lines from the figure. But it could also be set up to take mortality and transfers, or survival and death but no transfers. In each of these three cases, the decomposition will run 
+
+# Continuous time perspective
+The continuous time representation of our multistate process can be expressed either as tuple of partial differential equations or as a continuous time Markov matrix, and examination of both cases will lead us to conclude that the only forces that matter in a multistate system are those of attrition.
+
+### Continuous time matrices
+
+
+
+
+### Differential equations
+
+With states healthy $H$ and unhealthy $U$, and processes, $\mu^h$, $\mu^u$, $o^h$, and $r^u$ for mortality of healthy, unhealthy, onset of unhealthiness, and recovery from unhealthiness, respectively. Then we have two equations:
+$$ \frac{\mathrm{d}H}{\mathrm{d}t} = -\mu^h H(t) - o^h H(t) + r^u U(t) ~\mathrm{d}t$$
+$$ \frac{\mathrm{d}U}{\mathrm{d}t} = -\mu^u U(t) + o^h H(t) - r^u U(t) ~\mathrm{d}t$$
+In this setup, the stocks $U$ and $H$ are determined only by the radix composition. Forces of survival and remaining in a state are not formally represented. Given continuous functions of these four rates of attrition, the entire process is a function of $U(0)$, $H(0)$ (the radix composition) and the four functions of rates of attrition. There is no compositional problem at all among the rates. 
 
 
 # References
