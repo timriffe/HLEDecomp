@@ -9,10 +9,42 @@ bibliography: references.bib
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
+Dear Vera and Juan José,
+
+Thank you for taking the time to consider my problem. This brief is written to describe my exercise, how the parameters of my function are of a compositional nature, how this might be a problem for my exercise, and how it might not be (I hope). I'll describe all the perspectives I've thought of as of now. I find it important to vet my exercise in this way because I think the kind of results generated will have direct policy implications for understanding trends and for health resource targetting.
+Thank you for your consideration,
+
+Tim Riffe
 
 # Background
 
-We have a 3 state discrete Markov model to estimate old-age life expectancy with and without disability. The states are disability-free (DF), disabled (Dis.) and dead. The transition probabilties are stratified by some strata, such as sex and three education levels. I'd like to decompose differences in expectancies over time or between groups into the contributions from these parameters. So far this is always using the pseudo-continuous method proposed by @horiuchi2008 .
+We have a 3 state discrete time Markov model to estimate old-age life expectancy with and without disability. The states are (1) disability-free , (2) disabled and (3) dead. Possible transitions in this model are shown in this state space diagram, where e.g. $p12$ reads as "the probability of moving from state 1 to state 2".
+
+```{tikz, echo = FALSE}
+\begin{tikzpicture}[->,shorten >=1pt,auto,node distance=5cm,
+  thick,main node/.style={draw}]
+
+  \node[main node] (1) {1 (Disability free)};
+  \node[main node] (2) [right of=1] {2 (Disabled)};
+  \node[main node] (3) [below left of=2,xshift=1cm] {3 (Dead)};
+
+  \path[every node/.style={font=\sffamily\small}]
+    (1) edge [bend right] node [left] {$p13$ (die healthy)} (3)
+    (1) edge [bend right] node [below] {$p12$ (disablement)} (2)
+    (1) edge [loop left] node {$p11$} (1)
+    (2) edge [bend right] node [above] {$p21$ (recovery)} (1)
+    (2) edge [loop right] node {$p22$} (2)
+    (2) edge [bend left] node {$p23$ (die disabled)} (3)
+    (3) edge [loop below] node {(absorbing state)} (3);
+    
+\end{tikzpicture}
+```
+
+Since the parameters are probabilities, we have $1 = p11 + p12 + p13$ and $1 = p21 + p22 + p23$. Age is not depicted in the diagram, but each transition happens as individuals age into the next age class, and each age class therefore has these two compositions. From this model, we are interested in calculating state-specific life expectancies, and this is a straightforward and deterministic calculation. This class of model is used by demographers for many different phenomena, such as working life expectancy, marital transitions, migration, to name a few, and the problem I'll descibe here for health would be invoked just the same in those contexts if a similar exercise to mine undertaken.
+
+We have separate models for males and females, but the sex-specific models are each composed of separate submodels for three education groups. The process for each education group unfolds independently, but these are blended together according to the so-called \emph{radix} composition, which consists first in the fraction in each education group at the starting age, and second in the fraction disabled in each education group (6 parts total). The radix is a composition, but it's not the one I'm worried about. Estimating a life expectancy invokes no compositional problem, but we invoke such a problem as soon as we would like to attribute differences in expectancies (e.g. between two time points) to differences in the input parameters. This exercise is what demographers refer to as decomposition.
+
+I'd like to decompose differences in expectancies over time (or between groups) into the contributions from model parameters (that is the transition probabilities and radix composition). To decompose I use the pseudo-continuous method proposed by @horiuchi2008 , although a different method by @caswell1989analysis would also be an option, and I'll give nutshell descriptions of both. Neither of these methods takes care of the compositional nature of the transition probabilities. Rather, this is something I need to program into the objective function, possibly via transformations or reparameterizing the whole operation.
 
 # Inputs
 This note will recycle the same parameters throughout: We have six vectors of transition probabilities for each of three education levels, and a radix with disability-free (DF) and disabled components for the three education levels (6-piece radix). 
@@ -35,7 +67,8 @@ TR2   <- collapseTR(TR = TR, PREV = PREV)
 setnames(TR2,c("m14","m24"),c("m13","m23"))
 ```
 
-Here are those transition probabilities, hastily plotted. Black is survival + remaining in the state, green is mortality, and red is transferring to the other state. The education groups are not labelled but higher edu is better for each of the transition types. You can only sense subtle changes from 1996 to 2006, but these amount to a 1.48 year increase in DFLE, a trivial .03 year decrease in DLE, for an overall gain of 1.45 years in LE.
+Here are those transition probabilities, hastily plotted. Black is $p11$ (left column) and $p22$ (right column), green is mortality ($p13$, $p23$), and red is transferring to the other state ($p12$, $p21$). The education groups are not labelled but higher edu is \emph{better} for each of the transition types. You can only sense subtle changes from 1996 to 2006, but these amount to a 1.48 year increase in DFLE, a trivial .03 year decrease in DLE, for an overall gain of 1.45 years in LE. So, things changed for the better, but this isn't always the case!
+
 ```{r, echo = FALSE}
 a     <- seq(50, 110, by = 2)
 cols  <- getcolsall(ntrans = 2)
@@ -83,22 +116,60 @@ barplot(t(radix1), main = "1996 male radix",ylim=c(0,.5),las=1)
 barplot(t(radix2), main = "2006 male radix",ylim=c(0,.5),las=1)
 ```
 
+Differences are also just as subtle when overlayed in a ternary plot. So the perturbation that it takes to jump from 1996 to 2006 really is not that large. 
+
+```{r, echo = FALSE, fig.width=10,fig.height=10}
+library(Ternary)
+
+pri   <- TR2[time == 1996 & sex == "m" & edu == "primary"]
+sec   <- TR2[time == 1996 & sex == "m" & edu == "secondary"]
+ter   <- TR2[time == 1996 & sex == "m" & edu == "terciary"]
+
+TernaryPlot(alab='self (p11, p22)', 
+			blab='health (p12, p21)', 
+			clab='mortality (p13, p23)',
+			grid.minor.lines = 0,
+            grid.lty='solid', 
+			col=rgb(0.9, 0.9, 0.9), 
+			grid.col='white')
+
+TernaryLines(pri[,..cols1], col='red')
+TernaryLines(sec[,..cols1], col='red')
+TernaryLines(ter[,..cols1], col='red')
+TernaryLines(pri[,..cols2], col='blue')
+TernaryLines(sec[,..cols2], col='blue')
+TernaryLines(ter[,..cols2], col='blue')
+legend(x=.4,y=1, 
+       lty=c(1,1,2,2), legend=c('DF origin 1996', 'Dis. origin 1996','DF origin 2006', 'Dis. origin 2006'), 
+       col=c("red","blue","red","blue"), bty='n', xpd=TRUE)
+
+pri   <- TR2[time == 2006 & sex == "m" & edu == "primary"]
+sec   <- TR2[time == 2006 & sex == "m" & edu == "secondary"]
+ter   <- TR2[time == 2006 & sex == "m" & edu == "terciary"]
+TernaryLines(pri[,..cols1], col='red',lty=2)
+TernaryLines(sec[,..cols1], col='red',lty=2)
+TernaryLines(ter[,..cols1], col='red',lty=2)
+TernaryLines(pri[,..cols2], col='blue',lty=2)
+TernaryLines(sec[,..cols2], col='blue',lty=2)
+TernaryLines(ter[,..cols2], col='blue',lty=2)
+```
+
 # Decomposition approach
 Assume that I have a function $f()$ that takes a single vector of parameters $\mathbf{\theta}$ and produces my desired expectancy (DFLE, DLE, or LE). $f(\mathbf{\theta})$ does all the book-keeping and arithmetic necessary to rearrange the the vector $\mathbf{\theta}$ into a transition matrix and estimate the desired expectancy, duly weighted by the radix composition, which is also contained in $\mathbf{\theta}$. 
 
+To be clear, the parameter vector $\theta$ could contain all six transitions and all six elements of the radix, but it could also be set up to contain only subsets of them, since they are compositions. Or it could consist in a transformation of the parameters, such as ALR, CLR, ILR. In the case of including all parameters untransformed, if I perturb a parameter then I need to counterperturb the others somehow. I've tried a number these possibilities, and all work perfectly well in an arithmetic sense (i.e. the decomposition sums properly), but the \emph{story} changes drastically depending on which one I choose. So it is necessary to understand how parameter perturbation enters into the decomposition methods.
+
 **Horiuchi in a nutshell**:
-Stacking the parameters into a single vector $\mathbf{\theta}$ sets up the decomposition easier. Horiuchi decomposition works like so: The vector $\mathbf{\theta}^{1996}$ gradually warps into $\mathbf{\theta}^{2006}$ along $N$ equispaced steps. At each of the $N$ steps, which can be thought of as the parameter background, each element of $\mathbf{\theta}$ is *independently* perturbed up and down by half a step, and the difference between these two values is taken as the contribution of the parameter given the background conditions. Each parameter ends up with $N$ such estimates, and their sum is taken to be the parameter contribution. Lo and behold the sum of these contributions of all the parameters is equal to $f(\mathbf{\theta}^{2006}) - f(\mathbf{\theta}^{1996})$
+Writing the objective function such that the parameters are stacked into a single vector $\mathbf{\theta}$ is the first step to setting up the decomposition. Horiuchi decomposition works like so: The vector $\mathbf{\theta}^{1996}$ gradually warps into $\mathbf{\theta}^{2006}$ along $N$ equispaced steps. At each of the $N$ steps, which can be thought of as the parameter background, each element of $\mathbf{\theta}$ is *independently* perturbed up and down by half a step, and the difference between these two values is taken as the contribution of the parameter given the background conditions. Each parameter ends up with $N$ such estimates, and their sum is taken to be the parameter contribution. Lo and behold the sum of these contributions of all the parameters is equal to $f(\mathbf{\theta}^{2006}) - f(\mathbf{\theta}^{1996})$.
+
+**LTRE in a nutshell**
+There are other decomposition techniques, such as Caswell's lifetable response experiment approach (LTRE), which is based on taking derivatives of $f(\theta)$ with respect of each element of $\theta$.
 
 **Devil in the details**:
 There are different ways to set up $f()$. The transition matrix created inside $f()$ only needs survivial and transfer probabilities. Mortality isn't in it. So $\mathbf{\theta}$ could contain just the black and red lines from the figure. But it could also be set up to take mortality and transfers, or survival and death but no transfers. In each of these three cases, the decomposition will run 
 
 # Continuous time perspective
 The continuous time representation of our multistate process can be expressed either as tuple of partial differential equations or as a continuous time Markov matrix, and examination of both cases will lead us to conclude that the only forces that matter in a multistate system are those of attrition.
-
-### Continuous time matrices
-
-
-
 
 ### Differential equations
 
@@ -107,6 +178,8 @@ $$ \frac{\mathrm{d}H}{\mathrm{d}t} = -\mu^h H(t) - o^h H(t) + r^u U(t) ~\mathrm{
 $$ \frac{\mathrm{d}U}{\mathrm{d}t} = -\mu^u U(t) + o^h H(t) - r^u U(t) ~\mathrm{d}t$$
 In this setup, the stocks $U$ and $H$ are determined only by the radix composition. Forces of survival and remaining in a state are not formally represented. Given continuous functions of these four rates of attrition, the entire process is a function of $U(0)$, $H(0)$ (the radix composition) and the four functions of rates of attrition. There is no compositional problem at all among the rates. 
 
+### Continuous time matrices
+Depending on how parameter estimation is done, sometimes one starts with rates (event/exposure rates over a time interval, for example), in which case only transient transitions (between living states) and mortality rates are estimated. These then go into a continuous time matrix as positive entries with a similar layout to a discrete time matrix. To complete the matrix, columns are forced to sum to 0 by adding in negative entries. The details of this procedure are irrelevant, but it is worth pointing out that self-arrows (remain in state and alive) are a residual rather than a direct input parameter.
 
 # References
 
