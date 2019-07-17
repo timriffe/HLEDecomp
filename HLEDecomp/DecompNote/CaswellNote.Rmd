@@ -1,5 +1,5 @@
 ---
-title: "Caswell Note"
+title: "Decomposition Note for Hal Caswell"
 author: "Tim Riffe"
 date: "7/16/2019"
 output: pdf_document
@@ -9,9 +9,10 @@ output: pdf_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-# Analytic derivatives
+# Decomp test
 
-```{r,echo=FALSE, message=FALSE }
+The first code chunk gives us the HRS transition probabilities reduced to a three state model (1 = healthy, 2 = disabled, 3 = dead), and transition probabilities labeled `m11` for staying healthy, `m12` for becoming disabled, `m13` for dying healthy, and so on.
+```{r, message = FALSE }
 library(data.table)
 library(DemoDecomp)
 library(xtable)
@@ -35,4 +36,190 @@ TR2   <- collapseTR(TR = TR, PREV = PREV)
 setnames(TR2,c("m14","m24"),c("m13","m23"))
 ```
 
+The state space looks like this, and we have 2-year age groups for ages 50-110.
 
+```{tikz, echo = FALSE}
+\begin{tikzpicture}[->,shorten >=1pt,auto,node distance=5cm,
+  thick,main node/.style={draw}]
+
+  \node[main node] (1) {1 (Disability free)};
+  \node[main node] (2) [right of=1] {2 (Disabled)};
+  \node[main node] (3) [below left of=2,xshift=1cm] {3 (Dead)};
+
+  \path[every node/.style={font=\sffamily\small}]
+    (1) edge [bend right] node [left] {$m13$ (die healthy)} (3)
+    (1) edge [bend right] node [below] {$m12$ (disablement)} (2)
+    (1) edge [loop left] node {$m11$} (1)
+    (2) edge [bend right] node [above] {$m21$ (recovery)} (1)
+    (2) edge [loop right] node {$m22$} (2)
+    (2) edge [bend left] node {$m23$ (die disabled)} (3)
+    (3) edge [loop below] node {(absorbing state)} (3);
+    
+\end{tikzpicture}
+```
+
+In the data we have this state space for three education groups, two sexes, and 3 time points (1996, 2006, and 2014). To keep things small, for this example we'll just decompose the difference between higher and lower educated males in 1996.
+
+```{r}
+m1996low <- TR2[time == 1996 & edu == "primary" & sex == "m"]
+m1996high <- TR2[time == 1996 & edu == "terciary" & sex == "m"]
+dim(m1996low); dim(m1996low)
+# take a peek
+m1996low %>% 
+	select(age, s1_prop, s2_prop, m11, m12, m13, m22, m21, m23) %>% 
+	head() %>% 
+	round(2)
+```
+
+The two values `s1_prop` and `s2_prop` are the proportions healthy and disabled at age 50, and these do not sum to one at first because we're in a single subset: they sum to one over all three education groups though. These will be rescaled as necessary.
+
+Using functions from the sourced file, we make `U`
+```{r}
+U1    <- data_2_U(m1996low, ntrans = 2)
+U2    <- data_2_U(m1996high, ntrans = 2)
+I     <- diag(nrow(U1))
+N1    <- solve(I - U1) * 2 # age interval
+N2    <- solve(I - U2) * 2
+
+# e50
+r1    <- unlist(m1996low[1,c("s1_prop","s2_prop")])
+r1    <- r1 / sum(r1)
+r2    <- unlist(m1996high[1,c("s1_prop","s2_prop")])
+r2    <- r2 / sum(r2)
+
+
+cind  <- rep(seq(50, 112, by = 2), 2) == 50
+e1    <- rbind(colSums(N1[1:32, cind]),
+	     	   colSums(N1[33:64, cind]))
+e2    <- rbind(colSums(N2[1:32, cind]),
+			   colSums(N2[33:64, cind]))
+# that's a big gap
+sum(e1*r1);sum(e2 * r2)
+# here in a single function
+e50(m1996low, ntrans = 2, deduct = FALSE)
+e50(m1996high, ntrans = 2, deduct = FALSE)
+```
+
+To decompose we need a version of the function `e50()` that takes a single vector $\theta$ as its argument. Here I'll make two versions of this function. The first defines $theta$ as consisting in disability transitions and mortality. The second uses disability transitions and survival within the state. 
+
+The function `dec_out()` takes a single vector of parameters, $\theta$ `= outvec`, and produces the estimate of total life expectancy at age 50. `outvec` is organized as 
+```{r, echo = FALSE}
+dec_out <- function(outvec){
+	n       <- length(outvec)
+	# siphon off proportions disabled as last two elements of the vector.
+	prop    <- outvec[(n-1):n]
+	outvec  <- outvec[1:(n-2)]
+	# requires input as vector, first reshape to matrix or df
+	datout  <- v2m(outvec, ntrans = 2)
+	# remove death rates and replace with self-arrows, needed to make
+	# transition matrices
+	datself <- out2self(datout, ntrans = 2)
+	# then compute e50 using the standard transition rates
+	result      <- e50(datself, 
+				   to = 5, # anything bigger than ntrans+1 gives total LE
+				   age = 50, 
+				   prop = prop, 
+				   ntrans = 2, 
+				   deduct = FALSE)
+
+	result 
+}
+```
+
+We can use column names to select the transitions we want to work with:
+```{r}
+(cols               <- getcols(ntrans = 2, self = FALSE, dead = 3))
+outvec1            <- c(as.matrix(m1996low[, cols, with = FALSE]), r1)
+outvec2            <- c(as.matrix(m1996high[, cols, with = FALSE]), r2)
+# same results
+dec_out(outvec1);dec_out(outvec2)
+```
+
+And again with $\theta$ defined using only the transitions needed to make `U`, called `selfvec`.
+```{r}
+dec_self <- function(selfvec){
+	n        <- length(selfvec)
+	# siphon off proportions disabled as last two elements of the vector.
+	prop     <- selfvec[(n-1):n]
+	selfvec  <- selfvec[1:(n-2)]
+	# requires input as vector, first reshape to matrix or df
+	datself  <- v2m(selfvec, ntrans = 2)
+	# remove death rates and replace with self-arrows, needed to make
+	# transition matrices
+	colnames(datself) <- getcols(ntrans = 2, self = TRUE, dead = 3)
+	datself <- as.data.frame(datself)
+	# then compute e50 using the standard transition rates
+	result      <- e50(datself, 
+				   to = 5, # anything bigger than ntrans+1 gives total LE
+				   age = 50, 
+				   prop = prop, 
+				   ntrans = 2, 
+				   deduct = FALSE)
+
+	result 
+}
+```
+
+And this is used in the same way:
+```{r}
+(cols               <- getcols(ntrans = 2, self = TRUE, dead = 3))
+selfvec1            <- c(as.matrix(m1996low[, cols, with = FALSE]), r1)
+selfvec2            <- c(as.matrix(m1996high[, cols, with = FALSE]), r2)
+# same results
+dec_self(selfvec1);dec_self(selfvec2)
+```
+
+There are a total of 66 parameters in $\theta$ either way. I've not implemented analytic derivatives, and I know you advise against numerical derivatives, but I really wouldn't expect them to be different enough to throw off our result. Here's LTRE using the parameter midpoint as the background reference.
+
+```{r}
+out_avg  <- (outvec1 + outvec2) / 2
+self_avg <- (selfvec1 + selfvec2) / 2
+library(numDeriv)
+g_out    <- grad(dec_out, out_avg)
+g_self   <- grad(dec_self, self_avg)
+# change in parameters
+d_out    <- outvec2 - outvec1
+d_self   <- selfvec2 - selfvec1
+# contributions, first order approx
+c_out    <- g_out * d_out
+c_self   <- g_self * d_self
+# same sums, yay!
+sum(c_out);sum(c_self)
+# rather close, yay!
+sum(e2*r2)-sum(e1 * r1)
+```
+
+Now to see where those contributions are, we need to unpack `c_out` and `c_self` just as we do in the decompose functions. I'll sum over age now, just to see the contributions from each transition type.
+
+```{r}
+	n       <- length(c_out)
+	# fraction disabled contribution can just be summed.
+	age50   <- sum(c_out[(n-1):n])
+	c_out   <- c_out[1:(n-2)]
+	# requires input as vector, first reshape to matrix or df
+	c_out_sum   <- colSums(v2m(c_out, ntrans = 2))
+	# 
+	names(c_out_sum) <-  getcols(ntrans = 2, self = FALSE, dead = 3)
+	# save this to compare
+    (c_out_sum <- c(c_out_sum, age50 = age50))
+```
+
+And repeat for the version that uses self arrows:
+```{r}
+	n       <- length(c_self)
+	# fraction disabled contribution can just be summed.
+	age50   <- sum(c_self[(n-1):n])
+	c_self   <- c_self[1:(n-2)]
+	# requires input as vector, first reshape to matrix or df
+	c_self_sum   <- colSums(v2m(c_self, ntrans = 2))
+	# 
+	names(c_self_sum) <-  getcols(ntrans = 2, self = TRUE, dead = 3)
+	# save this to compare, already looking very different
+    (c_self_sum <- c(c_self_sum, age50 = age50))
+```
+
+A little table, to be continued
+
+```{r}
+
+```
