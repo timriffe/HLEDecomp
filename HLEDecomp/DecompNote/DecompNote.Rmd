@@ -2,10 +2,13 @@
 title: "Decomposition notes"
 author: "Tim Riffe"
 date: "May 21, 2019"
-output: html_document
+output:
+  pdf_document: default
+header-includes:
+  - \usepackage{setspace}\doublespacing
 bibliography: references.bib
 ---
-
+\large
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
@@ -40,9 +43,9 @@ We have a 3 state discrete time Markov model to estimate old-age life expectancy
 \end{tikzpicture}
 ```
 
-Since the parameters are probabilities, we have $1 = p11 + p12 + p13$ and $1 = p21 + p22 + p23$. Age is not depicted in the diagram, but each transition happens as individuals age into the next age class, and each age class therefore has these two compositions. From this model, we are interested in calculating state-specific life expectancies, and this is a straightforward and deterministic calculation. This class of model is used by demographers for many different phenomena, such as working life expectancy, marital transitions, migration, to name a few, and the problem I'll descibe here for health would be invoked just the same in those contexts if a similar exercise to mine undertaken.
+Since the parameters are probabilities, we have $1 = p11 + p12 + p13$ and $1 = p21 + p22 + p23$. Age is not depicted in the diagram, but each transition happens as individuals age into the next age class, and each age class therefore has these two compositions. From this model, we are interested in calculating state-specific life expectancies, and this is a straightforward and deterministic calculation. This class of model is used by demographers for many different phenomena, such as working life expectancy, marital transitions, migration, to name a few, and the problem I'll descibe here for health would be invoked just the same in those contexts if a similar exercise to the present one were undertaken.
 
-We have separate models for males and females, but the sex-specific models are each composed of separate submodels for three education groups. The process for each education group unfolds independently, and these are averaged together according to the so-called *radix* composition, which consists first in the fraction in each education group at the starting age (50), and second in the fraction disabled in each education group (6 parts total). The radix is a composition, but it's not the one I'm worried about. Estimating a life expectancy invokes no compositional problem, but we invoke such a problem as soon as we would like to attribute differences in expectancies (e.g. between two time points) to differences in the input parameters. This exercise is what demographers refer to as *decomposition* (no idea about other disciplines). 
+We have separate models for males and females, but the sex-specific models are each composed of separate submodels for three education groups. The process for each education group unfolds independently, and these are averaged together according to the so-called *radix* composition, which consists first in the fraction in each education group at the starting age (50), and second in the fraction disabled in each education group (6 parts total). The radix is a composition, but it's not the one I'm worried about. Estimating a life expectancy invokes no compositional problem, but we invoke such a problem as soon as we would like to attribute differences in expectancies (e.g. between two time points) to differences in the input parameters. This exercise is what demographers refer to as *decomposition*. I do not know if this comes up in other disciplines. 
 
 I'd like to decompose differences in expectancies over time (or between groups) into the contributions from model parameters (that is the transition probabilities and radix composition). To decompose I use the pseudo-continuous method proposed by @horiuchi2008 , although a different method by @caswell1989analysis would also be an option, and I'll give nutshell descriptions of both. Neither of these methods takes care of the compositional nature of the transition probabilities. Rather, this is something I need to program into the objective function, possibly via transformations or reparameterizing the whole operation. 
 
@@ -69,7 +72,7 @@ setnames(TR2,c("m14","m24"),c("m13","m23"))
 
 Here are those transition probabilities, hastily plotted. Black is $p11$ (left column) and $p22$ (right column), green is mortality ($p13$, $p23$), and red is transferring to the other state ($p12$, $p21$). The education groups are not labelled but higher edu is \emph{better} for each of the transition types. You can only sense subtle changes from 1996 to 2006, but these amount to a 1.48 year increase in DFLE, a trivial .03 year decrease in DLE, for an overall gain of 1.45 years in LE. So, things changed for the better, but this isn't always the case!
 
-```{r, echo = FALSE}
+```{r, echo = FALSE, fig.height = 8}
 a     <- seq(50, 110, by = 2)
 cols  <- getcolsall(ntrans = 2)
 cols1 <- cols[1:3]
@@ -106,6 +109,7 @@ matplot(a,ter[,..cols2], type = 'l', add = TRUE)
 ```
 
 Also not to be left out, the starting composition changed some (dark is DF, light is Disabaled). Again, I'm not worried about how to deal with this composition in the decomposition because it will be summarized in two pieces "Age 50 education composition" and "Age 50 disability composition", and I do not need to partition effects to all six pieces of the radix.
+
 ```{r, echo = FALSE}
 sprop <- c("s1_prop","s2_prop")
 radix1 <- as.matrix(TR2[time == 1996 & sex == "m" & age == 50,..sprop])
@@ -116,7 +120,7 @@ barplot(t(radix1), main = "1996 male radix",ylim=c(0,.5),las=1)
 barplot(t(radix2), main = "2006 male radix",ylim=c(0,.5),las=1)
 ```
 
-Differences in transition probabilities are subtle but more visible when overlayed in a ternary plot. Here we see that the perturbation that it takes to jump from 1996 to 2006 really is not that large. It is also clear that education group differences are in many ages far larger than changes in the decade examined.
+Differences in transition probabilities over time are subtle but more visible when overlayed in a ternary plot. Here we see that the perturbation that it takes to jump from 1996 to 2006 really is not that large. It is also clear that education group differences are in many ages far larger than changes in the decade examined.
 
 ```{r, echo = FALSE, fig.width=10,fig.height=10}
 library(Ternary)
@@ -154,6 +158,13 @@ TernaryLines(sec[,..cols2], col='blue',lty=2)
 TernaryLines(ter[,..cols2], col='blue',lty=2)
 ```
 
+# The objective
+I would like to produce a table such as this:
+
+![Contributions to changes in Male expectancies (1996-2006)](Table1a.png)
+
+The problem is there are many ways this table can end up looking depending on how I parameterize this decomposition! 
+
 # Decomposition approach
 Assume that I have a function $f()$ that takes a single vector of parameters $\mathbf{\theta}$ and produces my desired expectancy (DFLE, DLE, or LE). $f(\mathbf{\theta})$ does all the book-keeping and arithmetic necessary to rearrange the the vector $\mathbf{\theta}$ into a transition matrix and estimate the desired expectancy, duly weighted by the radix composition, whose information is also contained in $\mathbf{\theta}$. 
 
@@ -167,10 +178,10 @@ There are other decomposition techniques, such as Caswell's lifetable response e
 This method makes you choose *where* to take the derivatives, to which Caswell recommends calculating them at the midpoint between $\theta^1$ and $\theta^2$. One could also do the same as with Horiuchi and repeat this operation $N$ times over a gradually changing \emph{background} to increase precision. I've discussed my "problem" with Caswell and he thinks that LTRE avoids the composition problem because the derivatives of a composition are independent. He therefore thinks it best to include *all* parameters, assigning a contribution to each. In practice the derivatives in this method are usually calculated numerically, which depends on perturbation, in which case no care is taken to constrain parameters (unless this is built into $f()$). He says that analytically calculated derivatives wouldn't have this problem. 
 
 **Freedom in parameterization**:
-There are different ways to set up $f()$. The transition matrix created inside $f()$ only needs survivial and transfer probabilities, and it contains no mortality. So $\mathbf{\theta}$ could contain just survival and transfers But it could also be set up to take mortality and transfers, or survival and mortality but no transfers. In each of these three cases, the parameters required to produce the estimate are internally rederived as needed. In effect, setting up $f(\theta)$ to run on two of the transition types has the effect of treating the third transition as a kind of residual. 
+There are different ways to set up $f()$. The transition matrix created inside $f()$ only needs survivial and transfer probabilities, and it contains no mortality. So $\mathbf{\theta}$ could contain just survival and transfers. But it could also be set up to take mortality and transfers, or survival and mortality but no transfers. In each of these three cases, the parameters required to produce the estimate are internally rederived as needed. In effect, setting up $f(\theta)$ to run on two of the transition types has the effect of treating the third transition as a kind of residual.
 
 # Continuous time perspective
-The continuous time representation of our multistate process can be expressed either as tuple of partial differential equations or as a continuous time Markov matrix, and examination of both cases will lead us to conclude that the only forces that matter in a multistate system are those of attrition.
+The continuous time representation of our multistate process can be expressed either as tuple of partial differential equations or as a continuous time Markov matrix, and examination of both cases might lead us to conclude that the only forces that matter in a multistate system are those of attrition.
 
 ### Differential equations
 
@@ -180,7 +191,28 @@ $$ \frac{\mathrm{d}U}{\mathrm{d}t} = -\mu^u U(t) + o^h H(t) - r^u U(t) ~\mathrm{
 In this setup, the stocks $U$ and $H$ are determined only by the forces of mortality, interstate transitions, and the radix composition. Forces of survival and remaining in a state are not formally represented. There is no compositional problem at all among the rates. 
 
 ### Continuous time matrices
-Depending on how parameter estimation is done, sometimes one starts with rates (event/exposure rates over a time interval, for example), in which case only transient transitions (between living states) and mortality rates are estimated. These then go into a continuous time matrix as positive entries with a similar layout to a discrete time matrix. To complete the matrix, columns are forced to sum to 0 by adding in negative entries. The details of this procedure are irrelevant, but it is worth pointing out that self-arrows (remain in state and alive) are a residual rather than a direct input parameter.
+Depending on how parameter estimation is done, sometimes one starts with rates (event/exposure rates over a time interval, for example), in which case only transient transitions (between living states) and mortality rates are estimated. These then go into a continuous time matrix as positive entries with a similar layout to a discrete time matrix. To complete the matrix, columns are forced to sum to 0 by adding in negative entries. The details of this procedure are irrelevant, but it is worth pointing out that self-arrows (remain in state and alive) are a residual rather than a direct input parameter. To calculate state expectancies from this matrix, it is first exponentiated, converting it to a probability matrix like the one we are working with. In this sense, we're back to the same compositional setting, and the conundrum might be re-invoked.
+
+# Maybe there's no problem?
+Which forces or probabilities to treat as parameters is a kind of epistemic problem. (A) If it is the case that attrition is the driving force, then it might be appropriate to treat self-arrows as a residual. (B) If it is the case that vitality is the driving force, then it might be appropriate to treat mortality as a residual. The way that demographers speak of, estimate, and model processes leads me to think that (A) is appropriate. If this is the case, then we have an artifactual composition of three parts, where only two parts determine the whole. In this case, it is clear how to set up and interpret the decomposition.
+
+# Use all possible parameters?
+However, I've also tried H. Caswell's LTRE method using all parameters. In this case, the decomposition sums as desired, and I get a contribution from *each* parameter. However, I suspect something will be wrong since perturbation still happens in a hidden way since we're using numerical derivatives, in which case the compositional nature of the data isn't respected. 
+
+# CoDa transformations
+I've tried different denominator choices for ALR using the `compositions` `R` package. In this case the decomposition exercise is done to parameters that have been ALR transformed. I like this because perturbations appear independant and also because they happen in the real space. In the case that I choose to put self-arrows in the denominator, results turn out to be qualitatively similar to treating self-arrows as residuals. Likwise, putting mortality in the ALR denominator is qualitatively similar to treating mortality as a residual.
+
+If the decomposition is done to CLR-transformed $\theta$ containing all parameters, the result is qualitatively similar to LTRE decomposition on all parameters (except the compositional nature of the data is respected). 
+
+# My questions
+
+1. Can I use demographic ~~dogma~~ reasoning to treat self-arrows as residuals or place self-arrows in an ALR denominator? If I do the second, can I call the mortality-component of the decomposition *mortality*, or do I need to understand it as *the contribution of mortality with respect to survival*? (and so on for the other parameters).
+
+2. Is Hal Caswell correct that the partial derivatives of an outcome that depends on a composition are independant? Even if so, is there still a rationale for pre-transforming with CLR or similar? I have misgivings on interpreting decomposition results that include the full composition in $\theta$.
+
+3. I see that this problem is mathematically undertermined, but when and how is it appropriate to use my discipline knowledge to narrow things down. Is it appropriate to publish my preferred solution, but to include other *solutions* that give qualitatively different results in supplementary material?
+
+4. I had wished to produce a large table to represent how results vary over these different choices, but I've not found the resources to organize this yet. If variation in the results based on methods choice would help advise on the proper course for this situation, I'll happily produce it. If needed, I have subsets available to compare that can be calculated.
 
 # Acknowledgements:
 This exercise has benefitted from discussions with Christian Dudel, Kathryn Grace, Jutta Gampe, Marie-Pier Bergeron, James Oeppen, Alyson van Raalte, Hal Caswell, Jonas Schöley, Shiro Horiuchi, and Daniel Schneider.  

@@ -1,0 +1,38 @@
+---
+title: "Caswell Note"
+author: "Tim Riffe"
+date: "7/16/2019"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Analytic derivatives
+
+```{r,echo=FALSE, message=FALSE }
+library(data.table)
+library(DemoDecomp)
+library(xtable)
+library(here)
+library(tidyverse)
+source(here("Code","R","Functions.R"))
+
+path <- 	here(
+	     "Data",
+		 "Transitions",
+		 "DCS",
+		 "initdetail",
+		 "TR_v06.Rdata")
+TR    <- local(get(load(path)))
+TR    <- data.table(TR)
+# TR: had to fix colnames problem
+PREV  <- TR[ , get_prev_dt(.SD), by = list(sex, edu, time)]
+# TR2 just means that there are now TWO living states,
+# healthy and disabled.
+TR2   <- collapseTR(TR = TR, PREV = PREV)
+setnames(TR2,c("m14","m24"),c("m13","m23"))
+```
+
+

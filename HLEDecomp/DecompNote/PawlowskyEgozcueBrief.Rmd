@@ -1,0 +1,23 @@
+---
+title: "Second Decomposition Brief"
+author: "Tim Riffe"
+date: "7/17/2019"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Summary
+
+The first decomposition note I sent establishes the context, the inputs, and the parameters. The present one formalizes what happens in the function $f(\theta)$, and will procede as a sequence of formulas, with code chunks. The present exercise will be a step simplified from the previously presented data. Here we will decompose differences in health expectancy between two education groups. The starting population (age 50) is therefore a two-part composition (disabled and not disabled), and we will not mix educational groups.
+
+# The objective
+
+The function $f(\theta)$ takes a vector of parameters $\theta$ and calculates disability free life expectancy from it. The units of disability free life expectancy are years. $\theta$ could take many forms, but it is in the first place a set of transition probabilities.
+
+
+
+
+

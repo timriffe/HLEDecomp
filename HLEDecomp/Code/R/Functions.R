@@ -83,6 +83,7 @@ pi2u <- function(pivec){
 #datself <- get_TR("02",subset = sex == "f" & edu == "all_edu" & time == 1996)
 # just transition rates, excluding to death, single sex, edu, year
 data_2_U <- function(datself, ntrans = 3){
+	datself    <- as.data.frame(datself,stringsAsFactors=FALSE)
 	# get the block order
 	trans.self <- getcols(ntrans = ntrans, self = TRUE)
 	this.order <- as.data.frame(matrix(trans.self, ntrans, byrow = TRUE),stringsAsFactors=FALSE)
