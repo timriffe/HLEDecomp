@@ -9,10 +9,29 @@ output: pdf_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-# Decomp test
+Dear Hal,
+I'm sorry I took so long getting back to you. You only asked for the $\mathbf{U}$ matrices from me, but here I'm giving a code tour to show a subset of the tests I've done. There is a high risk I've misinterpreted something in your most recent note, and if so I apologize. Namely, I've done no analytic derivatives here, just numerical ones, which you advise against, but I would hope that this does not throw off results. 
+
+The examples here show that i) if we take subsets of original (conditional on age and nothing else) transition probabilities then we get inconsistent results depending how we parameterize. ii) This is because for such probabilities $\Delta \theta$ isn't a mirror image between survival and mortality, and neither is $\frac{d\xi(\theta)}{d\theta}$. iii) Even so, framing things in terms of attrition (death and health transitions) gives results that seem plausible, whereas framing things in terms of survival and transitions gives strange results. iv) If we reprarameterize in terms of a) survival and b) health transitions conditional on surviving --OR-- in terms of a) mortality and b) health transitions conditional on surviving, then we get identical, plausible, and directly interpretable results either way. v) This property (identical results) holds also if we logit transform the probabilities, but not under several other transformations I tried. vi) The reparameterized results look rather similar to the 
+
+I like this second conditional parameterization. It is also qualitatively like the *attrition*-only parameterization compared in the first part.
+
+This document is written in R markdown, and it is hosted online in a github repository [https://github.com/timriffe/HLEDecomp](https://github.com/timriffe/HLEDecomp). To get the full markdown file, including some code chunks here suppressed, follow [HLEdecomp/DecompNote/CaswellNote.Rmd](https://github.com/timriffe/HLEDecomp/blob/master/HLEDecomp/DecompNote/CaswellNote.Rmd)
+Some further functions are read in from this file:
+[HLEdecomp/Code/R/Functions.R](https://github.com/timriffe/HLEDecomp/blob/master/HLEdecomp/Code/R/Functions.R). 
+
+I attached U1 and U2 to this email, as well as the original data used to make them, which also contains the age 50 proporions disabled (you need to rescale these as I do below).
+
+I hope we can continue this correspondence until case closed. I'm feeling pretty good after this note, having come up with a parameterization that appears to give consistent, plausible, and interpretable results.
+
+Best wishes,
+
+Tim
+
+# Setup
 
 The first code chunk gives us the HRS transition probabilities reduced to a three state model (1 = healthy, 2 = disabled, 3 = dead), and transition probabilities labeled `m11` for staying healthy, `m12` for becoming disabled, `m13` for dying healthy, and so on.
-```{r, message = FALSE }
+```{r, message = FALSE, warning=FALSE}
 library(data.table)
 library(DemoDecomp)
 library(xtable)
@@ -61,7 +80,7 @@ The state space looks like this, and we have 2-year age groups for ages 50-110.
 In the data we have this state space for three education groups, two sexes, and 3 time points (1996, 2006, and 2014). To keep things small, for this example we'll just decompose the difference between higher and lower educated males in 1996.
 
 ```{r}
-m1996low <- TR2[time == 1996 & edu == "primary" & sex == "m"]
+m1996low  <- TR2[time == 1996 & edu == "primary" & sex == "m"]
 m1996high <- TR2[time == 1996 & edu == "terciary" & sex == "m"]
 dim(m1996low); dim(m1996low)
 # take a peek
@@ -72,6 +91,9 @@ m1996low %>%
 ```
 
 The two values `s1_prop` and `s2_prop` are the proportions healthy and disabled at age 50, and these do not sum to one at first because we're in a single subset: they sum to one over all three education groups though. These will be rescaled as necessary.
+
+# First exercises 
+In this first set of exercises I show points (i, ii, iii). First showing most work, then wrapping in functions for expediency.
 
 Using functions from the sourced file, we make `U`
 ```{r}
@@ -95,15 +117,22 @@ e2    <- rbind(colSums(N2[1:32, cind]),
 			   colSums(N2[33:64, cind]))
 # that's a big gap
 sum(e1*r1);sum(e2 * r2)
-# here in a single function
+# here in a single function that wraps the above
+# and has more optional arguments.
 e50(m1996low, ntrans = 2, deduct = FALSE)
 e50(m1996high, ntrans = 2, deduct = FALSE)
 ```
 
-To decompose we need a version of the function `e50()` that takes a single vector $\theta$ as its argument. Here I'll make two versions of this function. The first defines $theta$ as consisting in disability transitions and mortality. The second uses disability transitions and survival within the state. 
+```{r, echo = FALSE, results = "hide"}
+write_csv(as.data.frame(U1), path = here("DecompNote","U1.csv"))
+write_csv(as.data.frame(U2), path = here("DecompNote","U2.csv"))
+write_csv(as.data.frame(m1996high), path = here("DecompNote","m1996high.csv"))
+write_csv(as.data.frame(m1996low), path = here("DecompNote","m1996low.csv"))
+```
+To decompose we need a version of the function `e50()` that takes a single vector $\theta$ as its argument. Here I'll make two versions of this function. The first defines $\theta$ as consisting in disability transitions and mortality. The second uses disability transitions and survival within the state. 
 
-The function `dec_out()` takes a single vector of parameters, $\theta$ `= outvec`, and produces the estimate of total life expectancy at age 50. `outvec` is organized as 
-```{r, echo = FALSE}
+The $\xi()$ function `dec_out()` takes a single vector of parameters, $\theta$ `= outvec`, and produces the estimate of total life expectancy at age 50. We just need to be diligent with book-keeping.
+```{r}
 dec_out <- function(outvec){
 	n       <- length(outvec)
 	# siphon off proportions disabled as last two elements of the vector.
@@ -128,9 +157,11 @@ dec_out <- function(outvec){
 
 We can use column names to select the transitions we want to work with:
 ```{r}
-(cols               <- getcols(ntrans = 2, self = FALSE, dead = 3))
-outvec1            <- c(as.matrix(m1996low[, cols, with = FALSE]), r1)
-outvec2            <- c(as.matrix(m1996high[, cols, with = FALSE]), r2)
+(colsout           <- getcols(ntrans = 2, self = FALSE, dead = 3))
+outmat1            <- as.matrix(m1996low[, colsout, with = FALSE])
+outmat2            <- as.matrix(m1996high[, colsout, with = FALSE])
+outvec1            <- c(outmat1, r1)
+outvec2            <- c(outmat2, r2)
 # same results
 dec_out(outvec1);dec_out(outvec2)
 ```
@@ -147,7 +178,7 @@ dec_self <- function(selfvec){
 	# remove death rates and replace with self-arrows, needed to make
 	# transition matrices
 	colnames(datself) <- getcols(ntrans = 2, self = TRUE, dead = 3)
-	datself <- as.data.frame(datself)
+	datself  <- as.data.frame(datself)
 	# then compute e50 using the standard transition rates
 	result      <- e50(datself, 
 				   to = 5, # anything bigger than ntrans+1 gives total LE
@@ -162,14 +193,16 @@ dec_self <- function(selfvec){
 
 And this is used in the same way:
 ```{r}
-(cols               <- getcols(ntrans = 2, self = TRUE, dead = 3))
-selfvec1            <- c(as.matrix(m1996low[, cols, with = FALSE]), r1)
-selfvec2            <- c(as.matrix(m1996high[, cols, with = FALSE]), r2)
+(colsself           <- getcols(ntrans = 2, self = TRUE, dead = 3))
+selfmat1            <- as.matrix(m1996low[, colsself, with = FALSE])
+selfmat2            <- as.matrix(m1996high[, colsself, with = FALSE])
+selfvec1            <- c(selfmat1, r1)
+selfvec2            <- c(selfmat2, r2)
 # same results
 dec_self(selfvec1);dec_self(selfvec2)
 ```
 
-There are a total of 66 parameters in $\theta$ either way. I've not implemented analytic derivatives, and I know you advise against numerical derivatives, but I really wouldn't expect them to be different enough to throw off our result. Here's LTRE using the parameter midpoint as the background reference.
+There are a total of 66 parameters in $\theta$ either way. Really the last two parameters could be reduced to one too (I do this later), but it won't make a difference here. I've not implemented analytic derivatives, and I know you advise against numerical derivatives, but I really wouldn't expect them to be different enough to throw off our result. Here's LTRE using the parameter midpoint as the reference $\theta$.
 
 ```{r}
 out_avg  <- (outvec1 + outvec2) / 2
@@ -186,16 +219,16 @@ c_self   <- g_self * d_self
 # same sums, yay!
 sum(c_out);sum(c_self)
 # rather close, yay!
-sum(e2*r2)-sum(e1 * r1)
+(DIF <- sum(e2 * r2) - sum(e1 * r1))
 ```
 
 Now to see where those contributions are, we need to unpack `c_out` and `c_self` just as we do in the decompose functions. I'll sum over age now, just to see the contributions from each transition type.
 
 ```{r}
-	n       <- length(c_out)
+	n           <- length(c_out)
 	# fraction disabled contribution can just be summed.
-	age50   <- sum(c_out[(n-1):n])
-	c_out   <- c_out[1:(n-2)]
+	age50       <- sum(c_out[(n-1):n])
+	c_out       <- c_out[1:(n-2)]
 	# requires input as vector, first reshape to matrix or df
 	c_out_sum   <- colSums(v2m(c_out, ntrans = 2))
 	# 
@@ -206,10 +239,10 @@ Now to see where those contributions are, we need to unpack `c_out` and `c_self`
 
 And repeat for the version that uses self arrows:
 ```{r}
-	n       <- length(c_self)
+	n            <- length(c_self)
 	# fraction disabled contribution can just be summed.
-	age50   <- sum(c_self[(n-1):n])
-	c_self   <- c_self[1:(n-2)]
+	age50        <- sum(c_self[(n-1):n])
+	c_self       <- c_self[1:(n-2)]
 	# requires input as vector, first reshape to matrix or df
 	c_self_sum   <- colSums(v2m(c_self, ntrans = 2))
 	# 
@@ -218,8 +251,352 @@ And repeat for the version that uses self arrows:
     (c_self_sum <- c(c_self_sum, age50 = age50))
 ```
 
-A little table, to be continued
+Individual components are very different, but origin state totals are identical:
 
 ```{r}
-
+# transitions originating in the healthy state
+c_self_sum[1] + c_self_sum[2]; c_out_sum[1] + c_out_sum[2]
+# transitions originating in the disabled state
+c_self_sum[3] + c_self_sum[4]; c_out_sum[3] + c_out_sum[4]
+# the age 50 composition:
+c_out_sum[5];c_self_sum[5]
 ```
+
+`d_out` and `d_self` must be same for health transitions and, but they are not mirror images for survival and mortality:
+
+```{r}
+# but we need to rearrange to compare directly
+colsself
+colsout[c(2,1,3,4)]
+dmatout  <- outmat2[,colsout[c(2,1,3,4)]] - outmat1[,colsout[c(2,1,3,4)]]
+dmatself <- selfmat2 - selfmat1
+ylim <- range(c(dmatout,dmatself))
+plot(dmatout[,4], dmatself[,4],asp=1, type = 'l', ylim = ylim,
+	 main = "delta(surv) != delta(mort)")
+lines(dmatout[,1], dmatself[,1], col = "red")
+
+ylim <- range(c(dmatout,dmatself))
+plot(dmatout[,2], dmatself[,2],asp=1, type = 'l', ylim = ylim,
+	 main = "Health transitions the same")
+lines(dmatout[,3], dmatself[,3], col = "red")
+```
+
+And also we should compare derivatives, they are indeed mirror images for survival and mortality, but not for health transitions. Also requires some book-keeping to align columns properly.
+
+```{r}
+gmatout            <- v2m(g_out[1:124], ntrans = 2)
+gmatself           <- v2m(g_self[1:124], ntrans = 2)
+colnames(gmatout)  <- colsout
+gmatout            <- gmatout[,c(2,1,3,4)]
+colnames(gmatself) <- colsself
+ylim <- range(c(gmatout,gmatself))
+plot(gmatout[,1],gmatself[,1],asp=1, type='l',ylim=ylim,
+	 main = "derivs for mort and surv are same magnitude\nopposite sign, just like Hal says",
+	 sub = "black = healthy, red = disabled",
+	 xlab = "out derivs (mort)",
+	 ylab = "self derivs (surv)")
+lines(gmatout[,4],gmatself[,4],lwd=2,lty='44',col="red")
+
+plot(gmatout[,2],gmatself[,2],asp=1, type='l',ylim=ylim,
+	 main = "derivs for health transitions change though!",
+	 sub = "black = healthy, red = disabled",
+	 xlab = "out derivs",
+	 ylab = "self derivs")
+lines(gmatout[,3],gmatself[,3],lwd=2,lty='44',col="red")
+```
+
+# The long and the short of it
+We have $\Delta$ the same for health transitions, but the derivatives change depending on the setup. We have $\Delta$ different for survival within state versus mortality, but derivatives are indeed mirror images. When multiplied together these give completely different decompositions. And the *self* setup (i.e. decomposing just what goes into `U`) looks strange, whereas the *attrition-only* setup gives a plausible and interpretable decomposition result.
+
+# What about other parameterizations?
+There are many ways to reparameterize, of which I've only tried a subset. Perhaps derivatives of proportions are too sensitive on the edges? Well, for easier experimentation I'll functionalize LTRE with a bit more flexibility.
+
+```{r}
+ltre <- function(func, pars1, pars2, dfunc, N = 20, ...){
+	if (missing(dfunc)){ 
+		dfunc <- numDeriv::grad
+	}
+	stopifnot(is.function(dfunc))
+    stopifnot(length(pars1) == length(pars2))
+	delta       <- pars2 - pars1
+	n 			<- length(pars1)
+	ddelta 		<- delta / N
+	linmat      <- matrix(rep(.5:(N - .5) / N, n), 
+			              byrow = TRUE, 
+						  ncol = N)
+	x           <- pars1 + ddelta * linmat
+	cc          <- matrix(0, nrow = n, ncol = N)
+	for (i in 1:N){
+		# move reference theta over the parameter space
+		cc[,i] <- dfunc(func, x[,i], ...) * ddelta
+	}
+	rowSums(cc)
+}
+```
+
+This is identical to the above if `N=1`.
+```{r}
+all(ltre(dec_self, selfvec1, selfvec2, N = 1)[1:124] - c_self == 0)
+all(ltre(dec_out, outvec1, outvec2, N = 1)[1:124] - c_out == 0)
+```
+
+And increasing `N` ought to reduce the residual of the decomposition arbitrarily close to 0. Here it does not hold and I do not know why, since it is the case in other functions I've messed around with. Maybe because I'm using numerical derivatives and we have rates close to 1 and 0? In an email you advised against this, but I don't understand why not, and to me it seems like a nice feature. One can also specify a self-made gradient function, so this would work with analytic derivatives too, if functionalized.
+
+The question is whether there exists a transformation where mortality and survival are interchangeable. In parallel work in consultation with Vera Pawlowsky and Juan Jose Egozcue I'm exploring whether it makes sense to treat this as a compositional data (CoDa) problem, which at a minimum would imply transforming these transition probabilities out of a simplex and into either ${\rm I\!R^2}$ or ${\rm I\!R^3}$. I'm not going to investigate that angle in this note.
+
+A nice way to parameterize $\xi(\theta)$ would be two have two multiplicative fractions instead of three probabilities (per transient state per age). For example, analogous to the *attrition* example, one could have:
+
+$$p1 = m13$$
+
+
+
+$$p2 = \frac{m12}{1-p1}$$
+This has all the same information in any case, and disability onset is here conditional on survival, and transitions originating in disability are treated in the same way. Or one could do something closer to the *survival* framing:
+$$ p1 = m11 + m12$$
+$$ p2 = \frac{m12}{p1}$$
+
+In either case it's clear enough how to get `U` from these. I'll go ahead and program this (the first one tagged in the code as `*out*` and the second one as `*self*`), but not litter this note with the ugly details, suffice to say we get a few new functions that you'll see in action below. These basically follow the same logic, and also allow for arbitrarily transformed parameters with the anti-transform applied as needed.
+
+```{r, echo = FALSE}
+m2p <- function(dat, self = FALSE){
+    if (!self){
+    	dat <- as.matrix(dat[,c("m13","m12","m21","m23")])
+    	p <- cbind(p1_1 = dat[,"m13"],
+    			   p1_2 = dat[,"m12"] / (1 - dat[,"m13"]),
+    			   p2_1 = dat[,"m23"],
+    			   p2_2 = dat[,"m21"] / (1 - dat[,"m23"]))
+    } else {
+    	dat <- as.matrix(dat[,c("m11","m12","m13","m21","m22","m23")])
+    	p <- cbind(p1_1 = (1 - dat[,"m13"]),
+    			   p1_2 = dat[,"m12"] / (1 - dat[,"m13"]),
+    			   p2_1 = (1 - dat[,"m23"]),
+    			   p2_2 = dat[,"m21"] / (1 - dat[,"m23"]))
+    }
+	p
+}
+# since we're going straight to U only need self cols
+p2m <- function(pmat, self = FALSE){
+	if (!self){
+		den1 <- 1 - pmat[,"p1_1"]
+		den2 <- 1 - pmat[,"p2_1"]
+		m <- cbind(m11 = den1 - pmat[,"p1_2"] * den1,
+				   m12 = pmat[,"p1_2"] * den1,
+				   m21 = pmat[,"p2_2"] * den2,
+				   m22 = den2 - pmat[,"p2_2"] * den2)
+	} else {
+		m <- cbind(m11 = (1 - pmat[,"p1_2"]) * pmat[,"p1_1"],
+				   m12 = pmat[,"p1_2"] * pmat[,"p1_1"],
+				   m21 = pmat[,"p2_2"] * pmat[,"p2_1"],
+				   m22 = (1 - pmat[,"p2_2"]) * pmat[,"p2_1"])
+	}
+	# be sure to return in standard order
+	cols <- getcols(ntrans = 2, dead = 3, self = TRUE)
+	m[, cols]
+}
+# need v2m for case of p
+v2m_p <- function(p){
+	n           <- length(p)
+	dim(p)      <- c(n/4,4)
+	colnames(p) <- c("p1_1","p1_2","p2_1","p2_2")
+	p
+}
+# a function giving e50 from p, defined either way
+dec_p <- function(pvec, self = TRUE, anti = identity){
+	pvec        <- anti(pvec)
+	n           <- length(pvec)
+	# siphon off proportions disabled as last two elements of the vector.
+	prop        <- pvec[n]
+	prop        <- c(prop, 1 - prop)
+	pvec        <- pvec[-n]
+	
+	pmat        <- v2m_p(pvec)
+	datself     <- p2m(pmat, self = self)
+
+	result      <- e50(datself, 
+				       to = 5, # anything bigger than ntrans+1 gives total LE
+				       age = 50, 
+				       prop = prop, 
+				       ntrans = 2, 
+				       deduct = FALSE)
+	result
+}
+
+logit <- function(x){
+	log(x/(1-x))
+}
+expit <- function(x){
+   out              <- exp(x)/(1+exp(x))
+   out[is.nan(out)] <- 1
+   out
+}
+```
+
+Here out and self refer to the analogous cases above. Let's see if we can get identical results from $f()$, here called `dec_p()`. This is confirmed.
+```{r}
+pvecout1 <- c(m2p(m1996low,self=FALSE), r1[1])
+pvecout2 <- c(m2p(m1996high,self=FALSE), r2[1])
+# first a check that results equal:
+dec_p(pvecout1,self=FALSE)
+dec_p(pvecout2,self=FALSE)
+
+# also identical results
+pvecself1 <- c(m2p(m1996low,self=TRUE), r1[1])
+pvecself2 <- c(m2p(m1996high,self=TRUE), r2[1])
+dec_p(pvecself1,self=TRUE)
+dec_p(pvecself2,self=TRUE)
+```
+
+Here if we decompose either way we're going to get the same results in each element, where mortality and survival are two sides of the same coin.
+
+```{r}
+c_p_out  <- ltre(dec_p, pvecout1, pvecout2, N = 1, self = FALSE)
+c_p_self <- ltre(dec_p, pvecself1, pvecself2, N = 1, self = TRUE)
+sum(c_p_out);sum(c_p_self)
+# rather close, yay!
+sum(e2 * r2) - sum(e1 * r1)
+
+age50         <- c_p_out[125];c_p_self[125]
+c_p_out       <- c_p_out[-125]
+c_p_self      <- c_p_self[-125]
+dim(c_p_out)  <- c(31,4)
+dim(c_p_self) <- c(31,4)
+
+pcols <-  c("p1_1","p1_2","p2_1","p2_2")
+c_p_out_sums  <- colSums(c_p_out)
+c_p_self_sums <- colSums(c_p_self)
+names(c_p_out_sums)  <- pcols
+names(c_p_self_sums) <- pcols
+c_p_out_sums
+c_p_self_sums
+```
+This is a nice result. I like this. Plus everything has a nice direct interpretation. It is noteworthy that these results are qualitatively similar to the *attrition*-only example done in the first round and they look nothing like the *survival* results.
+
+# Again, but under various transformations
+
+What about with a logit transform?
+```{r}
+c_p_outl  <- ltre(dec_p, logit(pvecout1), logit(pvecout2), 
+				 N = 2, self = FALSE, anti = expit)
+c_p_selfl <- ltre(dec_p, logit(pvecself1), logit(pvecself2), 
+				 N = 2, self = TRUE, anti = expit)
+# also close
+sum(c_p_outl);sum(c_p_selfl)
+
+(age50          <- c_p_outl[125]);c_p_selfl[125]
+c_p_outl       <- c_p_outl[-125]
+c_p_selfl      <- c_p_selfl[-125]
+dim(c_p_outl)  <- c(31,4)
+dim(c_p_selfl) <- c(31,4)
+c_p_outl_sums  <- colSums(c_p_outl)
+c_p_selfl_sums <- colSums(c_p_selfl)
+names(c_p_outl_sums)  <- pcols
+names(c_p_selfl_sums) <- pcols
+# quite similar results
+c_p_outl_sums
+c_p_selfl_sums
+```
+Note the logit transform results are very similar to the un transformed results, and they are also identical for either parameterization.
+
+What about log-exp transform?
+```{r}
+c_p_outl2  <- ltre(dec_p, log(pvecout1), log(pvecout2), 
+				 N = 1, self = FALSE, anti = exp)
+c_p_selfl2 <- ltre(dec_p, log(pvecself1), log(pvecself2), 
+				 N = 1, self = TRUE, anti = exp)
+# also close, but not equal
+sum(c_p_outl2);sum(c_p_selfl2)
+```
+These results are not identical for both parameterizations.
+
+What about sqrt-squared? What about $arcsin()$-$sin()$?
+```{r}
+sq <- function(x){
+	x^2
+}
+c_p_outl3  <- ltre(dec_p, sqrt(pvecout1), sqrt(pvecout2), 
+				 N = 1, self = FALSE, anti = sq)
+c_p_selfl3 <- ltre(dec_p, sqrt(pvecself1), sqrt(pvecself2), 
+				 N = 1, self = TRUE, anti = sq)
+# also close, but not equal
+sum(c_p_outl3);sum(c_p_selfl3)
+
+asint <- function(x){
+	2 * asin(sqrt(x))
+}
+asintinv <- function(x){
+	sin(x/2)^2
+}
+c_p_outl4  <- ltre(dec_p, asint(pvecout1), asint(pvecout2), 
+				 N = 1, self = FALSE, anti = asintinv)
+c_p_selfl4 <- ltre(dec_p, asint(pvecself1), asint(pvecself2), 
+				 N = 1, self = TRUE, anti = asintinv)
+# also close, but not equal
+sum(c_p_outl4);sum(c_p_selfl4)
+```
+These are similar to the other results, but also not identical for both parameterizations.
+
+## Summary
+Since `asin()` and `logit()` are both roughly linear between .3 and .7, probably decomp results for ages with transition probabilities in that range are similar, but I'm guessing that for probabilities close to 0 or 1, which we get around age 50 and above age 100, `logit()` is probably cleanest. Also, this transformation preserves symmetry between survival and mortality, while the others I tried do not. It's possibly also acceptable to just decompose straight on the probabilities. I prefer the setup with $p(mort or surv)$ and $p(health trans | surv)$ over the original setup where results vary too much. Directly, or under $logit()$ transform, decomposition values and symmetry are preserved, and this transformation retains the same interpretation as that desired. Is this the one you work out with matrix algebra?
+
+# Notes
+In tests of other functions I was able in increase precision in `ltre()` by increasing `N`, but not in the present case. Using the `DemoTools` package I can test with `horiuchi()`, which runs in essentially the same way.
+
+Here testing that precision increases with `N`... Confirmed.
+
+```{r, eval = FALSE}
+library(DemoDecomp)
+c_p_outh  <- horiuchi(dec_p, pvecout1, pvecout2, N = 1, self = FALSE)
+c_p_selfh <- horiuchi(dec_p, pvecself1, pvecself2, N = 1, self = TRUE)
+sum(c_p_outh);sum(c_p_selfh)
+c_p_outh  <- horiuchi(dec_p, pvecout1, pvecout2, N = 10, self = FALSE)
+c_p_selfh <- horiuchi(dec_p, pvecself1, pvecself2, N = 10, self = TRUE)
+sum(c_p_outh);sum(c_p_selfh)
+c_p_outh  <- horiuchi(dec_p, pvecout1, pvecout2, N = 20, self = FALSE)
+c_p_selfh <- horiuchi(dec_p, pvecself1, pvecself2, N = 20, self = TRUE)
+sum(c_p_outh);sum(c_p_selfh)
+```
+
+And, is symmetry preserved with Horiuchi? Yes.
+```{r, eval = FALSE}
+(age50          <- c_p_outh[125]);c_p_selfh[125]
+c_p_outh       <- c_p_outh[-125]
+c_p_selfh      <- c_p_selfh[-125]
+dim(c_p_outh)  <- c(31,4)
+dim(c_p_selfh) <- c(31,4)
+c_p_outh_sums  <- colSums(c_p_outh)
+c_p_selfh_sums <- colSums(c_p_selfh)
+names(c_p_outh_sums)  <- pcols
+names(c_p_selfh_sums) <- pcols
+# quite similar results
+c_p_outh_sums
+c_p_selfh_sums
+```
+
+## What about other gradient methods?
+
+The `grad()` function has arguments for other estimation methods. Let's try some and see if precision then increases with `N`. By default "Richardson" method is used, with `method.args=list(eps=1e-4, d=0.0001, zero.tol=sqrt(.Machine$double.eps/7e-7), r=4, v=2, show.details=FALSE)`. Let's make it finer. This will slow things down a lot, but just to check. Nope, not here either (code shown but not run).
+
+```{r, eval = FALSE}
+c_p_out_test  <- ltre(dec_p, logit(pvecout1), logit(pvecout2), 
+				 N = 2, self = FALSE, anti = expit,
+				 method.args = list(
+				 	eps = 1e-10, 
+				 	d = 0.0000001, 
+				 	v = 3,
+				 	zero.tol = sqrt(.Machine$double.eps), 
+				 	r = 6))
+sum(c_p_out_test)
+c_p_out_test  <- ltre(dec_p, logit(pvecout1), logit(pvecout2), 
+				 N = 10, self = FALSE, anti = expit,
+				 method.args = list(
+				 	eps = 1e-10, 
+				 	d = 0.00001, 
+				 	zero.tol = sqrt(.Machine$double.eps), 
+				 	r = 6,
+				 	v = 5))
+
+sum(c_p_out_test)
+DIF
+```
+
+I wonder if I had analytic derivatives implemented if precision would increase with `N`? One thing that doesn't look appealing about the derivative expressions in your note is that they are calculated for all matrix entries rather than just the minimal parameters. At least in the present no large matrices are invoked.  
