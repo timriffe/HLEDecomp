@@ -1,0 +1,13 @@
+---
+title: "Decomposing discrete time multistate models"
+author: "Tim Riffe"
+date: "10/11/2019"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Acknowledgements
+This exercise has benefitted from discussions with Christian Dudel, Kathryn Grace, Jutta Gampe, Marie-Pier Bergeron, James Oeppen, Alyson van Raalte, Hal Caswell, Jonas Schöley, Shiro Horiuchi, Daniel Schneider, Vera Pawlowsky-Glahn, and Juan José Egozcue.
