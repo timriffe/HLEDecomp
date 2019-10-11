@@ -58,9 +58,11 @@ library(DemoDecomp)
 library(RColorBrewer)
 library(xtable)
 library(compositions)
-path <- "/home/tim/git/HLEDecomp/HLEDecomp"
-source(file.path(path, "Code/R/Functions.R"))
-TR    <- local(get(load(file.path(path, "Data/Transitions/DCS/initdetail/TR_v06.Rdata"))))
+library(here)
+library(Ternary)
+
+source(here("Code/R/Functions.R"))
+TR    <- local(get(load(here("Data/Transitions/DCS/initdetail/TR_v06.Rdata"))))
 TR    <- data.table(TR)
 # TR: had to fix colnames problem
 PREV  <- TR[ , get_prev_dt(.SD), by = list(sex, edu, time)]
@@ -123,7 +125,6 @@ barplot(t(radix2), main = "2006 male radix",ylim=c(0,.5),las=1)
 Differences in transition probabilities over time are subtle but more visible when overlayed in a ternary plot. Here we see that the perturbation that it takes to jump from 1996 to 2006 really is not that large. It is also clear that education group differences are in many ages far larger than changes in the decade examined.
 
 ```{r, echo = FALSE, fig.width=10,fig.height=10}
-library(Ternary)
 
 pri   <- TR2[time == 1996 & sex == "m" & edu == "primary"]
 sec   <- TR2[time == 1996 & sex == "m" & edu == "secondary"]

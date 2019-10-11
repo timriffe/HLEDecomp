@@ -1,14 +1,4 @@
-me <- system("whoami",intern=TRUE)
-if (me == "mpidr_d\\riffe"){
-	setwd("U:/git/HLEDecomp/HLEDecomp")
-}
-if (me == "tim"){
-	setwd("/home/tim/git/HLEDecomp/HLEDecomp")
-}
-
-source("Code/R/utils.R")
-
-
+source(here("Code","R","utils.R"))
 
 
 # deprecated?
@@ -86,7 +76,9 @@ data_2_U <- function(datself, ntrans = 3){
 	datself    <- as.data.frame(datself,stringsAsFactors=FALSE)
 	# get the block order
 	trans.self <- getcols(ntrans = ntrans, self = TRUE)
-	this.order <- as.data.frame(matrix(trans.self, ntrans, byrow = TRUE),stringsAsFactors=FALSE)
+	
+	# TR: by columns instead of rows 9-Oct-2019
+	this.order <- as.data.frame(matrix(trans.self, ntrans, byrow = FALSE), stringsAsFactors=FALSE)
 
 	# take advantage of data.frame columns as list elements
 	UL         <- lapply(as.data.frame(datself[,trans.self],stringsAsFactors=FALSE), pi2u)
