@@ -1,13 +1,25 @@
 ---
-title: "Decomposing discrete time multistate models"
+title: "A decomposition approach for discrete time multistate models"
 author: "Tim Riffe"
 date: "10/11/2019"
 output: pdf_document
+bibliography: references.bib
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+
+# Background
+Multistate models are useful for capturing the comparative statics of dynamic processes, for example a healthy life expectancy. Examples of such models are found in the areas of health, family, migration, and labor demography. Often, we would like to explain inqualities between the sexes, over socioeconomic gradients, or changes over time within groups. Multistate models have a functional form, which means that a given set of parameters $\theta$ (transition probabilities and an initial state composition in this case) is used to deterministically calculate an aymptotic result, such as a state expectancy. That means that differences between results can be decomposed into contributions from each element of $\theta$. These contributions offer primary evidence of which forces account for differences observed, a first step for explaining differences. 
+
+There are three general decomposition approaches (that I know of) that can be used in settings such as this. These include the algorithm of stepwise replacement (ASR) [@andreev2002algorithm], the difference-scaled derivatives (DSD) approach [@caswell1989analysis], and pseudo-continuous decomposition (PCD) [@horiuchi2008]. The second approch DSD^[This method is primarily known as  a *lifetable response experiment* LTRE, but I opt to give it a more literal and descriptive name.] is the only one of these three approaches that has been used to decompose multistate models, but in principle they are interchangeable and should give only slightly different results. 
+
+I have stumbled upon a previously undescribed conundrum in the decomposition of discrete time multistate models: It matters how $f(\theta)$ is parameterized. While we can  
+
+
 # Acknowledgements
 This exercise has benefitted from discussions with Christian Dudel, Kathryn Grace, Jutta Gampe, Marie-Pier Bergeron, James Oeppen, Alyson van Raalte, Hal Caswell, Jonas Schöley, Shiro Horiuchi, Daniel Schneider, Vera Pawlowsky-Glahn, and Juan José Egozcue.
+
+# References
