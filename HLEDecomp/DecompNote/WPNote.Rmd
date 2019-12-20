@@ -9,14 +9,14 @@ bibliography: references.bib
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
-
+\[Edited ~20.12.2019\]
 
 # Background
-Multistate models are useful for capturing the comparative statics of dynamic processes, for example a healthy life expectancy. Examples of such models are found in the areas of health, family, migration, and labor demography. Often, we would like to explain inqualities between the sexes, over socioeconomic gradients, or changes over time within groups. Multistate models have a functional form, which means that a given set of parameters $\theta$ (transition probabilities and an initial state composition in this case) is used to deterministically calculate an aymptotic result, such as a state expectancy. That means that differences between results can be decomposed into contributions from each element of $\theta$. These contributions offer primary evidence of which forces account for differences observed, a first step for explaining differences. 
+Multistate models are useful for calculating summary statics from dynamic processes defined on the basis of transitions, for example a healthy life expectancy. Examples of such models are found in the areas of health, family, migration, and labor demography among others. Often, we would like to explain differences between the sexes, over socioeconomic gradients, or changes over time within groups. Multistate models have a functional form, which means that a given set of parameters $\theta$ (transition probabilities and (perhaps) an initial state composition in this case) is used to deterministically calculate an aymptotic result, such as a state expectancy. Therefore differences between results can be attributed to elementwise differences between two versions of $\theta$. These contributions offer primary evidence of which forces account for differences observed, a first step for explaining differences, or a first clue for targetted crafting of interventions. 
 
 There are three general decomposition approaches (that I know of) that can be used in settings such as this. These include the algorithm of stepwise replacement (ASR) [@andreev2002algorithm], the difference-scaled derivatives (DSD) approach [@caswell1989analysis], and pseudo-continuous decomposition (PCD) [@horiuchi2008]. The second approch DSD^[This method is primarily known as  a *lifetable response experiment* LTRE, but I opt to give it a more literal and descriptive name.] is the only one of these three approaches that has been used to decompose multistate models, but in principle they are interchangeable and should give only slightly different results. 
 
-I have stumbled upon a previously undescribed conundrum in the decomposition of discrete time multistate models: It matters how $f(\theta)$ is parameterized. While we can  
+I have stumbled upon a previously undescribed conundrum in the decomposition of discrete time multistate models: When decomposing differences in this class of model, it matters how $f(\theta)$ is parameterized. An understandable description of the nature of this problem requires some requisite knowledge, here given in brief.
 
 
 # Acknowledgements
