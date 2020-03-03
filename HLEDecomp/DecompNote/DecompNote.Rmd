@@ -61,8 +61,8 @@ library(compositions)
 library(here)
 library(Ternary)
 
-source(here("Code/R/Functions.R"))
-TR    <- local(get(load(here("Data/Transitions/DCS/initdetail/TR_v06.Rdata"))))
+source(here("Code","R","Functions.R"))
+TR    <- local(get(load(here("Data","Transitions","DCS","initdetail","TR_v06.Rdata"))))
 TR    <- data.table(TR)
 # TR: had to fix colnames problem
 PREV  <- TR[ , get_prev_dt(.SD), by = list(sex, edu, time)]

@@ -28,8 +28,26 @@ The core issue is that the probabilities of the $s+1$ transitions originating fr
 
 Let's assume a model with 3 ages and the states (`H`)ealthy, (`S`)ick and (`D`)ead. 
 
+```{r, include=FALSE, message = FALSE, warning=FALSE}
+library(here)
+library(data.table)
+library(tidyverse)
+source(here::here("Code","R","Functions.R"))
+TR    <- local(get(load(here::here("Data","Transitions","DCS","initdetail","TR_v06.Rdata"))))
+TR    <- data.table(TR)
+# TR: had to fix colnames problem
+PREV  <- TR[ , get_prev_dt(.SD), by = list(sex, edu, time)]
+# TR2 just means that there are now TWO living states,
+TR2   <- collapseTR(TR = TR, PREV = PREV) %>% 
+  filter(time == 2001, sex == "b", edu == "secondary")
+TR2
+
+data_2_U
+
+```
+
 
 # Acknowledgements
-This exercise has benefitted from discussions with Christian Dudel, Kathryn Grace, Jutta Gampe, Marie-Pier Bergeron, James Oeppen, Alyson van Raalte, Hal Caswell, Jonas Schöley, Shiro Horiuchi, Daniel Schneider, Vera Pawlowsky-Glahn, and Juan José Egozcue.
+This exercise has benefitted from discussions with Christian Dudel, Kathryn Grace, Jutta Gampe, Marie-Pier Bergeron, James Oeppen, Alyson van Raalte, Hal Caswell, Jonas Schöley, Shiro Horiuchi, Daniel Schneider, Marilia Nepomuceno, Vera Pawlowsky-Glahn, and Juan José Egozcue.
 
 # References

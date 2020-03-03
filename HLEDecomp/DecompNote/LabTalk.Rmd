@@ -1,0 +1,166 @@
+---
+title: "Decomposing discrete time multistate models"
+author: "Tim Riffe"
+date: "3/3/2020"
+output: beamer_presentation
+header-includes: 
+  - \usepackage{tikz}
+  - \usepackage{pgfplots}
+  - \usetikzlibrary{arrows,calc,positioning,shapes.geometric}
+  - \usepackage{xcolor}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+## Discrete time multistate models
+```{r, out.width='60%'}
+knitr::include_graphics('Figs/MScompendium.png')
+```
+
+## A typical model
+
+\begin{tikzpicture}[scale=0.7, ->,>=stealth',shorten >=1pt,auto,node distance=3.5cm,
+  thick,main node/.style={circle,draw},square/.style={regular polygon,regular polygon sides=4}]
+
+  \node[main node] (1) at (0,0) [square,draw]{Healthy};
+  \node[main node] (2) at (4,-2.5) [square,draw] {Disabled};
+  \node[main node] (3) at (1.5,-6) [square,draw] {Dead};  
+
+  \path[every node/.style={font=\sffamily\small}]
+    
+    (1) edge node [left] {} (3)
+   	(1) edge [bend right] node [left] {} (2)
+    
+    (2) edge node [right] {} (3)
+    (2) edge [bend right] node [left] {} (1)
+    
+    (1) edge [loop left] node {} (1)
+    (2) edge [loop right] node {} (2)
+    (3) edge [loop below] node {} (3)
+ 
+    ;
+\end{tikzpicture}
+
+## A typical model
+
+\begin{tikzpicture}[scale=0.7, ->,>=stealth',shorten >=1pt,auto,node distance=3.5cm,
+  thick,main node/.style={circle,draw},square/.style={regular polygon,regular polygon sides=4}]
+
+  \node[main node] (1) at (0,0) [square,draw]{Healthy};
+  \node[main node] (2) at (4,-2.5) [square,draw] {Disabled};
+  \node[main node] (3) at (1.5,-6) [square,draw] {Dead};  
+
+  \path[every node/.style={font=\sffamily\small}]
+    
+    (1) edge node [left] {} (3)
+   	(1) edge [bend right, red] node [left] {} (2)
+    
+    (2) edge node [right] {} (3)
+    (2) edge [bend right, red] node [left] {} (1)
+    
+    (1) edge [loop left, red] node {} (1)
+    (2) edge [loop right, red] node {} (2)
+    (3) edge [loop below] node {} (3)
+ 
+    ;
+\end{tikzpicture}
+
+## Generalizing the objective
+
+\Large
+$$\xi = f(\color{red}\theta \color{black})$$
+
+where $\xi$ can be any synthetic quantity calculated using $\color{red}\theta$.
+
+- often $\xi$ is an expectancy
+
+## Decomposition
+
+> Kitagawa, Arriaga, stepwise algorithm, Oaxaca-Blinder, CF, Horiuchi, LTRE, SVD, SSE, and many many more
+
+## Decomposition
+
+> Kitagawa, Arriaga, \textcolor{red}{stepwise algorithm}, Oaxaca-Blinder, CF, \textcolor{red}{Horiuchi}, \textcolor{red}{LTRE}, SVD, SSE, and many more
+
+## Decomposition
+
+Method     order indep.   exact sum    interpretable
+--------   ------------   ----------   ---------
+stepwise                    X           X
+Horiuchi    X               X           X
+LTRE        X               x           X
+
+## The setup
+\Large
+$$ \Delta \xi = \xi^2 - \xi^1$$
+\pause
+$$ = f(\color{red}{\theta^2} \color{black}) - f(\color{red}{\theta^1} \color{black})$$
+\pause
+$$ \Delta\xi = \sum \mathbf{c}_i$$
+\pause
+$$ \mathbf{c} = \mathcal{D}(f, \color{red}{\theta^2}\color{black},\color{red}{\theta^1}\color{black})$$
+
+## 
+\Huge
+\centering
+Let's talk about \color{red}$\theta$
+
+## 
+\definecolor{gray}{RGB}{100,100,100}
+\begin{minipage}{.48\linewidth}
+\resizebox{\textwidth}{!}{%
+\begin{tikzpicture}[ ->,>=stealth',shorten >=1pt,auto,node distance=1.5cm,
+  thick,main node/.style={circle,draw},square/.style={regular polygon,regular polygon sides=4}]
+
+  \node[main node] (1) at (0,0) [square,draw]{Healthy};
+  \node[main node] (2) at (4,-2.5) [square,draw] {Disabled};
+  \node[main node] (3) at (1.5,-6) [square,draw] {Dead};  
+
+  \path[every node/.style={font=\sffamily\small}]
+    
+    (1) edge [gray] node [left] {} (3)
+   	(1) edge [bend right, red] node [left] {} (2)
+    
+    (2) edge [gray] node [right] {} (3)
+    (2) edge [bend right, red] node [left] {} (1)
+    
+    (1) edge [loop left, red] node {} (1)
+    (2) edge [loop right, red] node {} (2)
+    (3) edge [loop below, gray] node {} (3)
+ 
+    ;
+\end{tikzpicture}
+}
+\end{minipage}
+\begin{minipage}{.48\linewidth}
+\resizebox{\textwidth}{!}{%
+\begin{tikzpicture}[->,>=stealth',shorten >=1pt,auto,node distance=3.5cm,
+  thick,main node/.style={circle,draw},square/.style={regular polygon,regular polygon sides=4}]
+
+  \node[main node] (1) at (0,0) [square,draw]{Healthy};
+  \node[main node] (2) at (4,-2.5) [square,draw] {Disabled};
+  \node[main node] (3) at (1.5,-6) [square,draw] {Dead};  
+
+  \path[every node/.style={font=\sffamily\small}]
+    
+    (1) edge [blue] node [left] {} (3)
+   	(1) edge [bend right, blue] node [left] {} (2)
+    
+    (2) edge [blue] node [right] {} (3)
+    (2) edge [bend right, blue] node [left] {} (1)
+    
+    (1) edge [loop left, gray] node {} (1)
+    (2) edge [loop right, gray] node {} (2)
+    (3) edge [loop below, gray] node {} (3)
+ 
+    ;
+\end{tikzpicture}
+}
+\end{minipage}
+
+## Observation
+\Large
+$$\xi = \color{red}{f(\theta)} \color{black} = \color{blue}{f(\theta)}$$
+

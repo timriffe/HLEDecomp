@@ -86,10 +86,10 @@ pi2u <- function(pivec) {
 
 #datself <- get_TR("02",subset = sex == "f" & edu == "all_edu" & time == 1996)
 # just transition rates, excluding to death, single sex, edu, year
-data_2_U <- function(datself, ntrans = 3) {
+data_2_U <- function(datself, ntrans = 3, dead = as.character(ntrans+1)) {
   datself    <- as.data.frame(datself, stringsAsFactors = FALSE)
   # get the block order
-  trans.self <- getcols(ntrans = ntrans, self = TRUE)
+  trans.self <- getcols(ntrans = ntrans, self = TRUE, dead = dead)
   
   # TR: by columns instead of rows 9-Oct-2019
   this.order <-
@@ -142,7 +142,7 @@ e50 <-
     prop <- prop / sum(prop)
     
     selfcols <- getcols(ntrans, self = TRUE, dead = dead)
-    U    <- data_2_U(DAT[, selfcols], ntrans = ntrans)
+    U    <- data_2_U(DAT[, selfcols], ntrans = ntrans, dead = dead)
     N    <- U2N(U, interval = interval)
     
     cind <- rep(seq(50, 112, by = 2), ntrans) == age
@@ -206,7 +206,7 @@ e50_dt <-
     # TR: new Sept 18
     prop <- prop / sum(prop)
     selfcols <- getcols(ntrans, self = TRUE, dead = dead)
-    U    <- data_2_U(DAT[, selfcols], ntrans = ntrans)
+    U    <- data_2_U(DAT[, selfcols], ntrans = ntrans, dead = dead)
     
     N    <- U2N(U, interval = interval)
     
@@ -480,7 +480,8 @@ get_prev_dt <-
            deduct = TRUE,
            ntrans,
            interval = 2,
-           age = 50) {
+           age = 50,
+           dead = as.character(ntrans+1)) {
     DAT <- as.data.frame(DAT, stringsAsFactors = FALSE)
     
     if (missing(ntrans)) {
@@ -495,10 +496,10 @@ get_prev_dt <-
     prop      <- prop / sum(prop)
     
     Age       <- DAT$age
-    cols      <- getcols(ntrans, self = TRUE)
+    cols      <- getcols(ntrans, self = TRUE, dead = dead)
     
     DAT       <- DAT[, cols]
-    U         <- data_2_U(DAT, ntrans = ntrans)
+    U         <- data_2_U(DAT, ntrans = ntrans, dead = dead)
     N         <- U2N(U, interval = interval)
     
     ages      <- rep(seq(50, 112, by = interval), ntrans)
