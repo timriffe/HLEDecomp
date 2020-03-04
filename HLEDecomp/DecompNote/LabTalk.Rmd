@@ -171,7 +171,7 @@ $$ \Delta \xi = \color{red}{\xi^2 - \xi^1} \color{black} = \color{blue}{\xi^2 - 
 \pause
 $$ \mathcal{D}(\color{red}{f}, \color{red}{\theta^2}\color{black},\color{red}{\theta^1}\color{black}) \ne \mathcal{D}(\color{blue}{f}, \color{blue}{\theta^2}\color{black},\color{blue}{\theta^1}\color{black})$$
 
-$$ \sum \color{red}{\mathbf{c}}^{\color{black}i} =\sum \color{blue}{\mathbf{c}}^{\color{black}i} $$
+$$ \sum \color{red}{\mathbf{c}}^{\color{black}i}\color{black} =\sum \color{blue}{\mathbf{c}}^{\color{black}i} $$
 but
 $$
 \color{red}{\mathbf{c}}^{\color{black}i} \ne \color{blue}{\mathbf{c}}^{\color{black}i}$$
@@ -218,4 +218,61 @@ Resid.     DF-DF    DF-Dis.   DF mort  Dis.-DF  Dis.-Dis.   Dis. mort
 ```{r, out.width='60%'}
 knitr::include_graphics('Figs/thanks.png')
 ```
+
+## A new property
+
+\Large
+We would like a solution that gives consistent interpretable results.
+\pause
+
+\bigskip
+
+\Huge
+Solution
+
+\bigskip
+
+\Large
+\pause
+Make $\theta$ consist in conditional probabilities
+
+## Specifics
+
+\Large
+For standard calcs we use (two of) [$p^{stay}$, $p^{switch}$, $p^{die}$]
+
+\pause
+Transform two multiplicative probabilities [$p^{stay} | survive$, $p^{survive}$]
+
+## Complementarity
+
+DF mort   Dis. mort   DF-Dis.       Dis.-DF
+-------   ------      -----------   --------
+1.29      0.58        0.02          -0.31
+
+\pause
+
+Transitions can be framed in terms of mortality or survival, in terms of staying in the state of transfering out of it. Results \color{blue}**identical**
+
+\pause
+\Huge
+\color{blue} Really, IDENTICAL
+
+## Small things
+
+- Best to logit or similar before decomposing ($f(\theta)$ just needs to undo it)
+- Probably extends to larger state spaces
+- Accounting for initial conditions not treated here
+
+## things to consider
+
+- Recheck LTRE work in lit
+- Low programming overhead on top of MS modeling
+- MS papers probably should do this
+- aiming for WP soon
+
+
+
+
+
 
