@@ -88,9 +88,12 @@ where $\xi$ can be any synthetic quantity calculated using $\color{red}\theta$.
 
 Method     order indep.   exact sum    interpretable
 --------   ------------   ----------   ---------
-stepwise                    X           X
+Stepwise                    X           X
 Horiuchi    X               X           X
 LTRE        X               x           X
+
+\pause
+They're all *good enough* for what we're doing
 
 ## The setup
 \Large
@@ -163,4 +166,56 @@ Let's talk about \color{red}$\theta$
 ## Observation
 \Large
 $$\xi = \color{red}{f(\theta)} \color{black} = \color{blue}{f(\theta)}$$
+\pause
+$$ \Delta \xi = \color{red}{\xi^2 - \xi^1} \color{black} = \color{blue}{\xi^2 - \xi^1}$$
+\pause
+$$ \mathcal{D}(\color{red}{f}, \color{red}{\theta^2}\color{black},\color{red}{\theta^1}\color{black}) \ne \mathcal{D}(\color{blue}{f}, \color{blue}{\theta^2}\color{black},\color{blue}{\theta^1}\color{black})$$
+
+$$ \sum \color{red}{\mathbf{c}}^{\color{black}i} =\sum \color{blue}{\mathbf{c}}^{\color{black}i} $$
+but
+$$
+\color{red}{\mathbf{c}}^{\color{black}i} \ne \color{blue}{\mathbf{c}}^{\color{black}i}$$
+
+## Example
+
+\Large
+DFLE increased from 30.75 in 2006 to 32.33 in 2014
+that's 1.58 years
+
+\bigskip
+\bigskip
+\small (HRS, women with secondary education)
+
+## Example
+
+\Large
+Same result whether we omit:
+- self-transitions
+- mortality transitions
+- health transitions
+
+## Example
+
+```{r, eval = FALSE, include = FALSE}
+Resid <- structure(c(NA, 1.28, 0.21, -0.01, 0.04, NA, 1.32, NA, 1.1, -0.28, 
+-1.86, NA, NA, 2.13, -0.41, 0.54, NA, 0.67), .Dim = c(3L, 6L), .Dimnames = list(
+    c("self", "dead", "other"), c("Stay healthy", "Get disabled", 
+    "Die healthy", "Recover", "Stay disab.", "Die disabled")))
+xtable(Resid)
+```
+\Large
+But very different stories if we decompose:
+
+\normalsize
+Resid.     DF-DF    DF-Dis.   DF mort  Dis.-DF  Dis.-Dis.   Dis. mort
+--------   ------   -------   -------  -------  ----------  ---------- 
+(self)              -0.01     1.32     -0.28                0.54 
+(dead)      1.28    0.04               -1.86    2.13 
+(other)     0.21              1.10              -0.41       0.67 
+
+## Thank you intermission
+\centering
+```{r, out.width='60%'}
+knitr::include_graphics('Figs/thanks.png')
+```
 

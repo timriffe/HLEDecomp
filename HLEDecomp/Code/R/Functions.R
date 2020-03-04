@@ -1,4 +1,4 @@
-source(here("Code", "R", "utils.R"))
+source(here("HLEDecomp","Code", "R", "utils.R"))
 
 
 # deprecated?
@@ -165,7 +165,7 @@ e50 <-
     # each to state weighted because person years can originate
     # in any from state.
     # Note age 50 props used even if age selection isn't 50
-    e50all <- colSums(e.50 * prop)
+    e50all <- colSums(e.50 %*% diag(prop))
     
     # this replaces, possibly erroneously, e.50 %*% prop
     # it's likely that whatever is happening here is the achilles heal

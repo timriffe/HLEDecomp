@@ -6,13 +6,9 @@ library(DemoDecomp)
 library(RColorBrewer)
 library(xtable)
 library(compositions)
+library(here)
 me <- system("whoami",intern=TRUE)
-if (me == "mpidr_d\\riffe"){
-	setwd("U:/git/HLEDecomp/HLEDecomp")
-}
-if (me == "tim"){
-	setwd("/home/tim/git/HLEDecomp/HLEDecomp")
-}
+setwd(here("HLEDecomp"))
 
 source("Code/R/Functions.R")
 
