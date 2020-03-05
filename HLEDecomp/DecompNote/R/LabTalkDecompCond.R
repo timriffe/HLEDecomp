@@ -5,8 +5,9 @@ library(DemoDecomp)
 library(RColorBrewer)
 library(here)
 
-source("Code/R/Functions.R")
-source("DecompNote/R/FunctionsLabTalk.R")
+here()
+source(here("HLEDecomp","Code/R/Functions.R"))
+source(here("HLEDecomp","DecompNote/R/FunctionsLabTalk.R"))
 # Author: tim
 ###############################################################################
 TR    <- local(get(load("Data/Transitions/DCS/initdetail/TR_v06.Rdata")))
@@ -118,6 +119,19 @@ round(resid.mortleave,2)
 
 
 
+library(tidyverse)
+
+D1 %>% 
+  select(age, m13,m12,m11) %>% 
+  pivot_longer(2:4,names_to = "transition",values_to="prob.") %>% 
+  mutate(transition = factor(transition),
+         transition = factor(transition,levels(transition)[c(3:1)])) %>% 
+  ggplot(mapping = aes(x=age,y=prob.,fill=transition))+
+  geom_col(space=0, width=2)+
+  theme(legend.pos = "none") + 
+  annotate("text",80,.25,label = "stay healthy", size = 8) + 
+  annotate("text",95,.6,label = "become disabled", size = 8, angle = -50) +
+  annotate("text",100,.9, label = "die", size = 8)
 
 
 
