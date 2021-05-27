@@ -26,6 +26,7 @@
 \usepackage{hyperref}
 \newcommand{\white}[1]{\textcolor{white}{#1}}
 \newcommand{\blue}[1]{\textcolor{blue}{#1}}
+\newcommand{\presentpic}{\includegraphics[scale = .5]{Figs/present.png}}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%	Beginning of the document		%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -39,10 +40,9 @@
 % \end{frame}
 \begin{frame}[plain]
 	%\titlepage
-	\vspace{-.5cm}
+	\vspace{.5cm}
  \centerline{\includegraphics[scale=1]{Figs/ehu_logo_strip.png}}
 
-	
 	\huge
 	\vspace{1em}
 	\textbf{\white{Consider parameterizing in terms of conditional probabilities when} decomposing \white{discrete time} multistate models}\\
@@ -57,10 +57,9 @@
 % -------------------------------------------------------------
 \begin{frame}[plain]
 	%\titlepage
-	\vspace{-.5cm}
+	\vspace{.5cm}
  \centerline{\includegraphics[scale=1]{Figs/ehu_logo_strip.png}}
 
-	
 	\huge
 	\vspace{1em}
 	\textbf{\white{Consider parameterizing in terms of conditional probabilities when} decomposing discrete time multistate models}\\
@@ -77,10 +76,9 @@
 
 \begin{frame}[plain]
 	%\titlepage
-	\vspace{-.5cm}
+	\vspace{.5cm}
  \centerline{\includegraphics[scale=1]{Figs/ehu_logo_strip.png}}
 
-	
 	\huge
 	\vspace{1em}
 	
@@ -157,29 +155,28 @@
 
 \begin{frame}[plain]
 \Large
-$$\xi = f(\color{red}\theta \color{black})$$
-\pause
-where $\xi$ can be any synthetic quantity calculated with $\color{red}\theta$.
-
-- often $\xi$ is an expectancy
+$$\presentpic = f(\color{red}\theta \color{black})$$
+\vspace{1em}
+ \presentpic \enspace is any synthetic index calculated from $\color{red}\theta$
+ 
 \end{frame}
 
 % -----------------------------------
 
 \begin{frame}[plain]{setup}
 \Large
-$$ \Delta \xi = \xi^2 - \xi^1$$
-\pause
+$$ \Delta\presentpic = \presentpic^2 - \presentpic^1$$
+
 $$ = f(\color{red}{\theta^2} \color{black}) - f(\color{red}{\theta^1} \color{black})$$
-\pause
-$$ \Delta\xi = \sum \mathbf{c}_i$$
-\pause
+
+$$ \Delta\presentpic = \sum \mathbf{c}_i$$
+
 $$ \mathbf{c} = \mathcal{D}(f, \color{red}{\theta^2}\color{black},\color{red}{\theta^1}\color{black})$$
 \end{frame}
 
 % -----------------------------------
 
-\begin{frame}[plain]{Decomposition, $\mathcal{D}()$}
+\begin{frame}[plain]{Decomposition, \scalebox{1.5}{$\mathcal{D}()$}}
 \begin{itemize}
 \item LTRE (Caswell 1989)
 \item Stepwise (Andreev et al 2002)
@@ -270,14 +267,14 @@ Pick two colors to make \scalebox{1.5}{\color{red}$\theta$}
 
 \begin{frame}[plain]
 \Large
-$$\xi = \color{red}{f(\theta)} \color{black} = \color{blue}{f(\theta)}$$
-\pause
-$$ \Delta \xi = \color{red}{\xi^2 - \xi^1} \color{black} = \color{blue}{\xi^2 - \xi^1}$$
-\pause
-$$ \mathcal{D}(\color{red}{f}, \color{red}{\theta^2}\color{black},\color{red}{\theta^1}\color{black}) \ne \mathcal{D}(\color{blue}{f}, \color{blue}{\theta^2}\color{black},\color{blue}{\theta^1}\color{black})$$
+$$\presentpic = \color{red}{f(\theta)} \color{black} = \color{blue}{f^\prime(\theta)}$$
+
+$$ \Delta \presentpic = \color{red}{\presentpic^2 - \presentpic^1} \color{black} = \color{blue}{\presentpic^2 - \presentpic^1}$$
+
+$$ \mathcal{D}(\color{red}{f}, \color{red}{\theta^2}\color{black},\color{red}{\theta^1}\color{black}) \ne \mathcal{D}(\color{blue}{f^\prime}, \color{blue}{\theta^2}\color{black},\color{blue}{\theta^1}\color{black})$$
 
 $$ \sum \color{red}{\mathbf{c}}^{\color{black}i}\color{black} =\sum \color{blue}{\mathbf{c}}^{\color{black}i} $$
-but
+
 $$
 \color{red}{\mathbf{c}}^{\color{black}i} \ne \color{blue}{\mathbf{c}}^{\color{black}i}$$
 \end{frame}
@@ -287,7 +284,7 @@ $$
 \begin{frame}[plain]{Example}
 \Large
 DFLE increased from 30.75 in 2006 to 32.33 in 2014.
-That's $\Delta \xi = $1.58 years
+That's $\Delta \presentpic = $1.58 years
 
 \bigskip
 \bigskip
@@ -298,7 +295,7 @@ That's $\Delta \xi = $1.58 years
 \begin{frame}[plain]{Example}
 
 \Large
-Same result, $\xi$  whether we omit:
+Same result, \presentpic\enspace  whether we omit:
 
 \begin{itemize}
 \item self-transitions
@@ -306,17 +303,17 @@ Same result, $\xi$  whether we omit:
 \item health transitions
 \end{itemize}
 
-But very different stories if we decompose:
+But \color{red}very different stories \color{black} if we decompose:
 
 \normalsize
 \begin{table}[ht]
 \centering
 \begin{tabular}{r|rrrrrr}
   \hline
-omits & Stay healthy & Get disabled & Die healthy & Recover & Stay disab. & Die disabled \\ 
+$\theta$ omits & DF\rightarrow DF & DF\rightarrow Dis & DF mort & Dis\rightarrow DF & Dis\rightarrow Dis & Dis mort \\ 
   \hline
-self &  & -0.01 & 1.32 & -0.28 &  & 0.54 \\ 
-  mort & 1.28 & 0.04 &  & -1.86 & 2.13 &  \\ 
+\color{blue}self &  & \color{blue}-0.01 & \color{blue}1.32 & \color{blue}-0.28 &  & \color{blue}0.54 \\ 
+  \color{red} mort & \color{red}1.28 & \color{red}0.04 &  & \color{red}-1.86 & \color{red}2.13 &  \\ 
   health & 0.21 &  & 1.10 &  & -0.41 & 0.67 \\ 
    \hline
 \end{tabular}
@@ -342,7 +339,7 @@ Solution
 \bigskip
 
 \Large
-\pause
+
 Make $\theta$ consist in conditional probabilities
 \end{frame}
 
