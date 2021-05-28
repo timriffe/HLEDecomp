@@ -55,21 +55,21 @@
 \end{frame}
 
 % -------------------------------------------------------------
-\begin{frame}[plain]
-	%\titlepage
-	\vspace{.5cm}
- \centerline{\includegraphics[scale=1]{Figs/ehu_logo_strip.png}}
-
-	\huge
-	\vspace{1em}
-	\textbf{\white{Consider parameterizing in terms of conditional probabilities when} decomposing discrete time multistate models}\\
-	\vspace{1em}
-	\large 
-	Tim Riffe \\
-	\vspace{1em}
-	28 May, 2021\\
-	REVES annual meeting
-\end{frame}
+%\begin{frame}[plain]
+%	%\titlepage
+%	\vspace{.5cm}
+% \centerline{\includegraphics[scale=1]{Figs/ehu_logo_strip.png}}
+%
+%	\huge
+%	\vspace{1em}
+%	\textbf{\white{Consider parameterizing in terms of conditional probabilities when} decomposing discrete time %multistate models}\\
+%	\vspace{1em}
+%	\large 
+%	Tim Riffe \\
+%	\vspace{1em}
+%	28 May, 2021\\
+%	REVES annual meeting
+%\end{frame}
 
 
 % -------------------------------------------------------------
@@ -264,20 +264,20 @@ Pick two colors to make \scalebox{1.5}{\color{red}$\theta$}
 \end{frame}
 
 % -----------------------------------
-
-\begin{frame}[plain]
-\Large
-$$\presentpic = \color{red}{f(\theta)} \color{black} = \color{blue}{f^\prime(\theta)}$$
-
-$$ \Delta \presentpic = \color{red}{\presentpic^2 - \presentpic^1} \color{black} = \color{blue}{\presentpic^2 - \presentpic^1}$$
-
-$$ \mathcal{D}(\color{red}{f}, \color{red}{\theta^2}\color{black},\color{red}{\theta^1}\color{black}) \ne \mathcal{D}(\color{blue}{f^\prime}, \color{blue}{\theta^2}\color{black},\color{blue}{\theta^1}\color{black})$$
-
-$$ \sum \color{red}{\mathbf{c}}^{\color{black}i}\color{black} =\sum \color{blue}{\mathbf{c}}^{\color{black}i} $$
-
-$$
-\color{red}{\mathbf{c}}^{\color{black}i} \ne \color{blue}{\mathbf{c}}^{\color{black}i}$$
-\end{frame}
+%
+%\begin{frame}[plain]
+%\Large
+%$$\presentpic = \color{red}{f(\theta)} \color{black} = \color{blue}{f^\prime(\theta)}$$
+%
+%$$ \Delta \presentpic = \color{red}{\presentpic^2 - \presentpic^1} \color{black} = \color{blue}{\presentpic^2 - %\presentpic^1}$$
+%
+%$$ \mathcal{D}(\color{red}{f}, \color{red}{\theta^2}\color{black},\color{red}{\theta^1}\color{black}) \ne %\mathcal{D}(\color{blue}{f^\prime}, \color{blue}{\theta^2}\color{black},\color{blue}{\theta^1}\color{black})$$
+%
+%$$ \sum \color{red}{\mathbf{c}}^{\color{black}i}\color{black} =\sum \color{blue}{\mathbf{c}}^{\color{black}i} %$$
+%
+%$$
+%\color{red}{\mathbf{c}}^{\color{black}i} \ne \color{blue}{\mathbf{c}}^{\color{black}i}$$
+%\end{frame}
 
 % -----------------------------------
 
@@ -329,13 +329,14 @@ $\theta$ omits & DF\rightarrow DF & DF\rightarrow Dis & DF mort & Dis\rightarrow
 \begin{frame}[plain]
 \Large
 We would like a solution that gives consistent interpretable results
-\pause
+
 
 \bigskip
 
 \Huge
+\begin{center}
 Solution
-
+\end{center}
 \bigskip
 
 \Large
@@ -345,14 +346,14 @@ Make $\theta$ consist in conditional probabilities
 
 \begin{frame}[plain]
 \Large
-For standard calcs we use (two of) 
+For standard calcs compose $\theta$ from (two of) 
 
 $$\left[p^{stay}, p^{switch}, p^{die}\right]$$
 
-\pause
 Transform this into two multiplicative probabilities 
 
 $$\left[p^{stay} | survive, p^{survive}\right]$$
+
 \end{frame}
 
 \begin{frame}[plain]{Complementarity}
@@ -364,7 +365,6 @@ $$\left[p^{stay} | survive, p^{survive}\right]$$
 1.29   &   0.58   &     0.02   &       -0.31
 \end{tabular}
 \end{table}
-\pause
 
 Transitions can be framed in terms of mortality or survival, in terms of staying in the state of transfering out of it. Results \color{blue}\emph{identical}
 
