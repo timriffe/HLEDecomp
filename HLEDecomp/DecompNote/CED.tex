@@ -1,0 +1,392 @@
+\documentclass[20pt,usenames,dvipsnames]{beamer}
+
+\usepackage{tikz}
+\usepackage[normalem]{ulem}
+\geometry{paperwidth=10in, paperheight=7.5in}
+\usepackage{animate}
+\usepackage{xcolor,colortbl}
+\usepackage{booktabs}
+\usepackage[utf8]{inputenc}
+\usepackage{pgfplots}
+\usetikzlibrary{arrows,calc,positioning,shapes.geometric}
+\pgfplotsset{compat=1.15}
+%\usepackage[mpidr]{./mpidr/beamerthemeMPIDR}
+%\usefonttheme{serif}
+%\newcolumntype{C}[1]{>{\centering\let\newline\\\arraybackslash\hspace{0pt}}m{#1}}
+%\newcommand*{\QEDA}{\hfill\ensuremath{\blacksquare}}
+%% Declaring title and author
+%	the institute's logo
+%\renewcommand{\mylogo}{\includegraphics[width=4.7in]{mpidr_logo_colour_en}}
+\usepackage{color}
+\definecolor{mygray}{rgb}{0.8,0.8,0.8}
+\definecolor{yellow}{rgb}{1,1,0}
+
+\defbeamertemplate{description item}{align left}{\insertdescriptionitem\hfill}
+%%	should be the very last package to be loaded
+\usepackage{hyperref}
+\newcommand{\white}[1]{\textcolor{white}{#1}}
+\newcommand{\blue}[1]{\textcolor{blue}{#1}}
+\newcommand{\presentpic}{\includegraphics[scale = .5]{Figs/present.png}}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%	Beginning of the document		%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{document}
+
+%%	titlepage - fixed frame:
+%%	========================
+
+% \begin{frame}
+% 	\titlepage
+% \end{frame}
+\begin{frame}[plain]
+	%\titlepage
+	\vspace{.5cm}
+ \centerline{\includegraphics[scale=1]{Figs/ehu_logo_strip2.png}}
+
+	\huge
+	\vspace{5mm}
+	\textbf{\white{Consider parameterizing in terms of conditional probabilities when} decomposing \white{discrete time} multistate models}\\
+	\vspace{1em}
+	\large 
+	Tim Riffe \\
+	\vspace{5mm}
+	11 Nov, 2021\\
+	CED Seminari
+\end{frame}
+
+% -------------------------------------------------------------
+%\begin{frame}[plain]
+%	%\titlepage
+%	\vspace{.5cm}
+% \centerline{\includegraphics[scale=1]{Figs/ehu_logo_strip.png}}
+%
+%	\huge
+%	\vspace{1em}
+%	\textbf{\white{Consider parameterizing in terms of conditional probabilities when} decomposing discrete time %multistate models}\\
+%	\vspace{1em}
+%	\large 
+%	Tim Riffe \\
+%	\vspace{1em}
+%	28 May, 2021\\
+%	REVES annual meeting
+%\end{frame}
+
+
+% -------------------------------------------------------------
+
+\begin{frame}[plain]
+	%\titlepage
+	\vspace{.5cm}
+ \centerline{\includegraphics[scale=1]{Figs/ehu_logo_strip2.png}}
+
+	\huge
+	\vspace{5mm}
+	
+	\textbf{Consider parameterizing in terms of \blue{conditional probabilities} when decomposing discrete time multistate models}\\
+	\vspace{1em}
+	\large 
+	Tim Riffe \\
+	\vspace{5mm}
+	11 Nov, 2021\\
+	CED Seminari
+\end{frame}
+
+
+%-------------------
+\begin{frame}[plain]{What is a multistate model?}
+\url{https://temery86.github.io/FullHistory/}
+\vspace{1em}
+
+\includegraphics[scale=.5]{Figs/multistate_animation.png}
+\end{frame}
+
+
+\begin{frame}[plain]{A typical multistate model}
+
+\small
+\begin{center}
+\begin{tikzpicture}[scale=0.7, ->,>=stealth',shorten >=1pt,auto,node distance=3.5cm,
+  thick,main node/.style={circle,draw},square/.style={regular polygon,regular polygon sides=4}]
+
+  \node[main node] (1) at (0,0) [square,draw]{Healthy};
+  \node[main node] (2) at (8,-5) [square,draw] {Disabled};
+  \node[main node] (3) at (3,-12) [square,draw] {Dead};  
+
+  \path[every node/.style={font=\sffamily\small}]
+    
+    (1) edge node [left] {} (3)
+   	(1) edge [bend right] node [left] {} (2)
+    
+    (2) edge node [right] {} (3)
+    (2) edge [bend right] node [left] {} (1)
+
+    (1) edge [loop left] node {} (1)
+    (2) edge [loop right] node {} (2)
+    (3) edge [loop below] node {} (3)
+ 
+    ;
+\end{tikzpicture}
+\end{center}
+\end{frame}
+
+
+\begin{frame}[plain]{A typical multistate model}
+
+\small
+\begin{center}
+\begin{tikzpicture}[scale=0.7, ->,>=stealth',shorten >=1pt,auto,node distance=3.5cm,
+  thick,main node/.style={circle,draw},square/.style={regular polygon,regular polygon sides=4}]
+
+  \node[main node] (1) at (0,0) [square,draw]{Healthy};
+  \node[main node] (2) at (8,-5) [square,draw] {Disabled};
+  \node[main node] (3) at (3,-12) [square,draw] {Dead};  
+
+  \path[every node/.style={font=\sffamily\small}]
+    
+    (1) edge node [left] {} (3)
+   	(1) edge [bend right, red] node [left] {} (2)
+    
+    (2) edge node [right] {} (3)
+    (2) edge [bend right, red] node [left] {} (1)
+    
+    (1) edge [loop left, red] node {} (1)
+    (2) edge [loop right, red] node {} (2)
+    (3) edge [loop below] node {} (3)
+ 
+    ;
+\end{tikzpicture}
+\end{center}
+\end{frame}
+
+% -----------------------------------
+
+\begin{frame}[plain]
+\Large
+$$\presentpic = f(\color{red}\theta \color{black})$$
+\vspace{1em}
+ \presentpic \enspace is any synthetic index calculated from $\color{red}\theta$
+ 
+\end{frame}
+
+% -----------------------------------
+
+\begin{frame}[plain]{Decomposition asbtract}
+\Large
+$$ \Delta\presentpic = \presentpic^2 - \presentpic^1$$
+
+$$ = f(\color{red}{\theta^2} \color{black}) - f(\color{red}{\theta^1} \color{black})$$
+
+$$ \Delta\presentpic = \sum \mathbf{c}_i$$
+
+$$ \mathbf{c} = \mathcal{D}(f, \color{red}{\theta^2}\color{black},\color{red}{\theta^1}\color{black})$$
+\end{frame}
+
+% -----------------------------------
+
+\begin{frame}[plain]{Decomposition, \scalebox{1.5}{$\mathcal{D}()$}}
+\begin{itemize}
+\item difference-scaled partial derivatves a.k.a \emph{LTRE} (Caswell 1989)
+\item Stepwise parameter swapping (Andreev et al 2002)
+\item Pseudo continuous (Horiuchi et al 2008)
+\end{itemize}
+
+\end{frame}
+
+% -----------------------------------
+
+\begin{frame}[plain]
+
+\Huge
+\centering
+Let's talk about \scalebox{2}{\color{red}$\theta$}
+
+\end{frame}
+
+% -----------------------------------
+
+\begin{frame}[plain]
+
+\Large
+Pick two colors to make \scalebox{1.5}{\color{red}$\theta$}
+
+\begin{center}
+\includegraphics[]{Figs/Transitions.pdf}
+\end{center}
+\end{frame}
+
+% -----------------------------------
+
+\begin{frame}[plain]
+\definecolor{gray}{RGB}{100,100,100}
+\begin{minipage}{.48\linewidth}
+\resizebox{\textwidth}{!}{%
+\begin{tikzpicture}[ ->,>=stealth',shorten >=1pt,auto,node distance=1.5cm,
+  thick,main node/.style={circle,draw},square/.style={regular polygon,regular polygon sides=4}]
+
+  \node[main node] (1) at (0,0) [square,draw]{Healthy};
+  \node[main node] (2) at (8,-5) [square,draw] {Disabled};
+  \node[main node] (3) at (3,-12) [square,draw] {Dead};  
+
+  \path[every node/.style={font=\sffamily\small}]
+    
+    (1) edge [gray] node [left] {} (3)
+   	(1) edge [bend right, red] node [left] {} (2)
+    
+    (2) edge [gray] node [right] {} (3)
+    (2) edge [bend right, red] node [left] {} (1)
+    
+    (1) edge [loop left, red] node {} (1)
+    (2) edge [loop right, red] node {} (2)
+    (3) edge [loop below, gray] node {} (3)
+ 
+    ;
+\end{tikzpicture}
+}
+\end{minipage}
+\begin{minipage}{.48\linewidth}
+\resizebox{\textwidth}{!}{%
+\begin{tikzpicture}[->,>=stealth',shorten >=1pt,auto,node distance=3.5cm,
+  thick,main node/.style={circle,draw},square/.style={regular polygon,regular polygon sides=4}]
+
+  \node[main node] (1) at (0,0) [square,draw]{Healthy};
+  \node[main node] (2) at (8,-5) [square,draw] {Disabled};
+  \node[main node] (3) at (3,-12) [square,draw] {Dead};  
+
+  \path[every node/.style={font=\sffamily\small}]
+    
+    (1) edge [blue] node [left] {} (3)
+   	(1) edge [bend right, blue] node [left] {} (2)
+    
+    (2) edge [blue] node [right] {} (3)
+    (2) edge [bend right, blue] node [left] {} (1)
+    
+    (1) edge [loop left, gray] node {} (1)
+    (2) edge [loop right, gray] node {} (2)
+    (3) edge [loop below, gray] node {} (3)
+ 
+    ;
+\end{tikzpicture}
+}
+\end{minipage}
+\end{frame}
+
+% -----------------------------------
+%
+%\begin{frame}[plain]
+%\Large
+%$$\presentpic = \color{red}{f(\theta)} \color{black} = \color{blue}{f^\prime(\theta)}$$
+%
+%$$ \Delta \presentpic = \color{red}{\presentpic^2 - \presentpic^1} \color{black} = \color{blue}{\presentpic^2 - %\presentpic^1}$$
+%
+%$$ \mathcal{D}(\color{red}{f}, \color{red}{\theta^2}\color{black},\color{red}{\theta^1}\color{black}) \ne %\mathcal{D}(\color{blue}{f^\prime}, \color{blue}{\theta^2}\color{black},\color{blue}{\theta^1}\color{black})$$
+%
+%$$ \sum \color{red}{\mathbf{c}}^{\color{black}i}\color{black} =\sum \color{blue}{\mathbf{c}}^{\color{black}i} %$$
+%
+%$$
+%\color{red}{\mathbf{c}}^{\color{black}i} \ne \color{blue}{\mathbf{c}}^{\color{black}i}$$
+%\end{frame}
+
+% -----------------------------------
+
+\begin{frame}[plain]{Example}
+\Large
+DFLE increased from 30.75 in 2006 to 32.33 in 2014.
+That's $\Delta \presentpic = $1.58 years
+
+\bigskip
+\bigskip
+\small (HRS, age 50 women with secondary education)
+
+\end{frame}
+
+\begin{frame}[plain]{Example}
+
+\Large
+Same result, \presentpic\enspace  whether we omit:
+
+\begin{itemize}
+\item self-transitions
+\item mortality transitions
+\item health transitions
+\end{itemize}
+
+But \color{red}very different stories \color{black} if we decompose:
+
+\normalsize
+\begin{table}[ht]
+\centering
+\begin{tabular}{r|rrrrrr}
+  \hline
+$\theta$ omits & DF\rightarrow DF & DF\rightarrow Dis & DF mort & Dis\rightarrow DF & Dis\rightarrow Dis & Dis mort \\ 
+  \hline
+\color{blue}self &  & \color{blue}-0.01 & \color{blue}1.32 & \color{blue}-0.28 &  & \color{blue}0.54 \\ 
+  \color{red} mort & \color{red}1.28 & \color{red}0.04 &  & \color{red}-1.86 & \color{red}2.13 &  \\ 
+  health & 0.21 &  & 1.10 &  & -0.41 & 0.67 \\ 
+   \hline
+\end{tabular}
+\end{table}
+\end{frame}
+
+\begin{frame}[plain]{"Thank you" intermission}
+\begin{center}
+\includegraphics[]{Figs/thanks.png}
+\end{center}
+\end{frame}
+
+\begin{frame}[plain]
+\Large
+We would like a solution that gives consistent interpretable results
+
+
+\bigskip
+
+\Huge
+\begin{center}
+Solution
+\end{center}
+\bigskip
+
+\Large
+
+Make $\theta$ consist in conditional probabilities
+\end{frame}
+
+\begin{frame}[plain]
+\Large
+For standard calcs compose $\theta$ from (two of) 
+
+$$\left[p^{stay}, p^{switch}, p^{die}\right]$$
+
+Transform this into two multiplicative probabilities 
+
+$$\left[p^{stay} | survive, p^{survive}\right]$$
+
+\end{frame}
+
+\begin{frame}[plain]{Complementarity (or \emph{Symmetry}?)}
+\begin{table}[ht]
+\centering
+\begin{tabular}{cccc}
+  \hline
+ DF mort & Dis. mort & DF\rightarrow Dis & Dis\rightarrow Df \\ \hline
+1.29   &   0.58   &     0.02   &       -0.31
+\end{tabular}
+\end{table}
+
+Transitions can be framed in terms of mortality or survival, in terms of staying in the state of transfering out of it. Results \color{blue}\emph{identical}
+
+\pause
+\Huge
+\color{blue} Really, IDENTICAL
+
+\pause
+\color{black}
+Thanks
+\end{frame}
+
+\end{document}
+
+
+
+
+

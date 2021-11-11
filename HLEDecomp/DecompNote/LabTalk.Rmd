@@ -258,7 +258,7 @@ Transform this into two multiplicative probabilities
 
 [$p^{stay} | survive$, $p^{survive}$]
 
-## Complementarity
+## Complementarity (or \emph{symmetry}?)
 
 DF mort   Dis. mort   DF-Dis.       Dis.-DF
 -------   ------      -----------   --------
